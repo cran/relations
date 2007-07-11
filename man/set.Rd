@@ -61,7 +61,28 @@ set_combn(x, m)
   the (proper) superset predicate, and \code{==} and \code{!=} for
   (in)equality. The \code{length} method for sets gives the
   cardinality. \code{set_combn} returns the set of all
-  subsets of specfied length.
+  subsets of specfied length. The \code{Summary} methods do also work if
+  defined for the set elements. The \code{\link{mean}} and
+  \code{\link[stats]{median}}
+  methods try to convert the object to a numeric vector before calling
+  the default methods.
+
+  Because set elements are unordered, it is not sensible to use indexing
+  (except using labels). However, it is possible to iterate over
+  \emph{all} elements using \code{for} and \code{{l,s}apply}.
+
+  Note that \code{set_union}, \code{set_intersection}, and
+  \code{set_symdiff} accept any number of arguments. The \eqn{n}-ary
+  symmetric difference of a collection (or multiset; here: the
+  list of arguments) of sets contains
+  just elements which are in an odd number of the sets in the
+  collection.
+
+  \code{set_is_element} is vectorized in \code{e}, that is, if \code{e}
+  is an atomic vector or list, the is-element operation is performed
+  element-wise, and a logical vector returned. Note that, however,
+  objects of class \code{"tuple"} are taken as atomic objects to
+  correctly handle sets of tuples.
   
 }
 \seealso{
@@ -74,8 +95,15 @@ set_combn(x, m)
 s <- set(1,2,3)
 s
 
+## named elements
+snamed <- set(one = 1, 2, three = 3)
+snamed
+
+## named elements can directly be accessed
+snamed[["one"]]
+
 ## a more complex set
-set(c,"test",list(1,2,3))
+set(c, "test", list(1, 2, 3))
 
 ## converter
 s2 <- as.set(2:5)
@@ -122,5 +150,17 @@ set_symdiff(set(1,2,3), set(2,3,4), set(3,4,5))
 
 ## subsets:
 set_combn(as.set(1:3),2)
+
+## iterators:
+sapply(s, sqrt)
+for (i in s) print(i)
+
+## Summary methods
+sum(s)
+range(s)
+
+## mean / median
+mean(s)
+median(s)
 }
 \keyword{math}

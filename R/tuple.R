@@ -189,11 +189,37 @@ function(x, ...)
 Ops.tuple <-
 function(e1, e2)
 {
-    len <- max(length(e1), length(e2))
-    e1 <- rep(e1, length.out = len)
-    e2 <- rep(e2, length.out = len)
-    as.tuple(lapply(seq_len(len),
-                    function(i) do.call(.Generic, list(e1[[i]], e2[[i]]))))
+    if (!missing(e2)) {
+        len <- max(length(e1), length(e2))
+        e1 <- rep(e1, length.out = len)
+        e2 <- rep(e2, length.out = len)
+        ret <- lapply(seq_len(len),
+                      function(i) do.call(.Generic, list(e1[[i]], e2[[i]])))
+    } else {
+        ret <- lapply(seq_along(e1),
+                      function(i) do.call(.Generic, list(e1[[i]])))
+    }
+
+    .make_tuple_from_list(ret)
+    
+}
+
+Summary.tuple <-
+function(..., na.rm = FALSE)
+    do.call(.Generic, c(as.list(...), na.rm = na.rm))
+
+mean.tuple <-
+function(x, ...)
+{
+    x <- as.numeric(x)
+    NextMethod()
+}
+
+median.tuple <-
+function(x, na.rm = FALSE)
+{
+    x <- as.numeric(x)
+    NextMethod()
 }
 
 tuple_outer <- set_outer
@@ -218,7 +244,7 @@ function(x, ...)
 ##     else if (sum(sapply(DESCRIPTION, nchar, "width")) < options("width"))
 ##         format(x)
 ##     else { ## Hmm... do we really want this heuristics?
-##         space <- function(i) paste(rep(" ", i), collapse = "")
+##         space <- function(i) paste(rep.int(" ", i), collapse = "")
 ##         TERMS <- names(x)
 ##         len <- length(x)
 ##         if (is.null(TERMS)) TERMS <- rep.int("", len)

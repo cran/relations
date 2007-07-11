@@ -111,6 +111,11 @@ function(..., recursive = FALSE)
     relation_ensemble(list = relations)
 }
 
+t.relation_ensemble <-
+function(x)
+    .make_relation_ensemble_from_list_and_meta(lapply(x, t),
+                                               attr(x, ".Meta"))
+
 rep.relation_ensemble <-
 function(x, times, ...)
     .make_relation_ensemble_from_list_and_meta(NextMethod("rep"),
@@ -135,7 +140,34 @@ function(x, ...)
         writeLines(gettext("An empty relation ensemble."))
     invisible(x)
 }
-        
+
+Ops.relation_ensemble <-
+function(e1, e2)
+{
+    ## Relation ensembles are of the tuple type, so that comparisons etc
+    ## are performed elementwise.  It might be useful to recycle ...
+    if(missing(e2)) {
+        ## Could have unary '+', '-' and '!'.
+        ## Only complement makes sense.  Could make the other a no-op.
+        if(!(as.character(.Generic) %in% "!"))
+            stop(gettextf("Unary '%s' not defined for \"%s\" objects.",
+                          .Generic, .Class))
+        ## Could also do relation_ensemble(list = NextMethod()).
+        return(.make_relation_ensemble_from_list_and_meta(lapply(e1,
+                                                                 .Generic),
+                                                          attr(e1,
+                                                               ".Meta")))
+    }
+    ## Otherwise, keep things simple.  Dispatch to tuple method:
+    out <- NextMethod()
+    ## And massage the return type:
+    if(as.character(.Generic) %in% c("<", "<=", ">", ">=", "==", "!="))
+        as.logical(out)
+    else
+        relation_ensemble(list = out)
+    ## (Could make the last more efficient, of course.)
+}
+
 Summary.relation_ensemble <-
 function(..., na.rm = FALSE)
 {

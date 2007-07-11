@@ -3,15 +3,31 @@
 ### * fit_relation_symdiff
 
 ## General purpose fitter for families
-.SD_families <- c("E", "L", "O", "P", "T")
+.SD_families <- c("E", "L", "O", "P", "T", "C", "A", "S")
 ## where:
 ##   E ... equivalence relations               REF SYM TRA
 ##   L ... linear orders                   TOT  *  ASY TRA
 ##   O ... partial order                       REF ASY TRA
 ##   P ... complete preorder ("ordering")  TOT  *      TRA
 ##   T ... tournament                      TOT  *  ASY
+##   C ... complete relations              TOT  *
+##   A ... antisymmetric relations                 ASY
+##   S ... symmetric relations                     SYM
 ## and TOT <-> total/complete, ASY <-> antisymmetric.
-## Note that completeness implies reflexivity (indicated by '*').
+## Note that completeness implies reflexivity (indicated by '*')
+## A and S will be reflexive iff the (weighted) majority of all input
+## relations is.
+
+## Keep this is sync with .relation_meta_db (currently in utilities.R).
+
+## <NOTE>
+## Ideally we would move to a database for families which specify their
+## parametrizations (currently, upper triangular or off-diagonal) and
+## constraints etc., in particular making it more convenient and
+## reliable to add support for new families.
+## A single classification (e.g., upper_tri vs. offdiag) does not do the
+## job.
+## </NOTE>
 
 ## Number of non-redundant object pairs.
 .n_of_pairs <-
@@ -19,7 +35,10 @@ function(n, family)
 {
     family <- match.arg(family, .SD_families)
     N <- n * (n - 1)                    # Number of distinct pairs.
-    switch(EXPR = family, E = , L = , T = N / 2, O = , P = N)
+    switch(EXPR = family,
+           S =, E =, L =, T = N / 2,    # upper_tri parametrization
+           O =, P =, A =, C = N         # offdiag parametrization
+           )
 }
 
 ## Number of transitivity constraints for the non-redundant pairs.
@@ -29,17 +48,20 @@ function(n, family)
 {
     family <- match.arg(family, .SD_families)
     N <- n * (n - 1) * (n - 2)          # Number of distinct triples.
-    switch(EXPR = family, E = N / 2, L = N / 3, O = , P = N, T = 0L)
+    switch(EXPR = family,
+           E = N / 2, L = N / 3, O =, P = N,
+           A =, T =, S =, C = 0L        # Families w/out TRA.
+           )
 }
 
 ## Make function giving the position of incidence (i, j) in the vector
 ## of non-redundant incidences used for symdiff fitting (upper.tri() for
-## E/L/T and .offdiag() for P/O, respectively).
+## E/L/S/T and .offdiag() for A/C/O/P, respectively).
 .make_pos <-
 function(n, family)
 {
     family <- match.arg(family, .SD_families)
-    if(family %in% c("E", "L", "T"))
+    if(family %in% c("E", "L", "S", "T"))
         function(i, j) {
             ## Position of x_{ij} in x[upper.tri(x)].
             i + (j - 1) * (j - 2) / 2
@@ -54,15 +76,11 @@ function(n, family)
 fit_relation_symdiff <-
 function(x, family = .SD_families, control = list())
 {
-    ## We'll need this eventually, so let's try now.
-    require("lpSolve")
-    
     ## Number of objects:
     n <- nrow(x)
-    
-    objective_in <- if(family %in% c("L", "T"))
+    objective_in <- if (family %in% c("L", "T"))
         (x - t(x))[upper.tri(x)]
-    else if(family == "E")
+    else if (family %in% c("E", "S"))
         (x + t(x))[upper.tri(x)]
     else
         x[.offdiag(x)]
@@ -72,23 +90,27 @@ function(x, family = .SD_families, control = list())
     ## integer, plus maybe totality or antisymmetry, plus maybe
     ## transitivity.
     NP <- .n_of_pairs(n, family)
-    family_is_O_or_P <- family %in% c("O", "P")
+    ## <NOTE>
+    ## At least for the time being, these families are exactly the
+    ## families using an off-diagonal parametrization.
+    family_is_A_or_C_or_O_or_P <- family %in% c("A", "C", "O", "P")
+    ## </NOTE>
     constr_mat <-
         rbind(diag(1, NP),
               diag(1, NP),
-              if(family_is_O_or_P)
-              .make_tot_or_asy_constraint_mat(n),              
+              if(family_is_A_or_C_or_O_or_P)
+              .make_tot_or_asy_constraint_mat(n),
               .make_transitivity_constraint_mat(n, family))
-    constr_dir <- 
+    constr_dir <-
         c(rep.int(">=", NP),
           rep.int("<=", NP),
-          if(family_is_O_or_P)
+          if(family_is_A_or_C_or_O_or_P)
           .make_tot_or_asy_constraint_dir(n, family),
           .make_transitivity_constraint_dir(n, family))
     constr_rhs <-
         c(rep.int(0, NP),
           rep.int(1, NP),
-          if(family_is_O_or_P)          
+          if(family_is_A_or_C_or_O_or_P)
           .make_tot_or_asy_constraint_rhs(n),
           .make_transitivity_constraint_rhs(n, family))
 
@@ -96,7 +118,7 @@ function(x, family = .SD_families, control = list())
     acmaker <-
         .make_additional_constraint_maker_using_incidences(n, family)
     if(!is.null(A <- control$constraints)) {
-        A <- .canonicalize_additional_constraints(A, "P")
+        A <- .canonicalize_additional_constraints(A, family)
         add <- acmaker(A)
         constr_mat <- rbind(constr_mat, add$mat)
         constr_dir <- c(constr_dir, add$dir)
@@ -104,6 +126,15 @@ function(x, family = .SD_families, control = list())
     }
 
     labels <- dimnames(x)
+
+    ## Compute diagonal:
+    ## For ASY and SYM families, a diagonal entry will be set iff it is
+    ## in the (non-strict weighted) majority of the input relations.
+    ## The other families are reflexive, so set ones. 
+    diagonal <- if (family %in% c("A", "S"))
+        diag(x) >= 0
+    else
+        rep.int(1, n)
 
     if(!is.null(all <- control$all) && identical(all, TRUE)) {
         verbose <- control$verbose
@@ -118,10 +149,11 @@ function(x, family = .SD_families, control = list())
                                                  A,
                                                  acmaker,
                                                  labels,
-                                                 verbose))
+                                                 verbose,
+                                                 diagonal))
     }
-    
-    out <- lpSolve::lp("max", 
+
+    out <- lpSolve::lp("max",
                        objective_in,
                        constr_mat,
                        constr_dir,
@@ -130,10 +162,12 @@ function(x, family = .SD_families, control = list())
     .stop_if_lp_status_is_nonzero(out$status, family)
 
     ## Turn the solution back into a full incidence matrix.
-    fit <- if(family_is_O_or_P)
-        .make_incidence_from_offdiag(round(out$solution), family, labels)
+    fit <- if(family_is_A_or_C_or_O_or_P)
+        .make_incidence_from_offdiag(round(out$solution),
+                                     family, labels, diagonal)
     else
-        .make_incidence_from_upper_tri(round(out$solution), family, labels)
+        .make_incidence_from_upper_tri(round(out$solution),
+                                       family, labels, diagonal)
     ## For the time being, tack some of the lp() results on so that we
     ## can look at them (but not everything due to size ...)
     attr(fit, ".lp") <- out[c("objval", "solution")]
@@ -158,12 +192,12 @@ function(status, family)
 
 .find_all_relation_symdiff_optima <-
 function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
-         verbose = FALSE)
+         verbose = FALSE, diagonal)
 {
     ## Start by computing one optimal solution.
     out <- lpSolve::lp("max", obj, mat, dir, rhs, int.vec = int)
     ## Check status:
-    .stop_if_lp_status_is_nonzero(out$status, family)    
+    .stop_if_lp_status_is_nonzero(out$status, family)
     ## Value of the optimum:
     ## (Seems that out$objval is less precise than this.)
     Vopt <- sum(out$objective * out$solution)
@@ -222,7 +256,7 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
     ## additional constraints.
 
     ## Determine a 2-column matrix of (i, j) index pairs to loop over.
-    ind <- if(family %in% c("E", "L", "T")) {
+    ind <- if(family %in% c("E", "L", "S", "T")) {
         ## Loop over all pairs 1 <= i < j <= n.
         which(upper.tri(matrix(0, n, n)), arr.ind = TRUE)
     }
@@ -232,7 +266,7 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
     }
     ## But exclude pairs already specified in additional constraints.
     if(!is.null(A)) {
-        hpos <- if(family %in% c("E", "L", "T")) {
+        hpos <- if(family %in% c("E", "L", "S", "T")) {
             function(i, j)
                 ifelse(i < j, n * (j - 1) + i, n * (i - 1) + j)
         }
@@ -245,11 +279,11 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
                                "!="),
                          2, all), ]
     }
-    
+
     Alist <- list(matrix(0, 0L, 3L))
     for(k in seq_len(nrow(ind))) {
         Alist <- do.call("c",
-                         lapply(Alist, 
+                         lapply(Alist,
                                 add_constraint_for_single_pair,
                                 ind[k, 1L], ind[k, 2L]))
         if(verbose)
@@ -259,7 +293,7 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
                 "\n")
     }
 
-    lapply(Alist, .make_incidence_from_triples, family, labels, n)
+    lapply(Alist, .make_incidence_from_triples, family, labels, diagonal)
 }
 
 ### * Constraint generators: transitivity.
@@ -272,7 +306,8 @@ function(n, family)
     family <- match.arg(family, .SD_families)
 
     NP <- .n_of_pairs(n, family)
-    if((n <= 2L) || (family == "T")) return(matrix(0, 0, NP))
+    if ((n <= 2L) || (family %in% c("A", "C", "S", "T")))
+        return(matrix(0, 0, NP))
 
     NC <- .n_of_transitivity_constraints(n, family)
     pos <- .make_pos(n, family)
@@ -283,13 +318,13 @@ function(n, family)
         ind <- seq_len(n)
         z <- as.matrix(expand.grid(ind, ind, ind))[, c(3L, 2L, 1L)]
         z <- z[(z[, 1L] < z[, 2L]) & (z[, 2L] < z[, 3L]), , drop = FALSE]
-        
+
         p_ij <- pos(z[, 1L], z[, 2L])
         p_ik <- pos(z[, 1L], z[, 3L])
         p_jk <- pos(z[, 2L], z[, 3L])
 
         out <- matrix(0, NC, NP)
-        ind <- seq_len(NC)        
+        ind <- seq_len(NC)
 
         if(family == "E") {
             ## For equivalence relations, we have 3 transitivity
@@ -321,7 +356,7 @@ function(n, family)
         out[cbind(ind, pos(z[, 2L], z[, 3L]))] <- 1
         out[cbind(ind, pos(z[, 1L], z[, 3L]))] <- -1
     }
-    
+
     out
 }
 
@@ -383,7 +418,7 @@ function(n)
 
     ind <- seq_len(n)
     z <- as.matrix(expand.grid(ind, ind))[, c(2L, 1L)]
-    z <- z[z[, 1L] < z[, 2L], ]
+    z <- z[z[, 1L] < z[, 2L], , drop = FALSE]
     out <- matrix(0, NC, NP)
     ind <- seq_len(NC)
     out[cbind(ind, pos(z[, 1L], z[, 2L]))] <- 1
@@ -397,7 +432,11 @@ function(n)
 function(n, family)
 {
     NC <- n * (n - 1) / 2
-    rep.int(switch(EXPR = family, O = "<=", P = ">="), NC)
+    rep.int(switch(EXPR = family,
+                   A =, O = "<=",       # ASY
+                   C =, P = ">="        # TOT
+                   ),
+            NC)
 }
 
 ### ** .make_tot_or_asy_constraint_rhs
@@ -405,7 +444,7 @@ function(n, family)
 .make_tot_or_asy_constraint_rhs <-
 function(n)
 {
-    NC <- n * (n - 1) / 2    
+    NC <- n * (n - 1) / 2
     rep.int(1, NC)
 }
 
@@ -514,13 +553,13 @@ function(A, family)
     ## diagonal ones (which should all be one, of course).
     A <- A[A[, 1L] != A[, 2L], , drop = FALSE]
     if(nrow(A) == 0L) return(matrix(0, 0L, 3L))
-    ## For E/L/T, we use only pairs i < j, so swap and possibly flip
+    ## For E/L/S/T, we use only pairs i < j, so swap and possibly flip
     ## (L/T) if needed.
-    if(family %in% c("E", "L", "T")) {
+    if(family %in% c("E", "L", "S", "T")) {
         ind <- A[, 1L] > A[, 2L]
         if(any(ind))
             A[ind, ] <- cbind(A[ind, c(2L, 1L), drop = FALSE],
-                              if(family == "E") A[ind, 3L]
+                              if(family %in% c("E", "S")) A[ind, 3L]
                               else 1 - A[ind, 3L])
     }
     ## Now validate.
@@ -543,7 +582,7 @@ function(A, family)
 ### ** .make_incidence_from_upper_tri
 
 .make_incidence_from_upper_tri <-
-function(x, family = c("E", "L", "T"), labels = NULL, n = NULL)
+function(x, family = c("E", "L", "S", "T"), labels = NULL, diagonal)
 {
     ## Compute the indicences of a binary relation from the given family
     ## from its upper triangular part (provided this is possible, of
@@ -551,21 +590,15 @@ function(x, family = c("E", "L", "T"), labels = NULL, n = NULL)
 
     family <- match.arg(family)
 
-    ## Number of objects.
-    n_from_tri_len <- function(n)
-        (1 + sqrt(8 * n + 1)) / 2
-    if(is.null(n))
-        n <- n_from_tri_len(length(x))
-
-    if(family == "E") {
-        ## Equivalence relation.
-        y <- diag(1 / 2, n, n)
+    if(family %in% c("E", "S")) {
+        ## Equivalence or symmetric relation.
+        y <- diag(diagonal / 2)
         y[upper.tri(y)] <- x
         y <- y + t(y)
     }
     else {
         ## Linear order or tournament.
-        y <- diag(1, n, n)
+        y <- diag(diagonal)
         y[upper.tri(y)] <- x
         y[lower.tri(y)] <- 1 - t(y)[lower.tri(y)]
     }
@@ -577,25 +610,25 @@ function(x, family = c("E", "L", "T"), labels = NULL, n = NULL)
 ### ** .make_incidence_from_offdiag
 
 .make_incidence_from_offdiag <-
-function(x, family = c("O", "P"), labels = NULL, n = NULL)
+function(x, family = c("A", "C", "O", "P"), labels = NULL, diagonal)
 {
+    family <- match.arg(family)
+
     ## Compute the indicences of a binary relation from its off-diagonal
     ## part (provided this is possible, of course).
-
-    if(is.null(n))
-        n <- (1 + sqrt(4 * length(x) + 1)) / 2
 
     ## <NOTE>
     ## Diagonal entries for the incidences are a mess.
     ## For antisymmetric relations, it really does/should not matter.
     ## Nevertheless, we now (unlike Fishburn) include reflexivity in the
-    ## definition of families L, O, P, and T. (For all but O, this is in
+    ## definition of families L, O, P, C, and T. (For all but O, this is in
     ## fact implied by the standard definition of completeness.)
+    ## For A and S, we use the majority vote to determine the diagonal entries.
     ## </NOTE>
 
-    y <- diag(1, n, n)
+    y <- diag(diagonal)
     y[.offdiag(y)] <- x
-    
+
     dimnames(y) <- labels
     y
 }
@@ -603,27 +636,24 @@ function(x, family = c("O", "P"), labels = NULL, n = NULL)
 ### ** .make_incidence_from_triples
 
 .make_incidence_from_triples <-
-function(x, family, labels = NULL, n = NULL)
+function(x, family, labels = NULL, diagonal)
 {
     ## Compute the indicences of a binary relation from a 3-column
     ## matrix the rows of which are triples (i, j, x_{ij}) with x_{ij}
     ## the incidence at position (i, j).
-    
-    if(is.null(n))
-        n <- max(x)
+
     ## Set up incidences for the non-redundant pairs.
-    I <- matrix(0, n, n)
+    I <- diag(diagonal)
     I[x[, -3L, drop = FALSE]] <- x[, 3L]
     ## And complete according to family.
-    diag(I) <- 1
-    if(family %in% c("E", "L", "T")) {
+    if(family %in% c("E", "L", "S", "T")) {
         ind <- lower.tri(I)
-        I[ind] <- if(family == "E")
+        I[ind] <- if(family %in% c("E", "S"))
             t(I)[ind]
         else
             1 - t(I)[ind]
     }
-    
+
     dimnames(I) <- labels
     I
 }
@@ -668,11 +698,11 @@ function(C, nc, control = list())
     ind_c <- seq_len(nc)
     ind_y <- seq_len(n_of_y_variables)
     z <- as.matrix(expand.grid(ind_o, ind_o, ind_c))
-    
+
     ## Build the three constraint objects:
     constraint_mat <- matrix(0, 3 * n_of_y_variables, n_of_variables)
     ind <- ind_y
-    constraint_mat[cbind(ind, ind_y)] <- 1    
+    constraint_mat[cbind(ind, ind_y)] <- 1
     constraint_mat[cbind(ind, pos_m(z[, 1L], z[, 3L]))] <- -1
     constraint_mat[cbind(ind, pos_m(z[, 2L], z[, 3L]))] <- -1
     ind <- ind + n_of_y_variables
@@ -723,7 +753,8 @@ function(C, nc, control = list())
                                                  A,
                                                  acmaker,
                                                  dimnames(C),
-                                                 verbose))
+                                                 verbose,
+                                                 rep.int(1, no)))
     }
 
     y <- lpSolve::lp("max",
@@ -738,7 +769,7 @@ function(C, nc, control = list())
 
     ## Return incidences.
     tcrossprod(M)
-    
+
 }
 
 ### * fit_relation_symdiff_P_k
@@ -763,7 +794,7 @@ function(C, nc, control = list())
     n_of_y_variables <- no ^ 2 * nc ^ 2
     n_of_m_variables <- no * nc
     n_of_variables <- n_of_y_variables + n_of_m_variables
-    
+
     pos_m <- function(i, k) {
         ## Position of variable m_{ik}.
         n_of_y_variables + i + (k - 1) * no
@@ -773,14 +804,14 @@ function(C, nc, control = list())
     ind_c <- seq_len(nc)
     ind_y <- seq_len(n_of_y_variables)
     z <- as.matrix(expand.grid(ind_o, ind_o, ind_c, ind_c))
-    
+
     constraint_mat <- matrix(0, 3 * n_of_y_variables, n_of_variables)
     ind <- ind_y
     constraint_mat[cbind(ind, ind_y)] <- 1
     constraint_mat[cbind(ind, pos_m(z[, 1L], z[, 3L]))] <- -1
     constraint_mat[cbind(ind, pos_m(z[, 2L], z[, 4L]))] <- -1
     ind <- ind + n_of_y_variables
-    constraint_mat[cbind(ind, ind_y)] <- 1    
+    constraint_mat[cbind(ind, ind_y)] <- 1
     constraint_mat[cbind(ind, pos_m(z[, 1L], z[, 3L]))] <- -1
     ind <- ind + n_of_y_variables
     constraint_mat[cbind(ind, ind_y)] <- 1
@@ -796,6 +827,25 @@ function(C, nc, control = list())
                     kronecker(rbind(rep.int(1, nc)), diag(1, no))))
     constraint_dir <- c(constraint_dir, rep.int("=", no))
     constraint_rhs <- c(constraint_rhs, rep.int(1, no))
+    ## Handle constraints on the class sizes.
+    if(!is.null(l <- control$l)) {
+        ## Verify that l is feasible.
+        ## It would be nice to be nice, in particular by rescaling the
+        ## sizes to sum to the number of objects (so that one can
+        ## e.g. specify proportions).  But using something like
+        ##   l <- round(l / sum(l) * nc)
+        ## does not work (e.g., c(2.4, 2.4, 5.2) sums to 10 but after
+        ## rounding only to 9).
+        if((length(l) != nc) || (sum(l) != no))
+            stop("Invalid specification of class sizes.")
+        ## And now add constraints \sum_j m_{jk} = l_k, k = 1, ..., nc.
+        constraint_mat <-
+            rbind(constraint_mat,
+                  cbind(matrix(0, nc, n_of_y_variables),
+                        kronecker(diag(1, nc), rbind(rep.int(1, no)))))
+        constraint_dir <- c(constraint_dir, rep.int("=", nc))
+        constraint_rhs <- c(constraint_rhs, l)
+    }
     ## Handle possibly additional explicit constrains.
     acmaker <-
         .make_additional_constraint_maker_using_memberships_P(pos_m,
@@ -812,9 +862,9 @@ function(C, nc, control = list())
     ## Set up augmented target function, silly way.
     C <- array(C, c(dim(C), nc, nc))
     for(k in ind_c)
-        for(l in seq(from = 1, length = k - 1))
+        for(l in seq_len(k - 1))
             C[, , k, l] <- 0
-    
+
     objective_in <- c(c(C), double(n_of_m_variables))
 
     integer_positions <- seq_len(n_of_m_variables) + n_of_y_variables
@@ -832,7 +882,8 @@ function(C, nc, control = list())
                                                  A,
                                                  acmaker,
                                                  dimnames(C),
-                                                 verbose))
+                                                 verbose,
+                                                 rep.int(1, no)))
     }
 
     y <- lpSolve::lp("max",

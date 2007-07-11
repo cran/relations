@@ -100,11 +100,14 @@ relation_antijoin(x, y, \dots)
 
   The left (right) \emph{semijoin} of two relations \eqn{X} and \eqn{Y}
   is the join of these, projected to the attributes of \eqn{X}
-  (\eqn{Y}).
+  (\eqn{Y}). Thus, it yields all tuples of \eqn{X}
+  (\eqn{Y}) participating in the join of \eqn{X} and \eqn{Y}. 
 
   The left (right) \emph{antijoin} of two relations \eqn{X} and \eqn{Y}
   is the complement of \eqn{X} (\eqn{Y}) and the join of both,
   projected to the attributes of \eqn{X} (\eqn{Y}).
+  Thus, it yields all tuples of \eqn{X}
+  (\eqn{Y}) \emph{not} participating in the join of \eqn{X} and \eqn{Y}. 
   
 }
 \references{
@@ -151,9 +154,9 @@ relation_table(relation_symdiff(R2, R3))
 
 ## cartesian product
 Employee <-
-    data.frame(Name = c("Harry", "Sally", "George", "Harriet"),
-               EmpId = c(3415, 2241, 3401, 2202),
-               DeptName = c("Finance", "Sales", "Finance", "Sales"),
+    data.frame(Name = c("Harry", "Sally", "George", "Harriet", "John"),
+               EmpId = c(3415, 2241, 3401, 2202, 3999),
+               DeptName = c("Finance", "Sales", "Finance", "Sales", "N.N."),
 	       stringsAsFactors = FALSE)
 Employee <- as.relation(Employee)
 relation_table(Employee)
@@ -177,39 +180,13 @@ relation_table(Employee \%><=\% Dept)
 ## full outer join
 relation_table(Employee \%=><=\% Dept)
 
-## semijoin
-Employee <-
-    data.frame(Name = c("Harry", "Sally", "George", "Harriet"),
-               EmpId = c(3415, 2241, 3401, 2202),
-               DeptName = c("Finance", "Sales", "Finance", "Production"),
-               stringsAsFactors = FALSE)
-Employee <- as.relation(Employee)
-relation_table(Employee)
-Dept <- data.frame(DeptName = c("Sales", "Production"),
-                   Manager = c("Harriet", "Charles"),
-                   stringsAsFactors = FALSE)
-Dept <- as.relation(Dept)
-relation_table(Dept)
-
-relation_table(Employee \%|><\% Dept)
-relation_table(Employee \%><|\% Dept)
-
 ## antijoin
-Employee <-
-    data.frame(Name = c("Harry", "Sally", "George", "Harriet"),
-               EmpId = c(3415, 2241, 3401, 2202),
-               DeptName = c("Finance", "Sales", "Finance", "Sales"),
-               stringsAsFactors = FALSE)
-Employee <- as.relation(Employee)
-relation_table(Employee)
-Dept <- data.frame(DeptName = c("Sales", "Production"),
-                   Manager = c("Harriet", "Charles"),
-                   stringsAsFactors = FALSE)
-Dept <- as.relation(Dept)
-relation_table(Dept)
-
 relation_table(Employee \%|>\% Dept)
 relation_table(Employee \%<|\% Dept)
+
+## semijoin
+relation_table(Employee \%|><\% Dept)
+relation_table(Employee \%><|\% Dept)
 
 ## division
 Completed <-

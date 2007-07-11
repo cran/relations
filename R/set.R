@@ -179,7 +179,17 @@ function(a, b)
 "%D%" <-
 set_symdiff <-
 function(...)
-    set_complement(set_intersection(...), set_union(...))
+{
+    len <- length(l <- list(...))
+    if (len < 1L)
+        set()
+    else if (len < 2L)
+        l[[1L]]
+    else if (len < 3L)
+        set_complement(set_intersection(...), set_union(...))
+    else
+        do.call(Recall, c(l[1L], list(do.call(Recall, l[-1L]))))
+}
 
 set_power <-
 function(x)
@@ -195,10 +205,10 @@ function(x)
 set_cartesian <-
 function(...)
 {
-    if(nargs() < 2L)
+    if (nargs() < 2L)
         return(..1)
     l <- list(...)
-    if(!all(len <- sapply(l, length)))
+    if (!all(len <- sapply(l, length)))
         return(set())
     .make_set_of_tuples_from_list_of_lists(.cartesian_product(l))
 }
@@ -206,7 +216,7 @@ function(...)
 set_combn <-
 function(x, m)
 {
-    if(m == 0)
+    if (m == 0)
         set()
     else
         do.call(set, apply(combn(x, m), 2L, as.set))
@@ -286,6 +296,24 @@ function(e1, e2)
          
 }
 
+Summary.set <-
+function(..., na.rm = FALSE)
+    do.call(.Generic, c(as.list(...), na.rm = na.rm))
+
+mean.set <-
+function(x, ...)
+{
+    x <- as.numeric(x)
+    NextMethod()
+}
+
+median.set <-
+function(x, na.rm = FALSE)
+{
+    x <- as.numeric(x)
+    NextMethod()
+}
+
 rep.set <-
 function(x, ...)
     x                                   # for the time being ...
@@ -305,7 +333,7 @@ function(x, left, right)
 {
     nms <- names(x)
     names(x) <- NULL
-    SEP <- rep("", length(x))
+    SEP <- rep.int("", length(x))
     if (!is.null(nms))
       SEP[nms != ""] <- " = "
     paste(left,

@@ -457,7 +457,7 @@ function(x, endorelation = FALSE) {
     arity <- length(x)
     if (is.null(nms)) {
       nms <- if (endorelation) {
-        rep("X", 2L)
+        rep.int("X", 2L)
         ## (Assuming that endorelations are always binary.)
       }
       else if (arity == 1L) "X"

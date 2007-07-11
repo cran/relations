@@ -51,7 +51,11 @@ tuple_is_ntuple(x, n)
   correctly handle cartesian products of sets.  Although tuple objects
   should behave like \dQuote{ordinary} vectors, some operations might
   yield unexpected results since tuple objects are in fact list objects
-  internally.
+  internally. The \code{Summary} methods do work if
+  defined for the set elements. The \code{\link{mean}} and
+  \code{\link[stats]{median}}
+  methods try to convert the object to a numeric vector before calling
+  the default methods.
 }
 \seealso{
   \code{\link{set}} and \code{\link{relation}}.
@@ -71,5 +75,7 @@ as.tuple(1:3)
 c(tuple("a","b"), 1)
 tuple(1,2,3) * tuple(2,3,4)
 rep(tuple(1,2,3), 2)
+min(tuple(1,2,3))
+sum(tuple(1,2,3))
 }
 \keyword{math}

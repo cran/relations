@@ -1,25 +1,39 @@
 ### * plot.relation
 
 plot.relation <-
-function(x, attrs = list(edge = list(arrowsize = "0")), ...)
+function(x, attrs = list(graph = list(rankdir = "BT"),
+                         edge = list(arrowsize = "0"),
+                         node = list(shape = "rectangle", fixedsize = FALSE)),
+         ...)
 {
-    if(!(is.relation(x) && relation_is_endorelation(x)))
+    if(!relation_is_endorelation(x))
         stop("Plot only available for endorelations.")
-    if(!(relation_is_transitive(x) && relation_is_antisymmetric(x)))
-        stop("Plot only available for antisymmetric and transitive relations.")
+    if(!(relation_is_transitive(x)
+         && (relation_is_antisymmetric(x) || relation_is_complete(x))))
+        stop("Plot only available for antisymmetric or complete transitive relations.")
     if(!require("Rgraphviz"))
         stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
-      
-    x <- unclass(relation_incidence(transitive_reduction(x)))
-    dimnames(x) <- labels(x)
-    plot(as(t(x), "graphNEL"), attrs = attrs, ...)
+
+    ## if x is a preference, use dual of complement instead
+    if (!relation_is_antisymmetric(x))
+      x <- t(!x)
+    
+    ## compute transitive reduction to avoid cluttered graph,
+    ## and extract incidence
+    I <- unclass(relation_incidence(transitive_reduction(x)))
+
+    ## transform to graphViz-compatible incidence
+    dimnames(I) <- labels(I)
+    plot(as(I, "graphNEL"), attrs = attrs, ...)
 }
 
 ### * plot.relation_ensemble
 
 plot.relation_ensemble <-
-function(x, attrs = list(edge = list(arrowsize = "0")), ...,
-         layout = NULL)
+function(x, attrs = list(graph = list(rankdir = "BT"), 
+                         edge = list(arrowsize = "0"), 
+                         node = list(shape = "rectangle", fixedsize = FALSE)),
+         ..., layout = NULL)
 {
     ## Why not?
     ## Of course, we maybe should only have one thing ...
@@ -29,8 +43,9 @@ function(x, attrs = list(edge = list(arrowsize = "0")), ...,
                    function(e)
                    (relation_is_endorelation(e)
                     && relation_is_transitive(e)
-                    && relation_is_antisymmetric(e)))))
-        stop("Plotting only available for ensembles of antisymmetric and transitive relations.")
+                    && (relation_is_antisymmetric(e)
+                        || relation_is_complete(e))))))
+        stop("Plotting only available for ensembles of antisymmetric or complete transitive relations.")
     if(!require("Rgraphviz"))
         stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
     ## Number of elements.
@@ -55,9 +70,15 @@ function(x, attrs = list(edge = list(arrowsize = "0")), ...,
         par(mfcol = c(nr, nc))
     on.exit(par(op))
     for(i in seq_along(x)) {
+        ## if x is a preference, use dual of complement instead
+        if (!relation_is_antisymmetric(x[[i]]))
+          x[[i]] <- t(!x[[i]])
+        
+        ## compute transitive reduction to avoid cluttered graph
+        ## and extract incidence
         I <- unclass(relation_incidence(transitive_reduction(x[[i]])))
         dimnames(I) <- labels(I)
-        plot(as(t(I), "graphNEL"), attrs = attrs, ...)
+        plot(as(I, "graphNEL"), attrs = attrs, ...)
     }
 }    
 

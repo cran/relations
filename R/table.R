@@ -15,8 +15,8 @@ function(x, ...)
       print.data.frame(y)
     else {
       y <- as.matrix(format(y, justify = "left"))
-      rownames(y) <- rep("", nrow(y))
-      print(y, quote = FALSE, right = TRUE)
+      rownames(y) <- rep.int("", nrow(y))
+      print(y, quote = FALSE)
     }
     invisible(x)
    

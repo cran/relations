@@ -4,7 +4,7 @@
 \title{Consensus Relations}
 \description{Compute the consensus relation of a relation ensemble.}
 \usage{
-relation_consensus(x, method = NULL, weights = 1, control = list())
+relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
 }
 \arguments{
   \item{x}{an ensemble of relations, or something which can be coerced
@@ -20,6 +20,8 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
     Recycled to the number of elements in the ensemble given by \code{x}
     if necessary.}
   \item{control}{a list of control parameters.  See \bold{Details}.}
+  \item{\dots}{a list of control parameters (overruling those specified
+    in \code{control}).}
 }
 \value{
   The consensus relation(s).
@@ -34,7 +36,7 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
   dissimilarity measure (see \code{\link{relation_dissimilarity}}) and
   \eqn{w_b} is the case weight given to element \eqn{R_b} of the
   ensemble (such consensus relations are called \dQuote{central
-    relations} in Regnier (1965)). 
+    relations} in Régnier (1965)). 
 
   Available built-in methods are as follows.  Apart from Condorcet's,
   these are applicable to ensembles of endorelations only. 
@@ -43,7 +45,15 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
     \item{\code{"Borda"}}{the consensus method proposed by Borda (1781).
       For each relation \eqn{R_b} and object \eqn{x}, one determines the
       Borda/Kendall scores, i.e., the number of objects \eqn{y} such
-      that \eqn{x R_b y}.  These are then aggregated across relations
+      that \eqn{y R_b x}.  These are then aggregated across relations
+      by weighted averaging.  Finally, objects are ordered according to
+      their aggregated scores.}
+    \item{\code{"Copeland"}}{the consensus method proposed by Copeland (1951).
+      For each relation \eqn{R_b} and object \eqn{x}, one determines the
+      Copeland scores, i.e., the number of objects \eqn{y} such
+      that \eqn{y R_b x}, minus the number of objects \eqn{y} such
+      that \eqn{x R_b y}. Like the Borda method,
+      these are then aggregated across relations
       by weighted averaging.  Finally, objects are ordered according to
       their aggregated scores.}
     \item{\code{"Condorcet"}}{the consensus method proposed by Condorcet
@@ -55,11 +65,11 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
       times that this is not the case.  Even when aggregating linear
       orders, this can lead to intransitive consensus solutions
       (\dQuote{effet Condorcet}).}
-    \item{\code{"SD/\var{C}"}}{an exact solver for determining the
+    \item{\code{"SD/\var{F}"}}{an exact solver for determining the
       consensus relation by minimizing the criterion function \eqn{L}
       with \eqn{d} as symmetric difference distance (\dQuote{SD}) over a
-      suitable class of endorelations as indicated by \var{C}, with
-      values:
+      suitable class (\dQuote{Family})
+      of endorelations as indicated by \var{F}, with values:
       \describe{
 	\item{\code{E}}{equivalence relations: reflexive, symmetric, and
 	  transitive.}
@@ -72,6 +82,9 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
 	  transitive.}
 	\item{\code{T}}{tournaments: complete (hence reflexive) and
 	  antisymmetric.}
+	\item{\code{C}}{complete relations.}
+	\item{\code{A}}{antisymmetric relations.}
+	\item{\code{S}}{symmetric relations.}
       }
       Consensus relations are determined by reformulating the consensus
       problem as an integer program (for the relation incidences), which
@@ -97,36 +110,41 @@ relation_consensus(x, method = NULL, weights = 1, control = list())
   }
 }
 \references{
-J. C. Borda (1781),
-Mémoire sur les élections au scrutin.
-Histoire de l'Académie Royale des Sciences.
+  J. C. Borda (1781),
+  Mémoire sur les élections au scrutin.
+  Histoire de l'Académie Royale des Sciences.
+  
+  W. D. Cook and M. Kress (1992),
+  \emph{Ordinal information and preference structures: decision models and
+    applications}.
+  Prentice-Hall: New York.
+  ISBN: 0-13-630120-7.
 
-W. D. Cook and M. Kress (1992),
-\emph{Ordinal information and preference structures: decision models and
-  applications}.
-Prentice-Hall: New York.
-ISBN: 0-13-630120-7.
+  M. J. A. de Condorcet (1785),
+  Essai sur l'application de l'analyse à la probabilité des décisions
+  rendues à la pluralité des voix. 
+  Paris.
 
-M. J. A. de Condorcet (1785),
-Essai sur l'application de l'analyse à la probabilité des décisions
-rendues à la pluralité des voix. 
-Paris.
-
-K. Hornik and D. Meyer (2007),
-Deriving consensus rankings from benchmarking experiments.
-In R. Decker and H.-J. Lenz,
-\emph{Advances in Data Analysis}.
-Studies in Classification, Data Analysis, and Knowledge Organization.
-Springer-Verlag.
-
-F. Marcotorchino and P. Michaud (1982).
-Agregation de similarites en classification automatique.
-\emph{Revue de Statistique Appliquée}, \bold{30}(2):21--44.
-
-S. Régnier (1965),
-Sur quelques aspects mathématiques des problèmes de classification
-automatique.
-\emph{ICC Bulletin}, 175--191.
+  A. H. Copeland (1951),
+  A Reasonable Social Welfare Function.
+  \emph{mimeo}, University of Michigan.
+  
+  K. Hornik and D. Meyer (2007),
+  Deriving consensus rankings from benchmarking experiments.
+  In R. Decker and H.-J. Lenz,
+  \emph{Advances in Data Analysis}.
+  Studies in Classification, Data Analysis, and Knowledge Organization.
+  Springer-Verlag: Heidelberg, 163--170.
+  
+  F. Marcotorchino and P. Michaud (1982).
+  Agrégation de similarités en classification automatique.
+  \emph{Revue de Statistique Appliquée}, \bold{30}(2):21--44.
+  \url{http://www.numdam.org/item?id=RSA_1982__30_2_21_0}.
+  
+  S. Régnier (1965),
+  Sur quelques aspects mathématiques des problèmes de classification
+  automatique.
+  \emph{ICC Bulletin}, \bold{4}:175--191.
 }
 \examples{
 ## Consensus equivalence.

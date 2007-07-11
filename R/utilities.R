@@ -97,7 +97,17 @@ function(x)
          list(is_endorelation = TRUE,
               is_complete = TRUE,
               is_reflexive = TRUE,                    
-              is_antisymmetric = TRUE)
+              is_antisymmetric = TRUE),
+         C =
+         list(is_endorelation = TRUE,
+              is_complete = TRUE,
+              is_reflexive = TRUE),
+         A =
+         list(is_endorelation = TRUE,
+              is_antisymmetric = TRUE),
+         S =
+         list(is_endorelation = TRUE,
+              is_symmetric = TRUE)
          )
 
 ### * .reorder_incidence

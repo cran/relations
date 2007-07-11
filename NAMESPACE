@@ -1,3 +1,6 @@
+importFrom("cluster", "silhouette")
+importFrom("stats", "median")
+
 export("as.relation",
        "as.relation_ensemble",
        "is.relation",
@@ -8,6 +11,7 @@ export("as.relation",
        "relation_arity",
        "relation_charfun",
        "relation_class_ids",
+       "relation_classes",
        "relation_consensus",
        "relation_dissimilarity",
        "relation_domain",
@@ -36,6 +40,8 @@ export("as.relation",
        "relation_is_preference",
        "relation_is_reflexive",
        "relation_is_right_total",
+       "relation_is_strict_linear_order",
+       "relation_is_strict_partial_order",
        "relation_is_surjective",
        "relation_is_symmetric",
        "relation_is_tournament",
@@ -44,27 +50,34 @@ export("as.relation",
        "relation_is_preorder",
        "relation_is_quasiorder",
        "relation_size",
+       "relation_pclust",
        "relation_properties",
        "relation_property",
-##       "relation_property<-",
+       "relation_scores",
        "relation_table",
+       "relation_violations",
+       "transform_incidences",
        "transitive_reduction",
        "transitive_closure"
        )
 
 S3method("[", "relation_ensemble")
 S3method("Ops", "relation")
+S3method("Ops", "relation_ensemble")
 S3method("Summary", "relation")
 S3method("Summary", "relation_ensemble")
 S3method("as.list", "relation_ensemble")
 S3method("c", "relation_ensemble")
+S3method("t", "relation_ensemble")
 S3method("plot", "relation")
 S3method("plot", "relation_ensemble")
 S3method("print", "relation")
+S3method("print", "relation_classes_of_objects")
 S3method("print", "relation_domain")
 S3method("print", "relation_graph")
 S3method("print", "relation_ensemble")
 S3method("print", "relation_incidence")
+S3method("print", "relation_pclust")
 S3method("print", "relation_table")
 S3method("rep", "relation_ensemble")
 S3method("t", "relation")
@@ -154,8 +167,11 @@ export("%e%",
        )
 
 S3method("Ops","set")
+S3method("Summary","set")
 S3method("print","set")
 S3method("print","summary.set")
+S3method("mean", "set")
+S3method("median", "set")
 S3method("rep","set")
 S3method("c","set")
 S3method("summary","set")
@@ -193,6 +209,7 @@ export("%e%",
 S3method("[", "tuple")
 S3method("[<-", "tuple")
 S3method("Ops","tuple")
+S3method("Summary","tuple")
 S3method("print","tuple")
 S3method("format", "tuple")
 S3method("as.tuple", "default")
@@ -209,6 +226,8 @@ S3method("as.tuple", "set")
 S3method("as.tuple", "relation")
 S3method("as.tuple", "relation_domain")
 S3method("c", "tuple")
+S3method("mean", "tuple")
+S3method("median", "tuple")
 S3method("rep", "tuple")
 
 ## LABEL(S)

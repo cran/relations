@@ -250,6 +250,18 @@ relation_is_linear_order <-
 function(x)
     relation_is_partial_order(x) && relation_is_complete(x)
 
+relation_is_strict_partial_order <-
+function(x)
+    (relation_is_endorelation(x)
+     && relation_is_irreflexive(x)
+     && relation_is_antisymmetric(x)
+     && relation_is_transitive(x))
+
+relation_is_strict_linear_order <-
+function(x)
+    relation_is_strict_partial_order(x) && relation_is_complete(x)
+
+
 relation_is_tournament <-
 function(x)    
     (relation_is_endorelation(x)

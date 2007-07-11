@@ -21,6 +21,26 @@ function(x)
         stop("Can only determine class ids for equivalences and weak orders.")
 }
 
+relation_classes <-
+function(x)
+{
+    ids <- relation_class_ids(x)
+    out <- split(seq_along(ids), ids)
+    class(out) <- c("relation_classes_of_objects")
+    attr(out, "labels") <- names(ids)
+    out
+}
+
+print.relation_classes_of_objects <-
+function(x, ...)
+{
+    labels <- attr(x, "labels")
+    y <- lapply(x, function(i) paste(labels[i], collapse = ", "))
+    writeLines(formatDL(rev(names(x)), sprintf("{%s}", rev(unlist(y))),
+                        style = "list", ...))
+    invisible(x)
+}
+
 get_class_ids_from_incidence <-
 function(x)
 {

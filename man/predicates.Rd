@@ -15,6 +15,8 @@
 \alias{relation_is_partial_order}
 \alias{relation_is_reflexive}
 \alias{relation_is_right_total}
+\alias{relation_is_strict_linear_order}
+\alias{relation_is_strict_partial_order}
 \alias{relation_is_surjective}
 \alias{relation_is_symmetric}
 \alias{relation_is_tournament}
@@ -45,6 +47,8 @@ relation_is_linear_order(x)
 relation_is_partial_order(x)
 relation_is_reflexive(x)
 relation_is_right_total(x)
+relation_is_strict_linear_order(x)
+relation_is_strict_partial_order(x)
 relation_is_surjective(x)
 relation_is_symmetric(x)
 relation_is_tournament(x)
@@ -86,7 +90,7 @@ relation_is_quasiorder(x)
     \item{coreflexive:}{\eqn{x R y} implies \eqn{x = y}.}
     \item{symmetric:}{\eqn{x R y} implies \eqn{y R x}.}
     \item{asymmetric:}{\eqn{x R y} implies that not \eqn{y R x}.}
-    \item{antisymmetric}{\eqn{x R y} and \eqn{y R x} imply that
+    \item{antisymmetric:}{\eqn{x R y} and \eqn{y R x} imply that
       \eqn{x = y}.}
     \item{transitive:}{\eqn{x R y} and \eqn{y R z} imply that
       \eqn{x R z}.}
@@ -103,7 +107,9 @@ relation_is_quasiorder(x)
     \item{weak order:}{complete and transitive.}
     \item{preference:}{the same as weak order.}
     \item{partial order:}{an antisymmetric preorder.}
+    \item{strict partial order:}{irreflexive, transitive and antisymmetric.}
     \item{linear order:}{a complete partial order.}
+    \item{strict linear order:}{a complete strict partial order.}
     \item{tournament:}{complete and antisymmetric.}
   }
 

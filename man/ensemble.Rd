@@ -24,7 +24,7 @@ is.relation_ensemble(x)
   Such ensembles are implemented as suitably classed lists of relation
   objects, making it possible to use \code{lapply} for computations on
   the individual relations in the ensemble.  Available methods for
-  relation ensembles include those for subscripting, \code{c},
+  relation ensembles include those for subscripting, \code{c}, \code{t},
   \code{rep}, and \code{print}.
 }
 \examples{

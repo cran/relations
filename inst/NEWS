@@ -1,0 +1,34 @@
+Changes to 0.2:
+
+  o Copeland's method added to relation_consensus()
+
+  o relation_classes() added to extract and pretty-print
+    (ordered) classes from preferences and equivalences.
+
+  o relation_violations() added to compute a measure of remoteness from a
+    specified property (e.g., symmetry, transitivity, etc.)
+
+  o set_symdiff() fixed for more than two elements (used to compute 
+    the complement of the union and the intersection of a set, which is
+    wrong in general). Now, the argument list is treated recursively.
+
+  o Vignette added
+
+  o New SD fitter added for the C ("complete") and A ("antisymmetric") 
+    families of relations
+
+  o Summary methods for tuples and sets added
+
+  o Ops and t - methods for the relation_ensemble class added
+
+  o plot.relation() fixed 
+    (used to plot the dual, now changes the graphviz layout)
+
+  o Ops.tuple() now correctly handles unary operators, and preserves class
+
+  o transform_incidences() added for transforming incidence matrices of
+    endorelations from/to other codings found in literature
+
+Changes to 0.1:
+
+  o Initial release

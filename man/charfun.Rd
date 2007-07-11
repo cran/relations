@@ -21,19 +21,19 @@ relation_charfun(x, components = FALSE)
 }
 \examples{
 ## Relation 'a divides b':
-R <- relation(domain = list(1 : 10, 1 : 10),
-              charfun = function(a, b) b \%\% a == 0)
+divides <- function(a, b) b \%\% a == 0
+R <- relation(domain = list(1 : 10, 1 : 10), charfun = divides)
 R
 ## 'Recover' characteristic function:
-"\%D\%" <- relation_charfun(R)
+"\%|\%" <- relation_charfun(R)
 
 ## Use it.
-2 \%D\% 6
-c(2, 3, 4) \%D\% 6
-2 \%D\% c(2, 3, 6)
+2 \%|\% 6
+c(2, 3, 4) \%|\% 6
+2 \%|\% c(2, 3, 6)
 
 ## This also works:
-"\%D\%"(2, 6)
+"\%|\%"(2, 6)
 ## (and generally does for arities > 2).
 }
 \keyword{math}

@@ -36,8 +36,8 @@ X[[1,1]]
 Y <- set_outer(set(1,2), set(1,2,3), set)
 Y[[1,1]]
 set_outer(2 ^ set(1,2,3), set_is_subset)
-set_outer(1:5, 1:4, "^")
 
 tuple_outer(pair(1,2), triple(1,2,3))
+tuple_outer(1:5, 1:4, "^")
 }
 \keyword{math}

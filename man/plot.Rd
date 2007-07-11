@@ -6,7 +6,12 @@
   transitive reduction. 
 }
 \usage{
-\method{plot}{relation}(x, attrs = list(edge = list(arrowsize = "0")), ...)
+\method{plot}{relation}(x, attrs = list(graph = list(rankdir = "BT"),
+                                        edge = list(arrowsize = "0"),
+                                        node = list(shape = "rectangle",
+                                                    fixedsize = FALSE)),
+                        ...)
+
 }
 \arguments{
   \item{x}{an \R object inheriting from class \code{\link{relation}}.}
@@ -16,9 +21,11 @@
     \code{\link[graph:graphNEL-class]{graphNEL}} plot method.}
 }
 \details{
-  Visualization is currently only provided for antisymmetric and
-  transitive endorelations, and requires that package \pkg{Rgraphviz} is
-  available.
+  Visualization is currently only provided for either antisymmetric or
+  complete transitive endorelations and requires that package \pkg{Rgraphviz} is
+  available. In case of transitive complete relations (preferences), the
+  dual complement is plotted. Note that the default settings create a diagram with nodes
+  ordered bottom-up and with no arrows.
 }
 \seealso{
   \code{\link{relation}}
