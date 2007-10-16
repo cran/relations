@@ -9,6 +9,7 @@ relation_violations(x, family = c("T", "transitive",
                                   "S", "symmetric",
                                   "A", "antisymmetric",
                                   "C", "complete",
+                                  "M", "match",
                                   "R", "reflexive"))
 
 }
@@ -19,8 +20,9 @@ relation_violations(x, family = c("T", "transitive",
     computed.}
 }
 \value{
-  The number of violations for the specified family, i.e. the
-  minimum number of pairs (for transitive relations: triples)
+  The amount of violations for the specified family, i.e., for
+  crisp relations, the  minimum number of pairs (for transitive
+  relations: triples)
   that must be modified/added/removed to make
   the relation comply to the families' restrictions.
 }

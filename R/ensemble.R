@@ -238,6 +238,22 @@ function(x, D)
     .make_relation_ensemble_from_list_and_meta(x, meta)
 }
 
+### ** .is_ensemble_of_endorelations
+
+.is_ensemble_of_endorelations <-
+function(x)
+{
+    ## Check whether we have an ensemble of endorelations (assuming that
+    ## ensembles are known to have identical identical domains).
+    relation_is_endorelation(x[[1L]])
+}
+
+### ** .is_ensemble_of_crisp_relations
+
+.is_ensemble_of_crisp_relations <-
+function(x)
+    all(sapply(x, relation_is_crisp))
+
 
 ### Local variables: ***
 ### mode: outline-minor ***

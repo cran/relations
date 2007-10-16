@@ -20,10 +20,10 @@ relation_size(x)
 }
 \value{
   For determining the domain, an object of class \code{relation_domain},
-  inheriting from \code{\link{tuple}}.
+  inheriting from \code{\link[sets]{tuple}}.
 }
 \seealso{
-  \code{\link{tuple}};
+  \code{\link[sets]{tuple}};
   \code{\link{relation}};
   \code{\link{relation_domain<-}} and
   \code{\link{relation_domain_names<-}}

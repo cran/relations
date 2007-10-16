@@ -1,3 +1,28 @@
+Changes to 0.3:
+
+  o rank method is default for relation_scores
+
+  o the relations in the SVM Benchmark data are now all reflexive
+
+  o support for sets moved to separate 'sets' package
+
+  o support for fuzzy relations added
+
+  o fitters can now use a sparse constraint matrix representation
+
+  o new SD fitters for the S ("symmetric") and M ("matches") families
+
+  o relations are now subsettable
+
+  o fitters for Cook-Seiford method and Euclidean consensus added
+
+  o new summary method for relations which computes all implemented
+    predicates
+
+  o relation_choice() for choosing "winner" objects based on an ensemble
+    of relations between these
+
+
 Changes to 0.2:
 
   o Copeland's method added to relation_consensus()

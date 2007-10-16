@@ -11,7 +11,8 @@ relation_class_ids(x)
 relation_classes(x)
 }
 \arguments{
-  \item{x}{an object inheriting from class \code{\link{relation}}.}
+  \item{x}{an object inheriting from class \code{\link{relation}}
+    representing a crisp endorelation.}
 }
 \value{
   For \code{relation_class_ids},

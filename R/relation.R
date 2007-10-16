@@ -31,21 +31,66 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
     }
 
     if(!is.null(graph)) {
+        if (is.gset(graph) &&
+            (gset_is_multiset(graph) || gset_is_fuzzy_multiset(graph)))
+            stop("Only crisp or fuzzy sets allowed.")
         G <- .make_relation_graph_components(graph)
         ## Be nice and recycle domain (useful for endorelations).
         domain <- rep(domain, length.out = length(G))
         return(.make_relation_from_domain_and_graph_components(domain, G))
     }
-    
+
     if(!is.null(charfun)) {
         if(is.null(domain))
             stop("Need domain along with characteristic function.")
         ## No recycling here, as we really do not know the arity of a
         ## function (nor is this a well-defined notion).
-        I <- array(do.call(charfun, .cartesian_product(domain)),
+        I <- array(do.call(mapply,
+                           c(list(charfun), sets:::.cartesian_product(domain))),
                    dim = sapply(domain, length))
         return(.make_relation_from_domain_and_incidence(domain, I))
     }
+}
+
+### extract functions
+"[.relation" <-
+function(x, ...)
+{
+    l <- match.call()[-(1:2)]
+    D <- .domain(x)
+    I <- relation_incidence(x)
+    d <- dim(I)
+    dn <- dimnames(I)
+
+    if (length(l) != length(D))
+        stop("Wrong number of arguments.")
+
+    ## complete empty indices
+    l <- lapply(seq_along(l), function(i) {
+        ## check missings
+        if (is.symbol(l[[i]]))
+            return(seq_len(d[i]))
+        ## retrieve parameter
+        e <- eval(l[[i]])
+        ## integer arg -> use as index
+        if (is.numeric(e) && (e %% trunc(e) == 0L))
+            e
+        ## character arg -> match against dimnames labels
+        else if (is.character(e))
+            match(e, dn[[i]])
+        ## else: match against domain elements
+        else
+            match(list(e), D[[i]])
+    })
+
+    ## subset domain
+    D <- Map("[", D, l)
+
+    ## subset incidence matrix using standard method
+    I <- do.call("[", c(list(I), l, drop = FALSE))
+
+    ## return new relation
+    .make_relation_from_domain_and_incidence(D, I)
 }
 
 ### * is.relation
@@ -131,6 +176,18 @@ function(x)
     .make_relation_from_domain_and_incidence(D, I, meta)
 }
 
+as.relation.character <-
+function(x)
+    as.relation(factor(x))
+
+as.relation.set <-
+function(x)
+    relation(graph = x)
+
+as.relation.gset <-
+function(x)
+    relation(graph = x)
+
 ## Matrices and arrays are taken as incidences of relations, provided
 ## that they are feasible.
 as.relation.matrix <-
@@ -151,13 +208,25 @@ function(x)
     ## Get the domain.
     D <- lapply(x, unique)
     names(D) <- names(x)
+
     ## Get the incidences.
     I <- .make_incidence_from_domain_and_graph_components(D, x)
+
+    ## use membership information, if any
+    M <- attr(x, "memberships")
+    if (!is.null(M))
+        I[I > 0] <- M
+
     ## And put things together.
     .make_relation_from_domain_and_incidence(D, I)
 }
 
 ## Package clue: cl_partition objects.
+## <FIXME>
+## Of course, CLUE has a notion of soft ("fuzzy") partitions in the
+## Ruspini sense, but it is not clear how these correspond (should be
+## mapped) to fuzzy equivalence relations.
+## </FIXME>
 as.relation.cl_partition <-
 function(x)
     as.relation(factor(clue::cl_class_ids(x)))
@@ -171,13 +240,16 @@ function(x, row.names = NULL, ...)
 {
     ## Get the "raw" graph components.
     out <- .make_relation_graph_components(x)
+    M <- attr(out, "memberships")
     names(out) <-
         .make_domain_names_from_relation_graph_components(out,
                                                           relation_is_endorelation(x))
     ## Flatten.
     out <- lapply(out, unlist, recursive = FALSE)
+
     ## And put into "some kind of" data frame.
-    .make_data_frame_from_list(out, row.names)
+    structure(.make_data_frame_from_list(out, row.names),
+              memberships = M)
 }
 
 ### ** as.tuple.relation
@@ -197,6 +269,13 @@ as.tuple.relation_domain <-
 function(x)
     structure(x, class = "tuple")
 
+### * cut.relation
+
+cut.relation <-
+function(x, level = 1, ...)
+    .make_relation_from_domain_and_incidence(.domain(x),
+                                             .incidence(x) >= level)
+
 ### ** print.relation
 
 print.relation <-
@@ -204,13 +283,35 @@ function(x, ...)
 {
     a <- .arity(x)
     s <- paste(.size(x), collapse = " x ")
-    if(a == 1L)
-        writeLines(gettextf("A unary relation of size %s.", s))
-    else if(a == 2L)
-        writeLines(gettextf("A binary relation of size %s.", s))
-    else
-        writeLines(gettextf("A %d-ary relation of size %s.", a, s))
+    if(relation_is_crisp(x)) {
+        if(a == 1L)
+            writeLines(gettextf("A unary relation of size %s.", s))
+        else if(a == 2L)
+            writeLines(gettextf("A binary relation of size %s.", s))
+        else
+            writeLines(gettextf("A %d-ary relation of size %s.", a, s))
+    } else {
+        if(a == 1L)
+            writeLines(gettextf("A unary fuzzy relation of size %s.", s))
+        else if(a == 2L)
+            writeLines(gettextf("A binary fuzzy relation of size %s.", s))
+        else
+            writeLines(gettextf("A %d-ary fuzzy relation of size %s.", a, s))
+    }
     invisible(x)
+}
+
+summary.relation <-
+function(object, ...)
+{
+    structure(.check_all_predicates(object),
+              class = "summary.relation")
+}
+
+print.summary.relation <-
+function(x, ...)
+{
+    print(unclass(x))
 }
 
 ### * Group methods and related.
@@ -222,7 +323,7 @@ function(x, ...)
 ## * We use min/max for meet and join (which of course is the same as
 ##   the above).
 ## * We use * for the composition and unary ! for the converse.
-## * Finally, t() is used for the dual.
+## * Finally, t() is used for the inverse.
 
 Summary.relation <-
 function(..., na.rm = FALSE)
@@ -249,8 +350,7 @@ function(e1, e2)
         if(!(as.character(.Generic) %in% "!"))
             stop(gettextf("Unary '%s' not defined for \"%s\" objects.",
                           .Generic, .Class))
-        return(.make_relation_from_domain_and_incidence(.domain(e1),
-                                                        1 - .incidence(e1)))
+        return(relation_complement(e1))
     }
 
     ## In addition to comparisons, we support & | * + - %/% %%.
@@ -266,7 +366,7 @@ function(e1, e2)
            "%/%" = return(relation_division(e1, e2)),
            "%%" = return(relation_remainder(e1, e2))
            )
-           
+
     D1 <- relation_domain(e1)
     D2 <- relation_domain(e2)
     I1 <- .incidence(e1)
@@ -281,7 +381,15 @@ function(e1, e2)
             stop("Composition of given relations not defined.")
         ## When composing indicidences, need the same *internal* order
         ## for D2[[1L]] as for D1[[2L]].
-        I <- ((I1 %*% I2[match(D1[[2L]], D2[[1L]]), ]) > 0)
+        if(relation_is_crisp(e1) && relation_is_crisp(e2))
+            I <- ((I1 %*% I2[match(D1[[2L]], D2[[1L]]), ]) > 0)
+        else {
+            I2 <- I2[match(D1[[2L]], D2[[1L]]), ]
+            n <- ncol(I1)               # Same as nrow(I2).
+            I <- matrix(0, nrow = nrow(I1), ncol = ncol(I2))
+            for(j in seq_len(n))
+                I <- pmax(I, outer(I1[, j], I2[j, ], .T.))
+        }
         ## The composition has domain (D1[[1L]], D2[[2L]]) (and
         ## appropriate names).  Information about auto-generation of
         ## domains is currently ignored.
@@ -309,8 +417,8 @@ function(e1, e2)
            ">"  = all(I1 >= I2) && any(I1 > I2),
            "==" = all(I1 == I2),
            "!=" = any(I1 != I2),
-           "&" = .make_relation_from_domain_and_incidence(D, I1 & I2),
-           "|" = .make_relation_from_domain_and_incidence(D, I1 | I2)
+           "&" = .make_relation_from_domain_and_incidence(D, .T.(I1, I2)),
+           "|" = .make_relation_from_domain_and_incidence(D, .S.(I1, I2))
            )
 }
 
@@ -318,7 +426,7 @@ t.relation <-
 function(x)
 {
     if(!relation_is_binary(x))
-        stop("Can only compute duals of binary relations.")
+        stop("Can only compute inverses of binary relations.")
     .make_relation_from_domain_and_incidence(rev(.domain(x)),
                                              t(.incidence(x)))
 }
@@ -332,11 +440,7 @@ function(x)
 .make_relation_by_domain_and_incidence <-
 function(D, I)
 {
-    ## Canonicalize a "valid" incidence, but generate a valid domain if
-    ## needed.  Note the difference: valid domains are ok as is, but
-    ## currently e.g. "valid" incidences include vectors and logicals.
-    I <- as.array(I)
-    if(is.logical(I)) I <- I + 0L
+    ## Generate a valid domain if needed.
     if(!.is_valid_relation_domain(D)) {
         D <- dimnames(I)
         if(!.is_valid_relation_domain(D)) {
@@ -369,7 +473,20 @@ function(x, meta = NULL)
 .make_relation_from_domain_and_incidence <-
 function(D, I, meta = NULL)
 {
+    ## Canonicalize a valid incidence and determine whether it is crisp
+    ## or not.
+    I <- as.array(I)
+    if(is.logical(I)) {
+        I <- I + 0L
+        is_crisp <- TRUE
+    }
+    else {
+        ## Should be numeric if valid (maybe we should simply check this
+        ## here as well?)
+        is_crisp <- all((I %% 1) == 0)
+    }
     R <- .make_relation_by_domain_and_incidence(D, I)
+    meta <- c(list(is_crisp = is_crisp), meta)
     .make_relation_from_representation_and_meta(R, meta)
 }
 
@@ -398,7 +515,10 @@ function(D, G)
 
     ## Get the incidences.
     I  <- .make_incidence_from_domain_and_graph_components(D, G)
-    
+    M <- attr(G, "memberships")
+    if (!is.null(M))
+        I[I == 1L] <- M
+
     ## And put things together.
     .make_relation_from_domain_and_incidence(D, I)
 }

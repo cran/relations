@@ -1,9 +1,13 @@
 relation_table <-
-function(x)
+function(x, memberships = TRUE)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    structure(as.data.frame(x),
+    DF <- as.data.frame(x)
+    M <- attr(DF, "memberships")
+    if (memberships && !is.null(M))
+        DF <- cbind(DF, " " = paste("[", M, "]", sep = ""))
+    structure(DF,
               class = c("relation_table", "data.frame"))
 }
 
@@ -19,5 +23,5 @@ function(x, ...)
       print(y, quote = FALSE)
     }
     invisible(x)
-   
+
 }

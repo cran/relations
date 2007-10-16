@@ -25,7 +25,7 @@ transitive_closure(x)
   \eqn{R'} on \eqn{X} so that the the transitive closure of \eqn{R'} is
   the same than the transitive closure of \eqn{R}.  The function is
   implemented using a depth-first-search approach, also with complexity
-  \eqn{O(n^3)}.
+  \eqn{O(n^3)}.  Currently, it can only be used for crisp relations.
 }
 \seealso{
   \code{\link{relation}}, \code{\link{reflexive_reduction}}.

@@ -19,8 +19,25 @@ function(x, y = NULL, method = "symdiff", ...)
     }
 
     known_methods <-
-        list("symdiff" = c(".relation_dissimilarity_symdiff",
-             "symmetric difference distance"))
+        list("symdiff" =
+             c(".relation_dissimilarity_symdiff",
+               "symmetric difference distance"),
+             CKS =
+             c(".relation_dissimilarity_CKS",
+               "Cook-Kress-Seiford distance"),
+             CS =
+             c(".relation_dissimilarity_CS",
+               "Cook-Seiford distance"),
+             score = 
+             c(".relation_dissimilarity_score",
+               "score-based distance"),
+             manhattan =
+             c(".relation_dissimilarity_symdiff",
+               "Manhattan distance"),
+             euclidean =
+             c(".relation_dissimilarity_euclidean",
+               "Euclidean distance")
+             )
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
@@ -48,6 +65,7 @@ function(x, y = NULL, method = "symdiff", ...)
         for(j in seq_along(y))
             d[, j] <- sapply(x, method, y[[j]])
         dimnames(d) <- list(names(x), names(y))
+        attr(x, "description") <- method_name
         return(d)
         ## </FIXME>
     }
@@ -66,9 +84,84 @@ function(x, y = NULL, method = "symdiff", ...)
     }
     ## Grr ... see clue:::.dist_from_vector().
     structure(unlist(d), Size = n, Labels = names(x),
-              class = "dist")
+              class = "dist", description = method_name)
 }
 
 .relation_dissimilarity_symdiff <-
 function(x, y)
     sum(abs(relation_incidence(x) - relation_incidence(y)))
+
+.relation_dissimilarity_CKS <-
+function(x, y)
+{
+    ## Wade D. Cook and Moshe Kress and Lawrence M. Seiford
+    ## Information and preference in partial orders: a bimatrix
+    ## representation.
+    ## Psychometrika 51/2. 197-207.
+    ## Unique paired comparison metric for partial rankings (Definition
+    ## 2.1) under the assumption that indifference is the centroid
+    ## between strict preferences and incomparability.
+    ## <NOTE>
+    ## Originally only defined between (partial) rankings, but
+    ## applicable more generally.
+    ## </NOTE>
+    x <- relation_incidence(x)
+    y <- relation_incidence(y)
+    I_x <- pmax(x, t(x)) 
+    P_x <- pmin(t(x), 1 - x)
+    I_y <- pmax(y, t(y))
+    P_y <- pmin(t(y), 1 - y)
+    sum(abs((I_x - I_y)[!upper.tri(I_x)])) + sum(abs(P_x - P_y))
+}
+
+.relation_dissimilarity_CS <-
+function(x, y)
+{
+    ## Wade D. Cook and Lawrence M. Seiford
+    ## Priority Ranking and Consensus Formation
+    ## Management Science 24/16, 1721--1732
+    ## Ordinal ranking in the sense of Kendall CHECK
+    ## Equivalent to: complete and transitive?
+    ## I.e., weak order aka preference ...
+    ## <NOTE>
+    ## Originally only defined between (complete) rankings, but
+    ## applicable more generally.
+    ## </NOTE>
+    sum(abs(relation_scores(x) - relation_scores(y)))
+}
+
+.relation_dissimilarity_score <-
+function(x, y, score = NULL, Delta = 1)
+{
+    ## Score-based distance Delta(score(x), score(y)).
+    ## If score is NULL, the default relation_score() is used.
+    ## If it is a character string, relation_scores(x, score) is used.
+    ## Otherwise, it must be a function (the score function itself).
+    ## If Delta is a number p (\ge 1), the p-norm is used as Delta().
+    ## Otherwise, it must be a fucntion.
+    ## The generalized Cook-Seiford dissimilarity is a special case of a
+    ## score-based distance (corresponding to the defaults).
+    if(is.null(score)) {
+        s_x <- relation_scores(x)
+        s_y <- relation_scores(y)
+    } else if(is.character(score) && (length(score) == 1)) {
+        s_x <- relation_scores(x, score)
+        s_y <- relation_scores(y, score)
+    } else if(is.function(score)) {
+        s_x <- score(x)
+        s_y <- score(y)
+    }
+    else
+        stop("Invalid 'score' argument.")
+    
+    if(is.numeric(p <- Delta) && (length(p) == 1L) && (p >= 1)) {
+        Delta <- function(u, v) sum(abs(u - v) ^ p) ^ (1 / p)
+    } else if(!is.function(Delta))
+        stop("Invalid 'Delta' argument.")
+
+    Delta(s_x, s_y)
+}
+
+.relation_dissimilarity_euclidean <-
+function(x, y)
+    sqrt(sum((relation_incidence(x) - relation_incidence(y)) ^ 2))

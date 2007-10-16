@@ -32,14 +32,17 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
   minimizing a criterion function measuring how dissimilar consensus
   candidates are from the (elements of) the ensemble (the so-called
   \dQuote{optimization approach}), typically of the form
-  \eqn{L(R) = \sum w_b d(R_b, R)}, where \eqn{d} is a suitable
-  dissimilarity measure (see \code{\link{relation_dissimilarity}}) and
+  \eqn{L(R) = \sum w_b d(R_b, R) ^ p}, where \eqn{d} is a suitable
+  dissimilarity measure (see \code{\link{relation_dissimilarity}}),
   \eqn{w_b} is the case weight given to element \eqn{R_b} of the
-  ensemble (such consensus relations are called \dQuote{central
-    relations} in Régnier (1965)). 
+  ensemble, and \eqn{p \ge 1}.  Such consensus relations are called
+  \dQuote{central relations} in Régnier (1965).  For \eqn{p = 1}, we
+  obtain (generalized) medians; \eqn{p = 2} gives (generalized) means
+  (least squares consensus relations).
 
-  Available built-in methods are as follows.  Apart from Condorcet's,
-  these are applicable to ensembles of endorelations only. 
+  Available built-in methods are as follows.  Apart from Condorcet's and
+  the unrestricted Manhattan and Euclidean consensus methods, these are
+  applicable to ensembles of endorelations only. 
 
   \describe{
     \item{\code{"Borda"}}{the consensus method proposed by Borda (1781).
@@ -48,43 +51,51 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       that \eqn{y R_b x}.  These are then aggregated across relations
       by weighted averaging.  Finally, objects are ordered according to
       their aggregated scores.}
-    \item{\code{"Copeland"}}{the consensus method proposed by Copeland (1951).
-      For each relation \eqn{R_b} and object \eqn{x}, one determines the
-      Copeland scores, i.e., the number of objects \eqn{y} such
-      that \eqn{y R_b x}, minus the number of objects \eqn{y} such
-      that \eqn{x R_b y}. Like the Borda method,
-      these are then aggregated across relations
-      by weighted averaging.  Finally, objects are ordered according to
-      their aggregated scores.}
+    \item{\code{"Copeland"}}{the consensus method proposed by Copeland
+      (1951).  For each relation \eqn{R_b} and object \eqn{x}, one
+      determines the Copeland scores, i.e., the number of objects
+      \eqn{y} such that \eqn{y R_b x}, minus the number of objects
+      \eqn{y} such that \eqn{x R_b y}.  Like the Borda method, these are
+      then aggregated across relations by weighted averaging.  Finally,
+      objects are ordered according to their aggregated scores.}
     \item{\code{"Condorcet"}}{the consensus method proposed by Condorcet
-      (1785), in fact minimizing the criterion function \eqn{L} with
-      \eqn{d} as symmetric difference distance over all possible
+      (1785).  For a given ensemble of crisp relations, this minimizes
+      the criterion function \eqn{L} with \eqn{d} as symmetric
+      difference distance and \eqn{p = 1} over all possible crisp 
       relations.  In the case of endorelations, consensus is obtained by
       weighting voting, such that \eqn{x R y} if the weighted number of
       times that \eqn{x R_b y} is no less than the weighted number of
       times that this is not the case.  Even when aggregating linear
       orders, this can lead to intransitive consensus solutions
       (\dQuote{effet Condorcet}).}
+    \item{\code{"CS"}}{the consensus method of Cook and Seiford (1978)
+      which determines a linear order minimizing the criterion function
+      \eqn{L} with \eqn{d} as generalized Cook-Seiford (ranking)
+      distance and \eqn{p = 1} via solving a linear sum assignment
+      problem.  One can obtain a relation ensemble with \emph{all}
+      consensus relations by setting the control parameter \code{all} to
+      \code{TRUE}.}
     \item{\code{"SD/\var{F}"}}{an exact solver for determining the
-      consensus relation by minimizing the criterion function \eqn{L}
-      with \eqn{d} as symmetric difference distance (\dQuote{SD}) over a
-      suitable class (\dQuote{Family})
-      of endorelations as indicated by \var{F}, with values:
+      consensus relation of an ensemble of crisp endorelations by
+      minimizing the criterion function \eqn{L} with \eqn{d} as
+      symmetric difference distance (\dQuote{SD}) and \eqn{p = 1} over a
+      suitable class (\dQuote{Family}) of crisp endorelations as
+      indicated by \var{F}, with values:
       \describe{
 	\item{\code{E}}{equivalence relations: reflexive, symmetric, and
 	  transitive.}
-	\item{\code{L}}{linear orders: complete (hence reflexive),
-	  antisymmetric, and transitive.}
+	\item{\code{L}}{linear orders: complete, antisymmetric, and
+	  transitive.}
 	\item{\code{O}}{partial orders: reflexive, antisymmetric and
 	  transitive.}
 	\item{\code{P}}{complete preorders (preference relations,
-	  \dQuote{orderings}): complete (hence reflexive) and
-	  transitive.}
-	\item{\code{T}}{tournaments: complete (hence reflexive) and
-	  antisymmetric.}
+	  \dQuote{orderings}): complete, reflexive and transitive.}
+	\item{\code{T}}{tournaments: complete, irreflexive and
+	  antisymmetric (i.e., complete and asymmetric).}
 	\item{\code{C}}{complete relations.}
 	\item{\code{A}}{antisymmetric relations.}
 	\item{\code{S}}{symmetric relations.}
+	\item{\code{M}}{matches: complete and reflexive.}
       }
       Consensus relations are determined by reformulating the consensus
       problem as an integer program (for the relation incidences), which
@@ -107,6 +118,21 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       \code{TRUE}.
       (See the examples.)
     }
+    \item{\code{"manhattan"}}{the (unrestricted) median of the
+      ensemble, minimizing \eqn{L} with \eqn{d} as Manhattan (symmetric
+      difference) distance and \eqn{p = 1} over all (possibly fuzzy)
+      relations.}
+    \item{\code{"euclidean"}}{the (unrestricted) mean of the ensemble,
+      minimizing \eqn{L} with \eqn{d} as Euclidean distance and
+      \eqn{p = 2} over all (possibly fuzzy) relations.}
+    \item{\code{"euclidean/\var{F}"}}{an exact solver for determining
+      the restricted least squares Euclidean consensus relation of an
+      ensemble of endorelations by minimizing the criterion function
+      \eqn{L} with \eqn{d} as Euclidean difference distance and
+      \eqn{p = 2} over a suitable family of crisp endorelations as
+      indicated by \var{F}, with available families control parameters
+      as for methods \code{"SD/\var{F}"}.
+    }
   }
 }
 \references{
@@ -120,6 +146,10 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
   Prentice-Hall: New York.
   ISBN: 0-13-630120-7.
 
+  W. D. Cook and L. M. Seiford (1978),
+  Priority ranking and consensus formation.
+  \emph{Management Science}, \bold{24}/16, 1721--1732.
+  
   M. J. A. de Condorcet (1785),
   Essai sur l'application de l'analyse à la probabilité des décisions
   rendues à la pluralité des voix. 
@@ -171,7 +201,7 @@ pm <- matrix(c(0, 1, 0, 1, 1,
                1, 1, 0, 0, 0,
                0, 0, 1, 0, 0,
                0, 0, 1, 1, 0),
-             nr = 5,
+             nrow = 5,
              byrow = TRUE,
              dimnames = list(letters[1:5], letters[1:5]))
 ## Note that this is a Cook and Kress "preference" matrix.

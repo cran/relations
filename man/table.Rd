@@ -6,10 +6,11 @@
   \dQuote{view} of a relational database table.
 }
 \usage{
-relation_table(x)
+relation_table(x, memberships = TRUE)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}}.}
+  \item{memberships}{logical; should membership vector (if any) be added to the table?}
 }
 \value{
   An object of class \code{relation_table}, inheriting from class

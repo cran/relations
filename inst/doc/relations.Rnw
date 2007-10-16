@@ -32,7 +32,7 @@
 \definecolor{Blue}{rgb}{0,0,0.8}
 \definecolor{Red}{rgb}{0.7,0,0}
 
-\date{2007-06-24}
+\date{2007-10-10}
 \title{Good Relations with \R}
 \author{David Meyer and Kurt Hornik}
 %% \VignetteIndexEntry{Relations}
@@ -73,186 +73,7 @@ and political sciences, etc.  Package \pkg{relations} provides data
 structures along with common basic operations for relations and also
 relation ensembles (collections of relations with the same domain), as
 well as various algorithms for finding suitable consensus relations for
-given relation ensembles.  In addition, the package also includes
-support for sets and tuples of \R{}~objects upon which relations are
-built.
-
-\section{Sets and Tuples}
-\label{sec:sets+tuples}
-
-There is only rudimentary support in base \R{}~for \emph{sets}.
-Typically, they are represented using atomic or recursive vectors
-(lists), and one can use operations such as \codefun{union},
-\codefun{intersect}, \codefun{setdiff}, \codefun{setequal}, and
-\codefun{is.element} to emulate set operations.  However, there are
-several drawbacks:  first of all, quite a few other operations such as
-the Cartesian product, the power set, the subset predicate, etc., are
-missing.  Then, the current facilities do not make use of a class
-system, making extensions hard (if not impossible).  Another consequence
-is that no distinction can be made between sequences (ordered
-collections of objects) and sets (unordered collections of objects),
-which is key for the definition of relations, where both concepts are
-combined.  Therefore, we decided to add more formalized and extended
-support for sets, and, because they are needed for Cartesian products,
-also for tuples.
-
-The \emph{tuple} functions in package \pkg{relations} represent basic
-infrastructure for handling tuples of general (\R) objects.  They are
-used, e.g., to correctly represent Cartesian products of sets, resulting
-in a set of tuples (see below).  Although tuple objects should behave
-like \dQuote{ordinary} vectors for the most common operations (see
-examples), some functions may yield unexpected results (e.g.,
-\codefun{table}) or simply not work (e.g., \codefun{plot}) since tuple
-objects are in fact list objects internally.  There are several
-constructors:  \codefunind{tuple}
-for arbitrarily many objects, and \codefunind{singleton},
-\codefunind{pair}, and \codefunind{triple}
-for tuples of lengths 1, 2 and 3, respectively.  Note that tuple elements
-can be named.
-<<tuples>>=
-## Constructor.
-tuple(1,2,3, TRUE)
-triple(1,2,3)
-pair(Name = "David", Height = 185)
-tuple_is_triple(triple(1,2,3))
-tuple_is_ntuple(tuple(1,2,3,4), 4)
-
-## Converter.
-as.tuple(1:3)
-
-## Operations.
-c(tuple("a","b"), 1)
-tuple(1,2,3) * tuple(2,3,4)
-rep(tuple(1,2,3), 2)
-@
-The \codefun{Summary} methods will also work if defined for the
-elements:
-<<tuplesummary>>=
-sum(tuple(1,2,3))
-range(tuple(1,2,3))
-@
-In addition, there is a \codefunind{tuple\_outer}
-function to apply functions to all combinations of tuple elements.  Note
-that \codefun{tuple\_outer} will also work for regular vectors and thus
-can really be seen as an extension of \codefun{outer}:
-<<tupleouter>>=
-tuple_outer(pair(1,2), triple(1,2,3))
-tuple_outer(1:5, 1:4, "^")
-@
-
-The basic constructor for creating sets is the \codefunind{set}
-function accepting an arbitrary number of \R{}~objects as arguments
-(which can be named).  In addition, there is a generic \codefunind{as.set}
-for converting suitable objects to sets.
-<<sets1>>=
-## constructor
-s <- set(1, 2, 3)
-s
-
-## named elements
-snamed <- set(one = 1, 2, three = 3)
-snamed
-
-## named elements can directly be accessed
-snamed[["one"]]
-
-## a more complex set
-set(c, "test", list(1, 2, 3))
-
-## set of sets
-set(set(), set(1))
-
-## conversion functions
-s2 <- as.set(2:5)
-s2
-@
-There are some basic predicate functions (and corresponding operators)
-defined for the (in)equality, (proper) sub-(super-)set, and element-of.
-Note that all the \codefun{set\_is\_\var{foo}} functions are vectorized:
-<<setpredicates>>=
-set_is_empty(set())
-set_is_equal(set(1), set(1))
-set(1) == set(1)
-set(1) != set(2)
-
-set_is_subset(set(1), set(1,2))
-set(1) <= set(1,2)
-set(1,2) >= set(1)
-
-set_is_proper_subset(set(1), set(1))
-set(1) < set(1)
-set(1,2) > set(1)
-
-set_is_element(1, set(1,2,3))
-1 %e% set(1,2,3)
-
-set_is_element(1:4, set(1,2,3))
-1:4 %e% set(1,2,3)
-@ Other than these predicate functions and operators, one can use:
-\codefun{c}, \code{+}, and \code{|} for the union, \code{-} for the
-complement, \code{\&} for the intersection, \code{\%D\%} for the
-symmetric difference, \code{*} and \code{\^{ }$n$} for the ($n$-fold)
-Cartesian product (yielding a set of $n$-tuples), and \code{2\^} for the
-power set.  \codefunind{set\_union}, \codefunind{set\_intersection}, and
-\codefunind{set\_symdiff} accept more than two arguments.\footnote{The
-  $n$-ary symmetric difference of a collection of sets consists of all
-  elements contained in an odd number of the sets in the collection.}
-The \code{length} method for sets gives the cardinality.
-\codefunind{set\_combn} returns the set of all subsets of specified
-length.  Note that (currently) the \codefun{rep} method for sets will
-just return its argument since set elements are unique.
-<<setops>>=
-length(s)
-length(set())
-
-## complement, union, intersection, symmetric difference:
-s - 1
-s + set("a")
-s | set("a")
-s & s2
-s %D% s2
-set(1,2,3) - set(1,2)
-
-set_intersection(set(1,2,3), set(2,3,4), set(3,4,5))
-set_union(set(1,2,3), set(2,3,4), set(3,4,5))
-set_symdiff(set(1,2,3), set(2,3,4), set(3,4,5))
-
-## Cartesian product
-s * s2
-s * s
-s ^ 2 # same as above
-s ^ 3
-
-## power set
-2 ^ s
-
-## subsets:
-set_combn(as.set(1:3),2)
-@
-The \codefun{Summary} methods will also work if defined for the
-elements:
-<<setsummary>>=
-sum(s)
-range(s)
-@
-Using \codefunind{set\_outer},
-it is possible to apply a function on all factorial combinations of the
-elements of two sets.  If only one set is specified, the function is
-applied to all pairs of this set.
-<<setouter>>=
-set_outer(set(1,2), set(1,2,3), "/")
-X <- set_outer(set(1,2), set(1,2,3), set)
-X[[2,3]]
-set_outer(2 ^ set(1,2,3), set_is_subset)
-@
-Because set elements are unordered,
-it is not sensible to use positional
-subscripting.  However, it is possible to iterate over \emph{all}
-elements using \codefun{for} and \codefun{lapply}/\codefun{sapply}:
-<<iterators>>=
-sapply(s, sqrt)
-for (i in s) print(i)
-@
+given relation ensembles.
 
 \section{Relations and Relation Ensembles}
 \label{sec:relations+ensembles}
@@ -505,7 +326,72 @@ plot(relation(incidence = inc))
 \end{center}
 \end{figure}
 
-\subsection{Relational Algebra}
+\subsection{Relation Ensembles}
+
+\dQuote{Relation ensembles} are collections of relations $R_i = (D,
+G_i)$ with the same domain $D$ and possibly different graphs $G_i$.
+Such ensembles are implemented as suitably classed lists of relation
+objects (of class \class{relation\_ensemble} and inheriting from
+\class{tuple}), making it possible to use \codefun{lapply} for
+computations on the individual relations in the ensemble.  Relation
+ensembles can be created via \codefunind{relation\_ensemble},
+or by coercion via the generic function \codefunind{as.relation\_ensemble}
+which has methods for at least data frames (regarding each variable as a
+separate relation).  Available methods for relation ensembles include
+those for subscripting, \codefun{c}, \codefun{t}, \codefun{rep}, \codefun{print}, and
+\codefun{plot}.  In addition, there are summary methods defined
+(\codefun{min}, \codefun{max}, and \codefun{range}).  Other operations
+work element-wise like on tuples due to the inheritance.
+
+The Cetacea data set \citep{relations:Vescia:1985} is a data frame with
+15 variables relating to morphology, osteology, or behavior, with both
+self-explanatory names and levels, and a common zoological
+classification (variable \code{CLASS}) for 36 types of cetacea.  We
+consider each variable an equivalence relation on the objects, excluding
+2 variables with missing values, giving a relation ensemble of length 14
+(number of complete variables in the data set).
+<<>>=
+data("Cetacea")
+ind <- sapply(Cetacea, function(s) all(!is.na(s)))
+relations <- as.relation_ensemble(Cetacea[, ind])
+print(relations)
+@
+Available methods for relation ensembles allow to determine duplicated
+(relation) entries, to replicate and combine, and extract unique
+elements:
+<<>>=
+any(duplicated(relations))
+thrice <- c(rep(relations, 2), relations)
+all.equal(unique(thrice), relations)
+@
+Note that \codefun{unique} does not preserve attributes, and hence
+names.  In case one wants otherwise, one can subscript by a logical
+vector indicating the non-duplicated entries:
+<<>>=
+all.equal(thrice[!duplicated(thrice)], relations)
+@
+
+Relation (cross-)dissimilarities can be computed for relations and
+ensembles thereof:
+<<>>=
+relation_dissimilarity(relations[1 : 2], relations["CLASS"])
+@
+To determine which single variable is \dQuote{closest} to the zoological
+classification:
+<<>>=
+d <- relation_dissimilarity(relations)
+sort(as.matrix(d)[, "CLASS"])[-1]
+@
+
+There is also an Ops group method for relation ensembles which works
+elementwise (in essence, as for tuples):
+<<>>=
+complement <- !relations
+complement
+@
+
+\section{Relational Algebra}
+\label{sec:relalgebra}
 
 In addition to the basic operations defined on relations,
 the package provides functionality similar to the corresponding
@@ -692,70 +578,6 @@ Shortcuts for \codefunind{relation\_antijoin} are
 ## antijoin
 relation_table(Employee %|>% Dept)
 relation_table(Employee %<|% Dept)
-@
-
-\subsection{Relation Ensembles}
-
-\dQuote{Relation ensembles} are collections of relations $R_i = (D,
-G_i)$ with the same domain $D$ and possibly different graphs $G_i$.
-Such ensembles are implemented as suitably classed lists of relation
-objects (of class \class{relation\_ensemble} and inheriting from
-\class{tuple}), making it possible to use \codefun{lapply} for
-computations on the individual relations in the ensemble.  Relation
-ensembles can be created via \codefunind{relation\_ensemble},
-or by coercion via the generic function \codefunind{as.relation\_ensemble}
-which has methods for at least data frames (regarding each variable as a
-separate relation).  Available methods for relation ensembles include
-those for subscripting, \codefun{c}, \codefun{t}, \codefun{rep}, \codefun{print}, and
-\codefun{plot}.  In addition, there are summary methods defined
-(\codefun{min}, \codefun{max}, and \codefun{range}).  Other operations
-work element-wise like on tuples due to the inheritance.
-
-The Cetacea data set \citep{relations:Vescia:1985} is a data frame with
-15 variables relating to morphology, osteology, or behavior, with both
-self-explanatory names and levels, and a common zoological
-classification (variable \code{CLASS}) for 36 types of cetacea.  We
-consider each variable an equivalence relation on the objects, excluding
-2 variables with missing values, giving a relation ensemble of length 14
-(number of complete variables in the data set).
-<<>>=
-data("Cetacea")
-ind <- sapply(Cetacea, function(s) all(!is.na(s)))
-relations <- as.relation_ensemble(Cetacea[, ind])
-print(relations)
-@
-Available methods for relation ensembles allow to determine duplicated
-(relation) entries, to replicate and combine, and extract unique
-elements:
-<<>>=
-any(duplicated(relations))
-thrice <- c(rep(relations, 2), relations)
-all.equal(unique(thrice), relations)
-@
-Note that \codefun{unique} does not preserve attributes, and hence
-names.  In case one wants otherwise, one can subscript by a logical
-vector indicating the non-duplicated entries:
-<<>>=
-all.equal(thrice[!duplicated(thrice)], relations)
-@
-
-Relation (cross-)dissimilarities can be computed for relations and
-ensembles thereof:
-<<>>=
-relation_dissimilarity(relations[1 : 2], relations["CLASS"])
-@
-To determine which single variable is \dQuote{closest} to the zoological
-classification:
-<<>>=
-d <- relation_dissimilarity(relations)
-sort(as.matrix(d)[, "CLASS"])[-1]
-@
-
-There is also an Ops group method for relation ensembles which works
-elementwise (in essence, as for tuples):
-<<>>=
-complement <- !relations
-complement
 @
 
 \section{Consensus Relations}

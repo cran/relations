@@ -5,6 +5,8 @@ function(x)
 {
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
+    if(!relation_is_crisp(x))
+        stop("Argument 'x' must be a crisp relation.")
     I <- relation_incidence(x)
     diag(I) <- 0
     has_children <- rowSums(I) > 0
@@ -33,7 +35,7 @@ function(x)
     I <- relation_incidence(x)
     diag(I) <- 1
     for (i in seq_len(ncol(I)))
-        I <- I | outer(I[,i], I[i,], "&")
+        I <- .S.(I, outer(I[,i], I[i,], ".T."))
     meta <- list(is_endorelation = TRUE,
                  is_transitive = TRUE)
     .make_relation_from_domain_and_incidence(.domain(x), I, meta)
@@ -69,6 +71,38 @@ function(x)
     meta <- list(is_endorelation = TRUE,
                  is_irreflexive = TRUE)
     .make_relation_from_domain_and_incidence(.domain(x), I, meta)
+}
+
+### * relation_left_trace
+
+relation_left_trace <-
+function(x)
+{
+    if(!(is.relation(x) && relation_is_endorelation(x)))
+        stop("Argument 'x' must be an endorelation.")
+    D <- .domain(x)
+    x <- relation_incidence(x)
+    n <- nrow(x)
+    I <- matrix(1, nrow = n, ncol = n)
+    for(k in seq_len(n))
+        I <- pmin(I, outer(x[k, ], x[k, ], .I.))
+    .make_relation_from_domain_and_incidence(D, I)
+}
+
+### * relation_right_trace
+
+relation_right_trace <-
+function(x)
+{
+    if(!(is.relation(x) && relation_is_endorelation(x)))
+        stop("Argument 'x' must be an endorelation.")
+    D <- .domain(x)
+    x <- relation_incidence(x)
+    n <- nrow(x)
+    I <- matrix(1, nrow = n, ncol = n)
+    for(k in seq_len(n))
+        I <- pmin(I, outer(x[, k], x[, k], .I.))
+    .make_relation_from_domain_and_incidence(D, t(I))
 }
 
 

@@ -22,15 +22,18 @@ data("SVM_Benchmarking_Regression_Consensus")
 }
 \format{
   \code{SVM_Benchmarking_Classification}
-  (\code{SVM_Benchmarking_Regression}) is an ensemble of 21
-  (12) relations representing pairwise comparisons of 17 classification
-  (10 regression) methods on 21 (12) data sets. Each relation of the
-  ensemble summarizes the results for a particular data set. The
-  relations are endorelations on the set of methods employed. Since some
-  methods did fail on some data sets, the relations are not
-  guaranteed to be complete, transitive, or even reflexive. See
-  Meyer et al. (2003) for details on the experimental design of the benchmark
-  study, and Hornik et Meyer (2007) for the pairwise comparisons.
+  (\code{SVM_Benchmarking_Regression}) is an ensemble of 21 (12)
+  relations representing pairwise comparisons of 17 classification (10
+  regression) methods on 21 (12) data sets.  Each relation of the 
+  ensemble summarizes the results for a particular data set.  The
+  relations are reflexive endorelations on the set of methods
+  employed, with a pair \eqn{(a, b)} of distinct methods contained in a
+  relation iff both delivered results on the corresponding data set and
+  \eqn{a} did not perform significantly better than \eqn{b} at the 5\%
+  level.  Since some methods failed on some data sets, the relations are
+  not guaranteed to be complete or transitive.  See Meyer et al. (2003)
+  for details on the experimental design of the benchmark study, and
+  Hornik and Meyer (2007) for the pairwise comparisons.
 
   \code{SVM_Benchmarking_Classification_Consensus}
   and \code{SVM_Benchmarking_Regression_Consensus} are lists of
@@ -66,14 +69,14 @@ names(SVM_Benchmarking_Classification)
 relation_domain(SVM_Benchmarking_Classification)
 
 ## select preferences
-P <- sapply(SVM_Benchmarking_Classification, relation_is_preference)
+preferences <-
+    Filter(relation_is_preference, SVM_Benchmarking_Classification)
 
 ## only the artifical data sets yield preferences
-names(SVM_Benchmarking_Classification)[P]
+names(preferences)
 
 ## visualize them using Hasse diagrams
-if (require("Rgraphviz"))
-    plot(SVM_Benchmarking_Classification[P])
+if(require("Rgraphviz")) plot(preferences)
 
 ## Same for regression:
 data("SVM_Benchmarking_Regression")
@@ -85,14 +88,14 @@ names(SVM_Benchmarking_Regression)
 relation_domain(SVM_Benchmarking_Regression)
 
 ## select preferences
-P <- sapply(SVM_Benchmarking_Regression, relation_is_preference)
+preferences <-
+    Filter(relation_is_preference, SVM_Benchmarking_Regression)
 
 ## only two of the artifical data sets yield preferences
-names(SVM_Benchmarking_Regression)[P]
+names(preferences)
 
 ## visualize them using Hasse diagrams
-if (require("Rgraphviz"))
-    plot(SVM_Benchmarking_Regression[P])
+if(require("Rgraphviz")) plot(preferences)
 
 ## Consensus solutions:
 
@@ -104,17 +107,19 @@ print(SVM_Benchmarking_Classification_Consensus)
 print(SVM_Benchmarking_Regression_Consensus)
 
 ## visualize the consensus preferences
-if (require("Rgraphviz")) {
-    plot(SVM_Benchmarking_Classification_Consensus$P)
-    plot(SVM_Benchmarking_Regression_Consensus$P)
+classP <- SVM_Benchmarking_Classification_Consensus$P
+regrP <- SVM_Benchmarking_Regression_Consensus$P
+if(require("Rgraphviz")) {
+    plot(classP)
+    plot(regrP)
 }
 
 ## in tabular style:
 ranking <- function(x) rev(names(sort(relation_class_ids(x))))
-sapply(SVM_Benchmarking_Classification_Consensus$P, ranking)
-sapply(SVM_Benchmarking_Regression_Consensus$P, ranking)
+sapply(classP, ranking)
+sapply(regrP, ranking)
 
 ## (prettier and more informative:)
-relation_classes(SVM_Benchmarking_Classification_Consensus$P[[1]])
+relation_classes(classP[[1L]])
 }
 \keyword{datasets}

@@ -12,10 +12,10 @@ relation_graph(x)
 }
 \value{
   An object of class \code{relation_graph}, inheriting from
-  \code{\link{set}}.
+  \code{\link[sets]{set}}.
 }
 \seealso{
-  \code{\link{set}};
+  \code{\link[sets]{set}};
   \code{\link{relation}};
   \code{\link{relation_graph<-}} for modifying the graph.
 }

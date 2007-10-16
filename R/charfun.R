@@ -13,7 +13,7 @@ function(x, components = FALSE)
            if (!components)
                function(...) {
                    args <- list(...)
-                   if (a == 2) {
+                   if (a == 2L) {
                        ## recycle for binary relations
                        maxlen <- max(sapply(args, length))
                        args <- lapply(args, rep, length.out = maxlen)

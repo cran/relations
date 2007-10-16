@@ -8,17 +8,23 @@ function(x, margin = NULL)
     if (is.null(margin))
         return(x)
     D <- relation_domain(x)
-    
+
     ind <- if (is.character(margin))
         match(margin, names(D))
     else if (is.numeric(margin))
         match(margin, seq_along(D))
     else NULL
-    
+
     if (!length(ind) || any(is.na(ind)))
         stop("Invalid projection margin.")
-    
-    I <- apply(relation_incidence(x), ind, any)
+
+    ## Generally, incidences are aggregated using the T-conorm.
+    ## However, for crisp relations, we use 'any' for performance reasons.
+    S.FUN <- if(relation_is_crisp(x))
+        any
+    else
+        function(i) Reduce(.S., i)
+    I <- apply(relation_incidence(x), ind, S.FUN)
     .make_relation_from_domain_and_incidence(.domain(x)[ind], I)
 }
 
@@ -32,12 +38,12 @@ function(x, subset)
 {
     .stop_if_not_relation_has_unique_domain_names(x)
     df <- as.data.frame(x)
-    if (missing(subset)) 
+    if (missing(subset))
         r <- TRUE
     else {
         e <- substitute(subset)
         r <- eval(e, df, parent.frame())
-        if (!is.logical(r)) 
+        if (!is.logical(r))
             stop("'subset' must evaluate to logical")
         r <- r & !is.na(r)
     }
@@ -45,7 +51,7 @@ function(x, subset)
     x
 }
 
-"%><%" <- 
+"%><%" <-
 relation_cartesian <-
 function(x, y, ...)
 {
@@ -53,10 +59,15 @@ function(x, y, ...)
     l <- list(...)
     if (length(l) > 0L)
         return(Recall(x, Recall(y, ...)))
+    T.FUN <- if(relation_is_crisp(x) && relation_is_crisp(y))
+        "*"
+    else
+        .T.
     .make_relation_from_domain_and_incidence(c(relation_domain(x),
                                                relation_domain(y)),
                                              outer(relation_incidence(x),
-                                                   relation_incidence(y))
+                                                   relation_incidence(y),
+                                                   T.FUN)
                                              )
 }
 
@@ -77,48 +88,79 @@ function(x, y, ...)
     ## check arities
     ## (use relation_domain() instead of .domain() here,
     ## since we need tuples of sets for the combination.)
-    D1 <- relation_domain(x)
-    D2 <- relation_domain(y)
-    if (length(x) != length(y))
+    Dx <- relation_domain(x)
+    Dy <- relation_domain(y)
+    if (length(Dx) != length(Dy))
         stop("Relation arity mismatch.")
 
     ## combine domains
-    D12 <- mapply(c, D1, D2, SIMPLIFY = FALSE)
+    Dxy <- Map(set_union, Dx, Dy)
 
-    ## combine graph components
-    GC <- mapply(c,
-                 .make_relation_graph_components(x),
-                 .make_relation_graph_components(y),
-                 SIMPLIFY = FALSE)
-    
-    ## And put things together
-    .make_relation_from_domain_and_graph_components(D12, GC)
+    ## extract incidences for combined domain
+    Ix <- Iy <- array(0, sapply(Dxy, length), lapply(Dxy, unlist))
+    Ix <- do.call("[<-", c(list(Ix),
+                           lapply(Dx, function(i) as.character(unlist(i))),
+                           list(relation_incidence(x))))
+    Iy <- do.call("[<-", c(list(Iy),
+                           lapply(Dy, function(i) as.character(unlist(i))),
+                           list(relation_incidence(y))))
+
+    ## and put things together
+    .make_relation_from_domain_and_incidence(Dxy, .S.(Ix, Iy))
+}
+
+
+### * relation_intersection
+
+## For the intersection, we also allow non-identical domain levels.
+
+relation_intersection <-
+function(x, y)
+{
+    ## check arities
+    ## (use relation_domain() instead of .domain() here,
+    ## since we need tuples of sets for the combination.)
+    Dx <- relation_domain(x)
+    Dy <- relation_domain(y)
+    if (length(Dx) != length(Dy))
+        stop("Relation arity mismatch.")
+
+    ## intersect domains
+    Dxy <- Map(set_intersection, Dx, Dy)
+
+    ## check if there is some overlap
+    if (any(sapply(Dxy, set_is_empty)))
+        return(set())
+
+    ## extract incidences for common domain
+    Ix <- do.call("[", c(list(relation_incidence(x)),
+                         lapply(Dxy, function(i) as.character(unlist(i)))))
+    Iy <- do.call("[", c(list(relation_incidence(y)),
+                         lapply(Dxy, function(i) as.character(unlist(i)))))
+
+    ## and put things together
+    .make_relation_from_domain_and_incidence(Dxy, .T.(Ix, Iy))
 }
 
 ### * relation_complement
 
-## For the complement, we also allow non-identical domain levels.
-
 relation_complement <-
-function(x, y)
+function(x, y = NULL)
 {
-    ## check arities
-    D <- .domain(x)
-    if (length(D) != length(.domain(y)))
-        stop("Relation arity mismatch.")
+    ## handle unary case
+    if (is.null(y))
+        return(.make_relation_from_domain_and_incidence(.domain(x),
+                                                        .N.(.incidence(x))))
 
-    I <- relation_incidence(x)
-    ## <FIXME>
-    ## match() behaves strangely on list of factors with different levels
-    ## so we have to compare character strings in this case
-    G <- .transform_factors_into_characters(.make_relation_graph_components(y))
-    D <- .transform_factors_into_characters(D)
-    ## </FIXME>
-    I[rbind(mapply(match, G, D))] <- 0
-  
-    ## And put things together
-    .make_relation_from_domain_and_incidence(.domain(x), I)
+    relation_intersection(x, relation_complement(y))
 }
+
+### * relation_symdiff
+
+relation_symdiff <-
+function(x, y)
+    relation_union(relation_complement(x, y),
+                   relation_complement(y, x))
 
 ### * relation_division
 
@@ -136,18 +178,18 @@ function(x, y)
 
     if (!all(dy %in% dx))
         stop("Divisor domain must be a subset of the dividend domain.")
-  
+
     ## find attributes unique to x
     dxunique <- dx[!dx %in% dy]
     if (length(dxunique) < 1L)
         stop("Dividend needs at least one unique domain.")
-    
+
     ## create projection of x to its unique attributes
     xunique <- relation_projection(x, dxunique)
-    
+
     ## compute "maximum" set of tuples
     T <- relation_cartesian(xunique, y)
-    
+
     ## remove actual set of tuples, and remove the projection
     ## of the remaining sets from the dividend
     relation_complement(xunique,
@@ -168,13 +210,46 @@ function(x, y)
 relation_join <-
 function(x, y, ...)
 {
+    ## check domains
     .stop_if_not_relation_has_unique_domain_names(x)
     .stop_if_not_relation_has_unique_domain_names(y)
-    tmp <- merge(X <- as.data.frame(x), Y <- as.data.frame(y), ...)
+
+    ## add memberships, if any
+    X <- as.data.frame(x)
+    Y <- as.data.frame(y)
     nms <- unique(c(names(X), names(Y)))
+    fuzzy <- !relation_is_crisp(x) || !relation_is_crisp(y)
+    if (fuzzy) {
+        Mx <- attr(X, "memberships")
+        if (is.null(Mx)) Mx <- 1
+        X <- cbind(X, "MEMBERSHIP.x" = Mx)
+
+        My <- attr(Y, "memberships")
+        if (is.null(My)) My <- 1
+        Y <- cbind(Y, "MEMBERSHIP.y" = My)
+    }
+
+    ## use merge for the operation
+    tmp <- merge(X, Y, ...)
+
+    ## handle empty result
     if(nrow(tmp) < 1L)
-        stop("Join is empty!")
-    as.relation(tmp[,nms])
+        return(set())
+
+    ## combine memberships for fuzzy relations
+    M <- if (fuzzy) {
+        Mx <- tmp[,"MEMBERSHIP.x"]
+        Mx[is.na(Mx)] <- 1
+        My <- tmp[,"MEMBERSHIP.y"]
+        My[is.na(My)] <- 1
+        .T.(Mx, My)
+    } else
+        NULL
+
+    ## rearrange columns & return relation
+    as.relation(structure(tmp[,nms],
+                          memberships = M)
+                )
 }
 
 "%><=%" <-
@@ -207,19 +282,6 @@ function(x, y, ...)
 "%<|%" <-
 function(x, y, ...)
     relation_antijoin(y, x, ...)
-
-### * relation_symdiff
-
-relation_symdiff <-
-function(x, y)
-    relation_union(relation_complement(x, y),
-                   relation_complement(y, x))
-
-### * relation_intersection
-
-relation_intersection <-
-function(x, y)
-    relation_complement(relation_union(x, y), relation_symdiff(x, y))
 
 ### * .stop_if_not_relation_has_unique_domain_names
 

@@ -39,7 +39,7 @@ function(x)
 }
 
 .domain <-
-function(x)    
+function(x)
     UseMethod(".domain")
 .domain.relation <-
 function(x)
@@ -60,8 +60,8 @@ function(x, ...)
       ""
     else
       paste(format(as.tuple(n)), " ", sep = "")
-      
-    writeLines(sprintf("%s %swith elements:", .ntuple(x, A = TRUE), s))
+
+    writeLines(sprintf("%s %swith elements:", sets:::.ntuple(x, A = TRUE), s))
     for (i in x) print(i)
     invisible(x)
 }

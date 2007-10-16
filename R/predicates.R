@@ -58,7 +58,7 @@ function(x)
 
 relation_is_surjective <- relation_is_right_total
 
-relation_is_functional <- 
+relation_is_functional <-
 function(x)
 {
     if(!is.relation(x))
@@ -114,7 +114,17 @@ function(x)
      && (nrow(x) == ncol(x))
      && identical(rownames(x), colnames(x)))
 }
-    
+
+relation_is_crisp <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    if(.has_property(x, "is_crisp"))
+        return(.get_property(x, "is_crisp"))
+    all((relation_incidence(x) %% 1) == 0)
+}
+
 ## <NOTE>
 ## Sometimes "total" is used synonymously to "complete".
 ## http://en.wikipedia.org/wiki/Binary_relation has two different usages
@@ -129,7 +139,20 @@ function(x)
         return(.get_property(x, "is_complete"))
     x <- relation_incidence(x)
     if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
-    all((x + t(x))[row(x) != col(x)] >= 1)
+    all(.S.(x, t(x))[row(x) != col(x)] == 1)
+}
+
+relation_is_match <-
+relation_is_strongly_complete <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    ## We currently never set is_strongly_complete metadata.
+    ## We could look at both is_complete and is_reflexive, though.
+    all(.S.(x, t(x)) == 1)
 }
 
 relation_is_reflexive <-
@@ -183,7 +206,7 @@ function(x)
         stop("Argument 'x' must be a relation.")
     x <- relation_incidence(x)
     if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
-    all((x & t(x)) == 0)
+    all(.T.(x, t(x)) == 0)
 }
 
 relation_is_antisymmetric <-
@@ -195,7 +218,7 @@ function(x)
         return(.get_property(x, "is_antisymmetric"))
     x <- relation_incidence(x)
     if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
-    all((x & t(x))[row(x) != col(x)] == 0)
+    all(.T.(x, t(x))[row(x) != col(x)] == 0)
 }
 
 relation_is_transitive <-
@@ -207,13 +230,66 @@ function(x)
         return(.get_property(x, "is_transitive"))
     x <- relation_incidence(x)
     if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
-    all(((x %*% x) > 0) <= x)
+    for(j in seq_len(ncol(x)))
+        if(any(outer(x[, j], x[j, ], .T.) > x)) return(FALSE)
+    TRUE
+}
+
+relation_is_negatively_transitive <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    for(j in seq_len(ncol(x)))
+        if(any(outer(x[, j], x[j, ], .S.) < x)) return(FALSE)
+    TRUE
+}
+
+relation_is_Ferrers <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    n <- nrow(x)
+    for(j in seq_len(n))
+        for(l in seq_len(x)) {
+            ## Relation is Ferrers iff for all i, j, k, l
+            ##   T(R(i,j), R(k,l)) <= S(R(i,l), R(k,j))
+            if(any(outer(x[, j], x[, l], .T.) >
+                   outer(x[, l], x[, j], .S.)))
+                return(FALSE)
+        }
+    TRUE
+}
+
+relation_is_semitransitive <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    n <- nrow(x)
+    for(k in seq_len(n))
+        for(l in seq_len(n)) {
+            ## Relation is semitransitive iff for all i, j, k, l
+            ##   T(R(i,k), R(k,j)) <= S(R(i,l), R(l,j))
+            if(any(outer(x[, k], x[k, ], .T.) >
+                   outer(x[, l], x[l, ], .S.)))
+                return(FALSE)
+        }
+    TRUE
 }
 
 ## <FIXME>
 ## Add predicates for the following:
 ## Trichotomous: exactly one of xRy, yRx, or x=y holds.
 ## Euclidean: xRy & xRz => yRz.
+## But how do these generalize to fuzzy relations?
 ## </FIXME>
 
 ## And now combine:
@@ -229,9 +305,13 @@ function(x)
 
 relation_is_weak_order <- relation_is_preference <-
 function(x)
+{
+    ## Equivalently: strongly complete and transitive.
     (relation_is_endorelation(x)
      && relation_is_complete(x)
+     && relation_is_reflexive(x)
      && relation_is_transitive(x))
+}
 
 relation_is_preorder <- relation_is_quasiorder <-
 function(x)
@@ -242,31 +322,60 @@ function(x)
 relation_is_partial_order <-
 function(x)
     (relation_is_endorelation(x)
-     && relation_is_reflexive(x)
      && relation_is_antisymmetric(x)
      && relation_is_transitive(x))
 
 relation_is_linear_order <-
 function(x)
-    relation_is_partial_order(x) && relation_is_complete(x)
+    (relation_is_partial_order(x)
+     && relation_is_complete(x))
 
 relation_is_strict_partial_order <-
 function(x)
     (relation_is_endorelation(x)
-     && relation_is_irreflexive(x)
-     && relation_is_antisymmetric(x)
+     && relation_is_asymmetric(x)
      && relation_is_transitive(x))
 
 relation_is_strict_linear_order <-
 function(x)
-    relation_is_strict_partial_order(x) && relation_is_complete(x)
-
+    (relation_is_strict_partial_order(x)
+     && relation_is_complete(x))
 
 relation_is_tournament <-
-function(x)    
+function(x)
+{
+    ## The references disagree on whether tournaments are reflexive
+    ## (e.g., Barthelemy) or irreflexive (e.g., Fodor/Roubens).
+    ## We use the latter (as implied by asymmetry).
     (relation_is_endorelation(x)
      && relation_is_complete(x)
-     && relation_is_antisymmetric(x))
+     && relation_is_asymmetric(x))
+}
+
+relation_is_interval_order <-
+function(x)
+    (relation_is_endorelation(x)
+     && relation_is_complete(x)
+     && relation_is_Ferrers(x))
+
+relation_is_semiorder <-
+function(x)
+    (relation_is_interval_order(x)
+     && relation_is_semitransitive(x))
+
+
+## FIXME: add meta cache to improve performance
+## (idea: all predicates should call .foo-methods internally with additional
+## meta-argument, where all intermediate results are stored and which is
+## looked up before computations.)
+.check_all_predicates <-
+function(x)
+{
+    preds <- ls("package:relations", pattern="relation_is.*")
+    props <- sapply(preds, do.call, list(x))
+    names(props) <- sub("relation_is_", "", names(props))
+    props
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

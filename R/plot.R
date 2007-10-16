@@ -8,6 +8,8 @@ function(x, attrs = list(graph = list(rankdir = "BT"),
 {
     if(!relation_is_endorelation(x))
         stop("Plot only available for endorelations.")
+    if(!relation_is_crisp(x))
+        stop("Plot only available for crisp relations.")
     if(!(relation_is_transitive(x)
          && (relation_is_antisymmetric(x) || relation_is_complete(x))))
         stop("Plot only available for antisymmetric or complete transitive relations.")
@@ -41,11 +43,12 @@ function(x, attrs = list(graph = list(rankdir = "BT"),
         stop("Wrong class.")
     if(!all(sapply(x,
                    function(e)
-                   (relation_is_endorelation(e)
+                   (relation_is_crisp(e)
+                    && relation_is_endorelation(e)
                     && relation_is_transitive(e)
                     && (relation_is_antisymmetric(e)
                         || relation_is_complete(e))))))
-        stop("Plotting only available for ensembles of antisymmetric or complete transitive relations.")
+        stop("Plotting only available for ensembles of antisymmetric or complete transitive crisp relations.")
     if(!require("Rgraphviz"))
         stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
     ## Number of elements.

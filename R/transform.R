@@ -7,7 +7,7 @@ transform_incidences <- function(x, from = c("PO","SO","01","-1+1"),
   if ((length(dim(x)) != 2) || (length(unique(dimnames(x))) != 1))
     stop("Transformations only available for endorelations.")
 
-  ## convert from to canonical PO representation
+  ## convert `from` to canonical `PO` representation
   SO_2_PO <- function(z) {
     tmp <- z + (z == t(z))
     tmp[is.na(tmp)] <- 0

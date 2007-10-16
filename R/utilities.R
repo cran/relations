@@ -1,23 +1,3 @@
-### * .cartesian_product
-
-.cartesian_product <-
-function(x)
-{
-    ## Cf. expand.grid().
-    out <- vector("list", length(x))
-    rep_fac <- 1L
-    d <- sapply(x, length)
-    orep <- prod(d)
-    for(i in seq_along(x)) {
-        nx <- d[i]
-        orep <- orep / nx
-        out[[i]] <- x[[i]][rep.int(rep.int(seq_len(nx),
-                                           rep.int(rep_fac, nx)), orep)]
-        rep_fac <- rep_fac * nx
-    }
-    out
-}
-
 ### * .domain_is_equal
 
 .domain_is_equal <-
@@ -25,10 +5,10 @@ function(D1, D2)
     all(mapply(set_is_equal, lapply(D1, as.set), lapply(D2, as.set)))
 
 ### * .is_subsettable
-
-.is_subsettable <-
-function(x)
-    tryCatch({x[[1L]]; TRUE}, error = function(e) FALSE)
+### FIXME: not needed anymore?
+#.is_subsettable <-
+#function(x)
+#    tryCatch({x[[1L]]; TRUE}, error = function(e) FALSE)
 
 ### * .is_valid_relation_domain
 
@@ -45,23 +25,26 @@ function(x)
      && all(sapply(x, length) > 0L))
 }
 
-### * .make_set_of_tuples_from_list_of_lists
 ### * .make_set_of_tuples_from_relation_graph_components
 
-.make_set_of_tuples_from_list_of_lists <-    
 .make_set_of_tuples_from_relation_graph_components <-
-function(x)
-{
-    ret <- unlist(x, recursive = FALSE)
-    dim(ret) <- c(length(x[[1L]]), length(x))
-    as.set(apply(ret, 1L, as.tuple))
-}
+sets:::.make_set_of_tuples_from_list_of_lists
 
 ### * .match_domain_components
 
 .match_domain_components <-
 function(x, y)
     mapply(match, x, y, SIMPLIFY = FALSE)
+
+### * .negate
+
+## <FIXME>
+## Remove eventually once we have Negate() or equivalent in a released
+## version of R.
+.negate <-
+function(f)
+    function(...) ! match.fun(f)(...)
+## </FIXME>
 
 ### * .offdiag
 
@@ -80,34 +63,36 @@ function(x)
          L =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
-              is_reflexive = TRUE,                    
               is_antisymmetric = TRUE,
               is_transitive = TRUE),
          O =
          list(is_endorelation = TRUE,
-              is_reflexive = TRUE,
               is_antisymmetric = TRUE,
               is_transitive = TRUE),
-         P = 
+         P =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
-              is_reflexive = TRUE,                 
+              is_reflexive = TRUE,
               is_transitive = TRUE),
          T =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
-              is_reflexive = TRUE,                    
-              is_antisymmetric = TRUE),
+              is_irreflexive = TRUE,
+              is_antisymmetric = TRUE,
+              is_asymmetric = TRUE),
          C =
          list(is_endorelation = TRUE,
-              is_complete = TRUE,
-              is_reflexive = TRUE),
+              is_complete = TRUE),
          A =
          list(is_endorelation = TRUE,
               is_antisymmetric = TRUE),
          S =
          list(is_endorelation = TRUE,
-              is_symmetric = TRUE)
+              is_symmetric = TRUE),
+         M =
+         list(is_endorelation = TRUE,
+              is_complete = TRUE,
+              is_reflexive = TRUE)
          )
 
 ### * .reorder_incidence

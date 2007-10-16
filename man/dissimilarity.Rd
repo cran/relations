@@ -25,16 +25,80 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   elements of \code{x} and the elements of \code{y}.
 }
 \details{
-  Currently, \code{"symdiff"} is the only built-in method available.
-  This computes the cardinality of the symmetric difference of two
-  relations, i.e., the number of tuples contained in exactly one of two
-  relations.  For complete endorelations, this coincides with the
-  \emph{Kemeny-Snell} metric.
+  Available built-in methods are as follows.  Apart from the symmetric
+  difference distance, these are applicable to endorelations only.
+
+  \describe{
+    \item{\code{"symdiff"}}{symmetric difference distance.
+      This computes the cardinality of the symmetric difference of two
+      relations, i.e., the number of tuples contained in exactly one of
+      two relations.  For preference relations, this coincides with the
+      \emph{Kemeny-Snell} metric (Kemeny and Snell, 1962).  Can also be
+      referred to as \code{"manhattan"}.
+    }
+
+    \item{\code{"euclidean"}}{the Euclidean distance between the
+      incidences.
+    }
+
+    \item{\code{"CS"}}{Cook-Seiford distance, a generalization of the
+      distance function of Cook and Seiford (1978).  Let the generalized
+      ranks of an object \eqn{a} in the (first) domain of an
+      endorelation \eqn{R} be defined as the number of objects \eqn{b}
+      dominating \eqn{a} (i.e., for which \eqn{a R b} and not \eqn{b R
+      a}), plus half the number of objects \eqn{b} equivalent to \eqn{a}
+      (i.e., for which \eqn{a R b} and \eqn{b R a}).  For preference
+      relations, this gives the usual Kendall ranks arranged according
+      to decreasing preference (and averaged for ties).  Then the
+      generalized Cook-Seiford distance is defined as the \eqn{l_1}
+      distance between the generalized ranks.
+    }
+
+    \item{\code{"CKS"}}{Cook-Kress-Seiford distance, a generalization of
+      the distance function of Cook, Kress and Seiford (1986).  For each
+      pair of objects \eqn{a} and \eqn{b} in an endorelation \eqn{R}, we
+      can have \eqn{a R b} and not \eqn{b R a} or vice versa (cases of
+      \dQuote{strict preference}, \eqn{a R b} and \eqn{b R a} (the case
+      of \dQuote{indifference}), or neither \eqn{a R b} nor \eqn{b R a}
+      (the case of \dQuote{incomparability}).  (Only the last two are
+      possible if \eqn{a = b}.)  The distance by Cook, Kress and Seiford
+      puts indifference as the metric centroid between both preference
+      cases and incomparability (i.e., indifference is at distance one
+      from the other three, and each of the other three is at distance
+      two from the others).  The generalized Cook-Kress-Seiford distance
+      is the paired comparison distance (i.e., a metric) based on these
+      distances between the four paired comparison cases.  (Formula 3 in
+      the reference must be slightly modified for the generalization
+      from partial rankings to arbitrary endorelations.)
+    }
+
+    \item{\code{"score"}}{score-based distance.  This computes
+      \eqn{\Delta(s(x), s(y))} for suitable score and distance functions
+      \eqn{s} and \eqn{\Delta}, respectively.  These can be specified by
+      additional arguments \code{score} and \code{Delta}.  If
+      \code{score} is a character string, it is taken as the method for
+      \code{\link{relation_scores}}.  Otherwise, if given it must be a
+      function giving the score function itself.  If \code{Delta} is a
+      number \eqn{p \ge 1}, the usual \eqn{l_p} distance is used.
+      Otherwise, it must be a function given the distance function.
+      The defaults correspond to using the default relation scores and
+      \eqn{p = 1}.
+    }
+  }
 }
 \references{
-J. G. Kemeny and J. L. Snell (1962),
-\emph{Mathematical Models in the Social Sciences},
-chapter \dQuote{Preference Rankings: An Axiomatic Approach}.
-MIT Press: Cambridge.
+  W. D. Cook, M. Kress and L. M. Seiford (1986),
+  Information and preference in partial orders: a bimatrix
+  representation.
+  \emph{Psychometrika} \bold{51}/2, 197--207.
+
+  W. D. Cook and L. M. Seiford (1978),
+  Priority ranking and consensus formation.
+  \emph{Management Science}, \bold{24}/16, 1721--1732.
+  
+  J. G. Kemeny and J. L. Snell (1962),
+  \emph{Mathematical Models in the Social Sciences},
+  chapter \dQuote{Preference Rankings: An Axiomatic Approach}.
+  MIT Press: Cambridge.
 }
 \keyword{math}

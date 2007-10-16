@@ -25,8 +25,9 @@ relation_incidence(x) <- value
     always elements of the corresponding elements of the domain of
     \code{x}.
     
-    For setting incidences, a binary array with dimension the size of
-    the relation \code{x}.
+    For setting incidences, a numeric array with values in the unit
+    interval or a logical array, with dimension the size of the relation
+    \code{x}.
 
     For setting the domain names, a character vector as long as the
     arity of the relation \code{x}.

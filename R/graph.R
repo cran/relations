@@ -13,12 +13,17 @@ function(x) {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
     out <- .make_relation_graph_components(x)
-    nms <- names(out) 
+    nms <- names(out)
     ## Note that we no longer use auto-generated names for the relation
     ## graph.
     names(out) <- NULL
-    .make_relation_graph(.make_set_of_tuples_from_relation_graph_components(out),
-                         domain_names = nms)
+    S <- .make_set_of_tuples_from_relation_graph_components(out)
+    if (!relation_is_crisp(x)) {
+        I <- relation_incidence(x)
+        S <- sets:::.make_gset_from_support_and_memberships(support = S,
+                                                            memberships = I[I > 0])
+    }
+    .make_relation_graph(S, domain_names = nms)
 }
 
 .make_relation_graph <-
@@ -48,13 +53,18 @@ function(x, ...)
        writeLines("The empty set.")
     else {
        domain_names<- attr(x, "domain_names")
-       writeLines(sprintf("A set with %s%s:",
-                          .ntuple(x[[1L]], plural = length(x) > 1),
-                          if (is.null(domain_names)) "" else 
+       writeLines(sprintf(if (gset_is_fuzzy_set(x))
+                          "A fuzzy set with %s%s:"
+                          else "A set with %s%s:",
+                          sets:::.ntuple(as.list(x)[[1L]], plural = length(x) > 1L),
+                          if (is.null(domain_names)) "" else
                           paste(" ", format(as.tuple(domain_names)), sep = "")
                           )
                   )
-       for (i in x) print(i)
+       if (gset_is_fuzzy_set(x))
+           for (i in Map(e, unclass(x), sets:::.get_memberships(x))) print(i)
+       else
+           for (i in x) print(i)
     }
     invisible(x)
 }
@@ -62,6 +72,14 @@ function(x, ...)
 as.list.relation_graph <-
 function(x, ...)
     unclass(x)
+
+as.set.relation_graph <-
+function(x)
+    structure(x, class = c("set", "gset"))
+
+as.gset.relation_graph <-
+function(x)
+    structure(x, class = "gset")
 
 ### * .make_relation_graph_components
 
@@ -77,19 +95,20 @@ function(x)
 .make_relation_graph_components.set <-
 function(x)
 {
-    l <- length(x[[1L]])
+    l <- length(as.list(x)[[1L]])
     if (!all(sapply(x, length) == l))
         stop("All elements need to be of same length!")
-    if (l < 2L)
-        as.list(x)
-    else {
-        ## <NOTE>
-        ## We could try making this more efficient by building a big
-        ## list and slicing into components ...
-        lapply(seq_len(l), function(i) sapply(x, function(j) j[[i]]))
-        ## </NOTE>
-    }
+    ## <NOTE>
+    ## We could try making this more efficient by building a big
+    ## list and slicing into components ...
+    lapply(seq_len(l), function(i) sapply(x, function(j) j[[i]]))
+    ## </NOTE>
 }
+
+.make_relation_graph_components.gset <-
+function(x)
+    structure(.make_relation_graph_components(as.list(x)),
+              memberships = sets:::.get_memberships(x))
 
 .make_relation_graph_components.relation <-
 function(x)
@@ -97,8 +116,8 @@ function(x)
     I <- relation_incidence(x)
     D <- relation_domain(x)
     ind <- as.logical(c(I))
-    ## Set missings to zero.
-    ind[is.na(ind)] <- FALSE
+    ## Set missings to TRUE (will index NAs in domain).
+    ind[is.na(ind)] <- TRUE
     ## <NOTE>
     ## We would like to use
     ##   out <- do.call("expand.grid", D)[ind, ]
@@ -108,7 +127,11 @@ function(x)
     ## Seems we need our own simplified expand.grid() ...
     ## Of course, we could try to generate only the replications needed
     ## (as we already have ind).
-    structure(lapply(.cartesian_product(D), "[", ind),
+    memberships <- NULL
+    if (!relation_is_crisp(x))
+        memberships <- I[I > 0]
+    structure(lapply(sets:::.cartesian_product(D), "[", ind),
+              memberships = memberships,
               names = names(D))
     ## </NOTE>
 }
