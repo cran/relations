@@ -115,15 +115,18 @@ function(relations, weights, control)
     ## Note that Cook and Seiford use Kendall-style "ranks" which are
     ## sorted in decreasing preference, whereas our default scores work
     ## in the opposite direction.
-    scores <- sapply(relations, relation_scores)
+    incidences <- lapply(relations, relation_incidence)
+    scores <- sapply(incidences, .incidence_scores_ranks)
     for(k in seq_len(n))
-        C[, k] <- rowSums(sweep(abs(scores - k), 2, weights, "*"))
+        C[, k] <- rowSums(sweep(abs(scores - k), 2L, weights, "*"))
     .compare <- function(u) outer(u, u, ">=")
     I <- if(all)
         lapply(.find_all_LSAP_solutions(C), .compare)
     else
         .compare(clue::solve_LSAP(C))
-    meta <- .relation_meta_db[["L"]]
+    objval <- .relation_consensus_CS_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[["L"]], list(objval = objval))
+
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
@@ -155,15 +158,18 @@ function(relations, weights, control)
 function(relations, weights, control)
 {
     if(!.is_ensemble_of_crisp_relations(relations))
-        stop("Need an ensemble of crip relations.")
+        stop("Need an ensemble of crisp relations.")
 
-    M <- .make_fit_relation_symdiff_M(relations, weights)
+    incidences <- lapply(relations, relation_incidence)
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
     diag(M) <- 1                        # Ensure reflexivity.
     I <- M >= 0                         # We do not break ties (>=).
+    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- list(is_endorelation = TRUE,
                  is_complete = TRUE,
                  is_reflexive = TRUE,
-                 is_antisymmetric = all(M != 0))
+                 is_antisymmetric = all(M != 0),
+                 objval = objval)
     ## (We do not know about transitivity without computing ...) 
     .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
 }
@@ -242,15 +248,16 @@ function(relations, weights, control)
 .relation_consensus_manhattan <-
 function(relations, weights, control)
 {
-    weights <- rep(weights, length.out = length(relations))
+    incidences <- lapply(relations, relation_incidence)
+    weights <- rep(weights, length.out = length(incidences))
     ## Incidences of the consensus relation are the weighted medians.
-    I <- array(apply(do.call("cbind",
-                             lapply(relations,
-                                    function(e)
-                                    c(relation_incidence(e)))),
+    I <- array(apply(do.call("cbind", lapply(incidences, c)),
                      1L, clue:::weighted_median, weights),
                dim = .size(relations))
-    .make_relation_from_domain_and_incidence(.domain(relations), I)
+    meta <-
+        list(objval =
+             .relation_consensus_symdiff_objval(I, incidences, weights))
+    .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
 }
 
 ### ** .relation_consensus_euclidean
@@ -267,7 +274,10 @@ function(relations, weights, control)
     ## Incidences of the consensus relation are the weighted means.
     I <- array(rowSums(mapply("*", incidences, weights)),
                dim = dim(incidences[[1L]]))
-    .make_relation_from_domain_and_incidence(.domain(relations), I)
+    meta <-
+        list(objval =
+             .relation_consensus_euclidean_objval(I, incidences, weights))
+    .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
 }
 
 ### ** .relation_consensus_euclidean_A
@@ -484,11 +494,13 @@ function(relations, family, weights, control, euclidean = FALSE)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
     if(!euclidean && !.is_ensemble_of_crisp_relations(relations))
-        stop("Need an ensemble of crip relations.")
+        stop("Need an ensemble of crisp relations.")
 
-    M <- .make_fit_relation_symdiff_M(relations, weights)
+    incidences <- lapply(relations, relation_incidence)
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff(M, family, control)
-    meta <- .relation_meta_db[[family]]
+    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[[family]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
@@ -501,11 +513,13 @@ function(relations, weights, k, control, euclidean = FALSE)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
     if(!euclidean && !.is_ensemble_of_crisp_relations(relations))
-        stop("Need an ensemble of crip relations.")
+        stop("Need an ensemble of crisp relations.")
 
-    M <- .make_fit_relation_symdiff_M(relations, weights)
+    incidences <- lapply(relations, relation_incidence)
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff_E_k(M, k, control)
-    meta <- .relation_meta_db[["E"]]
+    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[["E"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
@@ -518,11 +532,13 @@ function(relations, weights, k, control, euclidean = FALSE)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
     if(!euclidean && !.is_ensemble_of_crisp_relations(relations))
-        stop("Need an ensemble of crip relations.")
+        stop("Need an ensemble of crisp relations.")
 
-    M <- .make_fit_relation_symdiff_M(relations, weights)
+    incidences <- lapply(relations, relation_incidence)
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff_P_k(M, k, control)
-    meta <- .relation_meta_db[["P"]]
+    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[["P"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
@@ -532,15 +548,16 @@ function(relations, weights, k, control, euclidean = FALSE)
 ### ** .make_fit_relation_symdiff_M
 
 .make_fit_relation_symdiff_M <-
-function(relations, weights)
+function(incidences, weights)
 {
     ## Compute the array
     ##   \sum_b w_b (2 incidence(b) - 1)
     ## used in fit_relation_symdiff() and also for the Condorcet
     ## consensus solution.
 
-    w <- rep(weights, length.out = length(relations))
-    incidences <- lapply(relations, relation_incidence)
+    w <- rep(weights, length.out = length(incidences))
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
     M <- array(rowSums(mapply("*", incidences, w)),
                dim = dim(incidences[[1L]]),
                dimnames = dimnames(incidences[[1L]]))
@@ -562,6 +579,50 @@ function(D, I, meta = NULL)
     }
     else
         .make_relation_from_domain_and_incidence(D, I, meta)
+}
+
+## Utilities for computing the values of the objective functions for the
+## optimization-based consensus methods.
+
+### ** .relation_consensus_symdiff_objval
+
+.relation_consensus_symdiff_objval <-
+function(I, incidences, weights)
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+    
+    sum(weights *
+        sapply(incidences, .incidence_dissimilarity_symdiff, I))
+}
+
+### ** .relation_consensus_euclidean_objval
+
+.relation_consensus_euclidean_objval <-    
+function(I, incidences, weights)    
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+
+    sum(weights *
+        sapply(incidences, .incidence_dissimilarity_euclidean, I) ^ 2)
+}
+
+### ** .relation_consensus_CS_objval
+
+.relation_consensus_CS_objval <-
+function(I, incidences, weights)
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+
+    sum(weights * sapply(incidences, .incidence_dissimilarity_CS, I))
 }
 
 ### Local variables: ***

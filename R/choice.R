@@ -49,6 +49,8 @@ function(relations, control)
     if(is.null(all)) all <- FALSE
     sparse <- control$sparse
     if(is.null(sparse)) sparse <- FALSE
+    solver <- control$solver
+    control <- control$control
     ## And of course, more sanity checking would be nice ...
 
     x <- .make_fit_relation_symdiff_M(relations, 1)
@@ -67,11 +69,13 @@ function(relations, control)
     D <- relation_domain(relations)[[1L]]
     ## Solve.
     if(all)
-        return(.find_all_relation_symdiff_winners(alpha, beta, C, n, D))
+        return(.find_all_relation_symdiff_winners(alpha, beta, C, n, D,
+                                                  solver, control))
     integer_positions <-
         .n_of_symdiff_choice_v_variables(n) + seq_len(n)
-    out <- solve_MILP(MILP("max", obj, list(C$mat, C$dir, C$rhs),
-                           integer_positions))
+    out <- solve_MILP(MILP(obj, list(C$mat, C$dir, C$rhs),
+                           integer_positions, maximum = TRUE),
+                      solver, control)
     u <- out$solution[integer_positions]
     as.set(D[u == 1])
 }
@@ -157,7 +161,7 @@ function(n, k, sparse = FALSE)
 }
 
 .find_all_relation_symdiff_winners <-
-function(alpha, beta, C, n, domain)
+function(alpha, beta, C, n, domain, solver, control)
 {
     ## Find all relation symdiff "winners" by a simple branch-and-cut
     ## strategy, using successive reductions.
@@ -175,9 +179,11 @@ function(alpha, beta, C, n, domain)
 
     ## Value function for given problem instance.
     V <- function(obj, mat, dir, rhs, pos) {
-        out <- solve_MILP(MILP("max", obj, list(mat, dir, rhs), pos))
+        out <- solve_MILP(MILP(obj, list(mat, dir, rhs), pos,
+                               maximum = TRUE),
+                          solver, control)
         if(out$status != 0) return(-Inf)
-        out$value
+        out$objval
     }
     ## Determine the optimal value.
     Vopt <- V(c(alpha, beta), mat, dir, rhs, int_pos(n))
@@ -192,7 +198,7 @@ function(alpha, beta, C, n, domain)
         if(node$done) return(node)
         tol <- 1e-10
         len <- length(rhs)
-        pos <- int_pos(n - 1)
+        pos <- int_pos(n - 1L)
         u <- node$u
         beta <- node$beta
         value <- node$value
@@ -228,7 +234,7 @@ function(alpha, beta, C, n, domain)
 
     ## Main loop.
     nodes <- list(node(integer(), beta))
-    while(n > 1) {
+    while(n > 1L) {
         ## Move from n to n - 1.
         ## Reduce constraints.
         n_v <- .n_of_symdiff_choice_v_variables(n)
@@ -238,7 +244,7 @@ function(alpha, beta, C, n, domain)
         alpha <- alpha[-ind]
         ## Drop elements from constraints.
         rind <- c(ind, ind + n_v, ind + 2 * n_v, 3 * n_v + n)
-        mat <- mat[-rind, -c(ind, ncol(mat))]
+        mat <- mat[-rind, -c(ind, ncol(mat)), drop = FALSE]
         dir <- dir[-rind]
         rhs <- rhs[-rind]
         ## Branch and cut.
@@ -246,7 +252,7 @@ function(alpha, beta, C, n, domain)
                          lapply(nodes, splitter, n, alpha, delta, mat,
                                 dir, rhs))
         ## cat("n:", n, "n of nodes", length(nodes), "\n")
-        n <- n - 1
+        n <- n - 1L
     }
 
     nodes <- lapply(nodes, finisher)

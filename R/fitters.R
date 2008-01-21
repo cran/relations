@@ -169,15 +169,19 @@ function(x, family = .SD_families, control = list())
                                                  acmaker,
                                                  labels,
                                                  verbose,
-                                                 diagonal))
+                                                 diagonal,
+                                                 control$solver,
+                                                 control$control))
     }
 
-    out <- solve_MILP(MILP("max",
-                           objective_in,
+    out <- solve_MILP(MILP(objective_in,
                            list(constr_mat,
                                 constr_dir,
                                 constr_rhs),
-                           seq_len(NP)))
+                           seq_len(NP),
+                           maximum = TRUE),
+                      control$solver,
+                      control$control)
     .stop_if_lp_status_is_nonzero(out$status, family)
 
     ## Turn the solution back into a full incidence matrix.
@@ -189,7 +193,7 @@ function(x, family = .SD_families, control = list())
                                        family, labels, diagonal)
     ## For the time being, tack some of the MILP results on so that we
     ## can look at them (but not everything due to size ...)
-    attr(fit, ".lp") <- out[c("value", "solution")]
+    attr(fit, ".lp") <- out[c("solution", "objval")]
 
     fit
 }
@@ -211,14 +215,16 @@ function(status, family)
 
 .find_all_relation_symdiff_optima <-
 function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
-         verbose = FALSE, diagonal)
+         verbose = FALSE, diagonal, solver, control)
 {
     ## Start by computing one optimal solution.
-    out <- solve_MILP(MILP("max", obj, list(mat, dir, rhs), int))
+    out <- solve_MILP(MILP(obj, list(mat, dir, rhs), int,
+                           maximum = TRUE),
+                       solver, control)
     ## Check status:
     .stop_if_lp_status_is_nonzero(out$status, family)
     ## Value of the optimum:
-    Vopt <- out$value
+    Vopt <- out$objval
 
     ## And now find all optimal additional constrains (i.e., at the end,
     ## all optimal incidences in 3-column matrix (i, j, x_{ij}) form) by
@@ -259,7 +265,8 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
                          lapply(Alist,
                                 .add_constraint_for_single_pair,
                                 ind[k, 1L], ind[k, 2L],
-                                acmaker, Vopt, obj, mat, dir, rhs, int))
+                                acmaker, Vopt, obj, mat, dir, rhs, int,
+                                solver, control))
         if(verbose)
             message(gettextf("N_of_pairs: %d *** N_of_optimal_branches: %d",
                              k, length(Alist)))
@@ -269,7 +276,8 @@ function(n, family, obj, mat, dir, rhs, int, A, acmaker, labels,
 }
 
 .add_constraint_for_single_pair <-
-function(A, i, j, acmaker, Vopt, obj, mat, dir, rhs, int)
+function(A, i, j, acmaker, Vopt, obj, mat, dir, rhs, int,
+         solver, control)
 {
     ## Figure out whether additional constraint x_{ij} = 0 or x_{ij} =
     ## 1, or both, are "optimal".
@@ -279,14 +287,15 @@ function(A, i, j, acmaker, Vopt, obj, mat, dir, rhs, int)
         ## Compute optimum for a valid matrix A of additional
         ## constraints.
         add <- acmaker(A)
-        out <- solve_MILP(MILP("max",
-                               obj,
+        out <- solve_MILP(MILP(obj,
                                list(rbind(mat, add$mat),
                                     c(dir, add$dir),
                                     c(rhs, add$rhs)),
-                               int))
+                               int,
+                               maximum = TRUE),
+                          solver, control)
         if(out$status != 0) return(-Inf)
-        out$value
+        out$objval
     }
 
     Aij0 <- rbind(A, c(i, j, 0))
@@ -321,7 +330,7 @@ function(A, i, j, acmaker, Vopt, obj, mat, dir, rhs, int)
 
 .find_all_relation_symdiff_optima_E_or_P_k <-
 function(n, nc, family, obj, mat, dir, rhs, int, A, acmaker, labels,
-         verbose = FALSE)
+         verbose = FALSE, solver, control)
 {
     ## <NOTE>
     ## This still has a lot of code duplicated with
@@ -329,11 +338,13 @@ function(n, nc, family, obj, mat, dir, rhs, int, A, acmaker, labels,
     ## </NOTE>
     
     ## Start by computing one optimal solution.
-    out <- solve_MILP(MILP("max", obj, list(mat, dir, rhs), int))
+    out <- solve_MILP(MILP(obj, list(mat, dir, rhs), int,
+                           maximum = TRUE),
+                       solver, control)
     ## Check status:
     .stop_if_lp_status_is_nonzero(out$status, family)
     ## Value of the optimum:
-    Vopt <- out$value
+    Vopt <- out$objval
 
     ## Need to loop over all pairs of objects i and classes k:
     ind <- cbind(rep(seq_len(n), each = nc),
@@ -349,7 +360,8 @@ function(n, nc, family, obj, mat, dir, rhs, int, A, acmaker, labels,
                          lapply(Alist,
                                 .add_constraint_for_single_pair,
                                 ind[k, 1L], ind[k, 2L],
-                                acmaker, Vopt, obj, mat, dir, rhs, int))
+                                acmaker, Vopt, obj, mat, dir, rhs, int,
+                                solver, control))
         if(verbose)
             message(gettextf("N_of_pairs: %d *** N_of_optimal_branches: %d",
                              k, length(Alist)))
@@ -1031,15 +1043,19 @@ function(C, nc, control = list())
                                                           A,
                                                           acmaker,
                                                           labels,
-                                                          verbose))
+                                                          verbose,
+                                                          control$solver,
+                                                          control$control))
     }
 
-    y <- solve_MILP(MILP("max",
-                         objective_in,
+    y <- solve_MILP(MILP(objective_in,
                          list(constraint_mat,
                               constraint_dir,
                               constraint_rhs),
-                         integer_positions))
+                         integer_positions,
+                         maximum = TRUE),
+                    control$solver,
+                    control$control)
     .stop_if_lp_status_is_nonzero(y$status, "E")
 
     M <- matrix(y$solution[integer_positions], ncol = nc)
@@ -1197,15 +1213,19 @@ function(C, nc, control = list())
                                                           A,
                                                           acmaker,
                                                           labels,
-                                                          verbose))
+                                                          verbose,
+                                                          control$solver,
+                                                          control$control))
     }
 
-    y <- solve_MILP(MILP("max",
-                         objective_in,
+    y <- solve_MILP(MILP(objective_in,
                          list(constraint_mat,
                               constraint_dir,
                               constraint_rhs),
-                         integer_positions))
+                         integer_positions,
+                         maximum = TRUE),
+                    control$solver,
+                    control$control)
     .stop_if_lp_status_is_nonzero(y$status, "P")
 
     M <- matrix(y$solution[integer_positions], ncol = nc)

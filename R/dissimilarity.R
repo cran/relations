@@ -89,7 +89,12 @@ function(x, y = NULL, method = "symdiff", ...)
 
 .relation_dissimilarity_symdiff <-
 function(x, y)
-    sum(abs(relation_incidence(x) - relation_incidence(y)))
+    .incidence_dissimilarity_symdiff(relation_incidence(x),
+                                     relation_incidence(y))
+
+.incidence_dissimilarity_symdiff <-
+function(x, y)    
+    sum(abs(x - y))
 
 .relation_dissimilarity_CKS <-
 function(x, y)
@@ -105,8 +110,13 @@ function(x, y)
     ## Originally only defined between (partial) rankings, but
     ## applicable more generally.
     ## </NOTE>
-    x <- relation_incidence(x)
-    y <- relation_incidence(y)
+    .incidence_dissimilarity_CKS(relation_incidence(x),
+                                 relation_incidence(y))
+}
+
+.incidence_dissimilarity_CKS <-
+function(x, y)
+{
     I_x <- pmax(x, t(x)) 
     P_x <- pmin(t(x), 1 - x)
     I_y <- pmax(y, t(y))
@@ -127,8 +137,13 @@ function(x, y)
     ## Originally only defined between (complete) rankings, but
     ## applicable more generally.
     ## </NOTE>
-    sum(abs(relation_scores(x) - relation_scores(y)))
+    .incidence_dissimilarity_CS(relation_incidence(x),
+                                relation_incidence(y))
 }
+
+.incidence_dissimilarity_CS <-
+function(x, y)
+    sum(abs(.incidence_scores_ranks(x) - .incidence_scores_ranks(y)))
 
 .relation_dissimilarity_score <-
 function(x, y, score = NULL, Delta = 1)
@@ -164,4 +179,9 @@ function(x, y, score = NULL, Delta = 1)
 
 .relation_dissimilarity_euclidean <-
 function(x, y)
-    sqrt(sum((relation_incidence(x) - relation_incidence(y)) ^ 2))
+    .incidence_dissimilarity_euclidean(relation_incidence(x),
+                                       relation_incidence(y))
+
+.incidence_dissimilarity_euclidean <-
+function(x, y)
+    sqrt(sum((x - y) ^ 2))

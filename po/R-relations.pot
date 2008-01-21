@@ -1,0 +1,263 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: R 2.3.0\n"
+"Report-Msgid-Bugs-To: bugs@r-project.org\n"
+"POT-Creation-Date: 2007-12-15 11:15\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+msgid "Invalid projection margin."
+msgstr ""
+
+msgid "'subset' must evaluate to logical"
+msgstr ""
+
+msgid "Relation arity mismatch."
+msgstr ""
+
+msgid "Division by empty relations not defined."
+msgstr ""
+
+msgid "Divisor domain must be a subset of the dividend domain."
+msgstr ""
+
+msgid "Dividend needs at least one unique domain."
+msgstr ""
+
+msgid "Relation(s) with unique domain names required."
+msgstr ""
+
+msgid "Argument 'x' must be a relation."
+msgstr ""
+
+msgid "Wrong number of arguments."
+msgstr ""
+
+msgid "Cannot compute choice from empty ensemble."
+msgstr ""
+
+msgid "Method '%s' is not a valid choice method."
+msgstr ""
+
+msgid "Invalid argument 'method'."
+msgstr ""
+
+msgid "Need an ensemble of endorelations."
+msgstr ""
+
+msgid "Need an ensemble of crisp relations."
+msgstr ""
+
+msgid "Cannot compute consensus of empty ensemble."
+msgstr ""
+
+msgid "Argument 'weights' has negative elements."
+msgstr ""
+
+msgid "Argument 'weights' has no positive elements."
+msgstr ""
+
+msgid "Invalid 'method' argument."
+msgstr ""
+
+msgid "Method '%s' is not a valid consensus method."
+msgstr ""
+
+msgid "Need an ensemble of crip relations."
+msgstr ""
+
+msgid "Invalid consensus method '%s'."
+msgstr ""
+
+msgid "Method '%s' is not a valid dissimilarity method."
+msgstr ""
+
+msgid "All relations must have the same domain."
+msgstr ""
+
+msgid "Invalid 'score' argument."
+msgstr ""
+
+msgid "Invalid 'Delta' argument."
+msgstr ""
+
+msgid "Argument 'x' must be a relation or relation ensemble."
+msgstr ""
+
+msgid "Invalid relation domain."
+msgstr ""
+
+msgid "Relation arity mismatch between 'x' and 'value'."
+msgstr ""
+
+msgid "Relation size mismatch between 'x' and 'value'."
+msgstr ""
+
+msgid "Argument 'x' must be an endorelation."
+msgstr ""
+
+msgid "Empty relation ensembles cannot be created."
+msgstr ""
+
+msgid "An empty relation ensemble."
+msgstr ""
+
+msgid "Unary '%s' not defined for \"%s\" objects."
+msgstr ""
+
+msgid "Generic '%s' not defined for \"%s\" objects."
+msgstr ""
+
+msgid "Argument 'x' must be a relation ensemble."
+msgstr ""
+
+msgid "Given constraints are incompatible with family '%s'."
+msgstr ""
+
+msgid "N_of_pairs: %d *** N_of_optimal_branches: %d"
+msgstr ""
+
+msgid "Invalid additional incidence constraints."
+msgstr ""
+
+msgid "Incompatible constraints."
+msgstr ""
+
+msgid "Invalid specification of class sizes."
+msgstr ""
+
+msgid "Can only determine class ids for equivalences and weak orders."
+msgstr ""
+
+msgid "Not implemented."
+msgstr ""
+
+msgid "All elements need to be of same length!"
+msgstr ""
+
+msgid "Argument 'x' must be a crisp relation."
+msgstr ""
+
+msgid "Consensus method does not compute central relations."
+msgstr ""
+
+msgid "A hard partition of a relation ensemble with %d elements into %d classes."
+msgstr ""
+
+msgid "A soft partition (degree m = %f) of a relation ensemble with %d elements into %d classes."
+msgstr ""
+
+msgid "Plot only available for endorelations."
+msgstr ""
+
+msgid "Plot only available for crisp relations."
+msgstr ""
+
+msgid "Plot only available for antisymmetric or complete transitive relations."
+msgstr ""
+
+msgid "Need Rgraphviz package (obtainable from bioconductor.org))!"
+msgstr ""
+
+msgid "Wrong class."
+msgstr ""
+
+msgid "Plotting only available for ensembles of antisymmetric or complete transitive crisp relations."
+msgstr ""
+
+msgid "Need exactly one of 'incidence', 'graph', and 'charfun'."
+msgstr ""
+
+msgid "Invalid relation incidence."
+msgstr ""
+
+msgid "Relation size mismatch between domain and incidence."
+msgstr ""
+
+msgid "Only crisp or fuzzy sets allowed."
+msgstr ""
+
+msgid "Need domain along with characteristic function."
+msgstr ""
+
+msgid "A unary relation of size %s."
+msgstr ""
+
+msgid "A binary relation of size %s."
+msgstr ""
+
+msgid "A %d-ary relation of size %s."
+msgstr ""
+
+msgid "A unary fuzzy relation of size %s."
+msgstr ""
+
+msgid "A binary fuzzy relation of size %s."
+msgstr ""
+
+msgid "A %d-ary fuzzy relation of size %s."
+msgstr ""
+
+msgid "Composition of given relations not defined."
+msgstr ""
+
+msgid "Relations need equal domains."
+msgstr ""
+
+msgid "Can only compute inverses of binary relations."
+msgstr ""
+
+msgid "Relation arity mismatch between domain and graph."
+msgstr ""
+
+msgid "Invalid graph with out-of-domain elements."
+msgstr ""
+
+msgid "Incorrect length of given 'row.names'."
+msgstr ""
+
+msgid "Relation scores are only available for endorelations."
+msgstr ""
+
+msgid "Logical subscripting currently not implemented."
+msgstr ""
+
+msgid "Character subscripting currently not implemented."
+msgstr ""
+
+msgid "Cannot mix positive and negative subscripts."
+msgstr ""
+
+msgid "Invalid subscript."
+msgstr ""
+
+msgid "Only numeric two-index subscripting is implemented."
+msgstr ""
+
+msgid "Repeated indices currently not allowed."
+msgstr ""
+
+msgid "Only numeric 2-index subscripting is implemented."
+msgstr ""
+
+msgid "Numbers of columns of matrices must match."
+msgstr ""
+
+msgid "Numbers of rows of matrices must match."
+msgstr ""
+
+msgid "Transformations only available for endorelations."
+msgstr ""
+
+msgid "Relation violations only defined for endorelations."
+msgstr ""
+
+msgid        "An ensemble of %d relation of size %s."
+msgid_plural "An ensemble of %d relations of size %s."
+msgstr[0]    ""
+msgstr[1]    ""

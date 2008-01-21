@@ -12,27 +12,27 @@ function(x,
     labs <- LABELS(relation_domain(x)[[1L]])
 
     ## <NOTE>
-    ## When adding .relation_score_FOO(x, ...) method functions, we
+    ## When adding .relation_scores_FOO(x, ...) method functions, we
     ## might want to pass x as the relation itself rather than its
     ## incidence.
-    x <- relation_incidence(x)
+    I <- relation_incidence(x)
     ## </NOTE>
 
     ret <- switch(method,
-                  ranks = .relation_scores_ranks(x, ...),
+                  ranks = .incidence_scores_ranks(I, ...),
                   "Barthelemy/Monjardet" = {
                       ## Use formula in Barthelemy & Monjardet, p. 258.
                       ## See also
                       ## http://mathworld.wolfram.com/ScoreSequence.html.
-                      (colSums(x * (1 - t(x))) + colSums(x) - 1) / 2
+                      (colSums(I * (1 - t(I))) + colSums(I) - 1) / 2
                   },
-                  Borda =, Kendall = colSums(x),
-                  differential = colSums(x) - rowSums(x),
+                  Borda =, Kendall = colSums(I),
+                  differential = colSums(I) - rowSums(I),
                   Wei = {
                       ## <FIXME>
                       ## Cook & Kress use "preference matrices", so to
                       ## be consistent, take complement?
-                      abs(Re(eigen(1 - x)$vectors[, 1L]))
+                      abs(Re(eigen(1 - I)$vectors[, 1L]))
                       ## </FIXME>
                   })
     
@@ -43,7 +43,7 @@ function(x,
         ret
 }
 
-.relation_scores_ranks <-
+.incidence_scores_ranks <-
 function(x, decreasing = TRUE)
 {
     n <- ncol(x)
