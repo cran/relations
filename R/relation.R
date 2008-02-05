@@ -231,6 +231,22 @@ as.relation.cl_partition <-
 function(x)
     as.relation(factor(clue::cl_class_ids(x)))
 
+## Package seriation: ser_permutation objects.
+as.relation.ser_permutation <-
+function(x)
+{
+    o <- seriation::get_order(x)
+    oo <- order(o)
+    D <- if(!is.null(nms <- names(o)[oo]))
+        list(nms, nms)
+    else
+        NULL
+    I <- outer(oo, oo, "<=")
+    meta <- .relation_meta_db[["L"]]
+    .make_relation_from_domain_and_incidence(D, I, meta)
+}
+
+
 ### * Relation methods
 
 ### ** as.data.frame.relation

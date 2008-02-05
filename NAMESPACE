@@ -111,6 +111,7 @@ S3method("as.relation", "matrix")
 S3method("as.relation", "numeric")
 S3method("as.relation", "ordered")
 S3method("as.relation", "relation")
+S3method("as.relation", "ser_permutation")
 
 S3method("as.data.frame", "relation")
 
