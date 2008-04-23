@@ -1,5 +1,6 @@
 \name{relation}
 \alias{relation}
+\alias{endorelation}
 \alias{as.relation}
 \alias{is.relation}
 \alias{dual}
@@ -8,6 +9,7 @@
 \description{Creation and manipulation of relations.}
 \usage{
 relation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
+endorelation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 as.relation(x)
 is.relation(x)
 }
@@ -117,6 +119,11 @@ is.relation(x)
   \eqn{k}-dimensional array is taken as the incidence of a \eqn{k}-ary
   relation.  Finally, a data frame is taken as a relation table.  Note
   that missing values will be propagated in the coercion.
+
+  \code{endorelation} is a wrapper for \code{relation}, trying to guess
+  a suitable domain from its arguments to create an endorelation. If a
+  domain is given, all labels are combined and the result (as a list)
+  recycled as needed.
   
   Basic relation operations are available as group methods: \code{min}
   and \code{max} give the meet and join, and \code{range} a
@@ -191,5 +198,10 @@ R3 < R2
 relation_incidence(R1 * R2)
 relation_incidence(! R1)
 relation_incidence(t(R2))
+
+### endorelation
+s <- set(pair("a","b"), pair("c","d"))
+relation_incidence(relation(graph = s))
+relation_incidence(endorelation(graph = s))
 }
 \keyword{math}

@@ -96,6 +96,7 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
 	\item{\code{A}}{antisymmetric relations.}
 	\item{\code{S}}{symmetric relations.}
 	\item{\code{M}}{matches: complete and reflexive.}
+	\item{\code{R}}{tRansitive relations.}
       }
       Consensus relations are determined by reformulating the consensus
       problem as an integer program (for the relation incidences), which

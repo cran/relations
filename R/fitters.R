@@ -1,19 +1,20 @@
-### Relation fitters.
+## Relation fitters.
 
 ### * fit_relation_symdiff
 
 ## General purpose fitter for families
-.SD_families <- c("E", "L", "O", "P", "T", "C", "A", "S")
+.SD_families <- c("E", "L", "O", "P", "T", "C", "A", "S", "R")
 ## where:
-##   E ... equivalence relations               REF SYM TRA
-##   L ... linear orders                   TOT     ASY TRA
-##   O ... partial order                           ASY TRA
-##   P ... complete preorder ("ordering")  TOT REF     TRA
-##   T ... tournament                      TOT IRR ASY
-##   C ... complete relations              TOT
-##   A ... antisymmetric relations                 ASY
-##   S ... symmetric relations                     SYM
-##   M ... matches                         TOT REF
+##   E ... Equivalence relations               REF SYM TRA
+##   L ... Linear orders                   TOT     ASY TRA
+##   O ... Partial order                           ASY TRA
+##   P ... complete Preorder ("ordering")  TOT REF     TRA
+##   T ... Tournament                      TOT IRR ASY
+##   C ... Complete relations              TOT
+##   A ... Antisymmetric relations                 ASY
+##   S ... Symmetric relations                     SYM
+##   M ... Matches                         TOT REF
+##   R ... tRansitive relations                        TRA
 ## and
 ##   TOT ... total/complete
 ##   REF ... reflexive
@@ -43,7 +44,7 @@ function(n, family)
     N <- n * (n - 1)                    # Number of distinct pairs.
     switch(EXPR = family,
            E =, L =, S =, T = N / 2,    # upper_tri parametrization
-           A =, C =, M =, O =, P = N    # offdiag parametrization
+           A =, C =, M =, O =, P =, R = N    # offdiag parametrization
            )
 }
 
@@ -55,14 +56,14 @@ function(n, family)
     family <- match.arg(family, .SD_families)
     N <- n * (n - 1) * (n - 2)          # Number of distinct triples.
     switch(EXPR = family,
-           E = N / 2, L = N / 3, O =, P = N,
+           E = N / 2, L = N / 3, O =, P =, R = N,
            A =, C =, M =, S =, T = 0L   # Families w/out TRA.
            )
 }
 
 ## Make function giving the position of incidence (i, j) in the vector
 ## of non-redundant incidences used for symdiff fitting (upper.tri() for
-## E/L/S/T and .offdiag() for A/C/M/O/P, respectively).
+## E/L/S/T and .offdiag() for A/C/M/O/P/R, respectively).
 .make_pos <-
 function(n, family)
 {
@@ -84,7 +85,7 @@ function(x, family = .SD_families, control = list())
 {
     sparse <- control$sparse
     if(is.null(sparse)) sparse <- FALSE
-    
+
     ## Number of objects:
     n <- nrow(x)
     objective_in <- if (family %in% c("L", "T"))
@@ -101,7 +102,7 @@ function(x, family = .SD_families, control = list())
     NP <- .n_of_pairs(n, family)
     ## <NOTE>
     ## At least for the time being, these families are exactly the
-    ## families using an off-diagonal parametrization.
+    ## families using an off-diagonal parametrization (except "R").
     family_is_A_or_C_or_M_or_O_or_P <-
         family %in% c("A", "C", "M", "O", "P")
     ## </NOTE>
@@ -117,13 +118,13 @@ function(x, family = .SD_families, control = list())
         c(rep.int(">=", NP),
           rep.int("<=", NP),
           if(family_is_A_or_C_or_M_or_O_or_P)
-          .make_tot_or_asy_constraint_dir(n, family),
+              .make_tot_or_asy_constraint_dir(n, family),
           .make_transitivity_constraint_dir(n, family))
     constr_rhs <-
         c(rep.int(0, NP),
           rep.int(1, NP),
           if(family_is_A_or_C_or_M_or_O_or_P)
-          .make_tot_or_asy_constraint_rhs(n),
+              .make_tot_or_asy_constraint_rhs(n),
           .make_transitivity_constraint_rhs(n, family))
 
     ## Handle additional constraints.
@@ -185,7 +186,7 @@ function(x, family = .SD_families, control = list())
     .stop_if_lp_status_is_nonzero(out$status, family)
 
     ## Turn the solution back into a full incidence matrix.
-    fit <- if(family_is_A_or_C_or_M_or_O_or_P)
+    fit <- if(family_is_A_or_C_or_M_or_O_or_P || (family == "R"))
         .make_incidence_from_offdiag(round(out$solution),
                                      family, labels, diagonal)
     else
@@ -336,7 +337,7 @@ function(n, nc, family, obj, mat, dir, rhs, int, A, acmaker, labels,
     ## This still has a lot of code duplicated with
     ##   .find_all_relation_symdiff_optima()
     ## </NOTE>
-    
+
     ## Start by computing one optimal solution.
     out <- solve_MILP(MILP(obj, list(mat, dir, rhs), int,
                            maximum = TRUE),
@@ -569,7 +570,7 @@ function(n, sparse = FALSE)
     ind <- seq_len(NC)
 
     if(!sparse) {
-        out <- matrix(0, NC, NP)        
+        out <- matrix(0, NC, NP)
         out[cbind(ind, pos(z[, 1L], z[, 2L]))] <- 1
         out[cbind(ind, pos(z[, 2L], z[, 1L]))] <- 1
     }
@@ -709,7 +710,7 @@ function(pos, n_of_variables, nc, sparse = FALSE)
             if(any(i0)) {
                 for(k in seq_len(nc)) {
                     mat[cbind(ind, pos(A[i0, 1L], k))] <- 1
-                    for(l in seq_len(k - 1))
+                    for(l in seq_len(k - 1L))
                         mat[cbind(ind, pos(A[i0, 2L], l))] <- -1
                     ind <- ind + na
                 }
@@ -726,26 +727,26 @@ function(pos, n_of_variables, nc, sparse = FALSE)
                 len <- length(ind)
                 i0 <- unlist(lapply(seq_len(nc),
                                     function(k)
-                                    rep.int(ind + (k - 1) * na, k)
-                                    ))                    
+                                    rep.int(ind + (k - 1L) * na, k)
+                                    ))
                 j0 <- unlist(lapply(seq_len(nc),
                                     function(k)
                                     c(pos(A[i0, 1L], k),
-                                      unlist(lapply(seq_len(k - 1),
+                                      unlist(lapply(seq_len(k - 1L),
                                                     function(l)
                                                     pos(A[i0, 2L], l))))
                                     ))
                 v0 <- unlist(lapply(seq_len(nc),
                                     function(k)
                                     c(rep.int(1, len),
-                                      rep.int(-1, (k - 1) * len))))
+                                      rep.int(-1, (k - 1L) * len))))
             }
             ind <- which(A[, 3L] == 1)
             if(any(ind)) {
                 len <- length(ind)
                 i1 <- unlist(lapply(seq_len(nc),
                                     function(k)
-                                    rep.int(ind + (k - 1) * na, k + 1)
+                                    rep.int(ind + (k - 1L) * na, k + 1L)
                                     ))
                 j1 <- unlist(lapply(seq_len(nc),
                                     function(k)
@@ -862,7 +863,7 @@ function(x, family = c("E", "L", "S", "T"),
 ### ** .make_incidence_from_offdiag
 
 .make_incidence_from_offdiag <-
-function(x, family = c("A", "C", "M", "O", "P"),
+function(x, family = c("A", "C", "M", "O", "P", "R"),
          labels = NULL, diagonal)
 {
     family <- match.arg(family)
@@ -946,7 +947,7 @@ function(C, nc, control = list())
 
     pos_m <- function(i, k) {
         ## Position of variable m_{ik}.
-        n_of_y_variables + i + (k - 1) * no
+        n_of_y_variables + i + (k - 1L) * no
     }
 
     ind_o <- seq_len(no)
@@ -989,7 +990,7 @@ function(C, nc, control = list())
                                     rep.int(-1, len)),
                                   3 * n_of_y_variables, n_of_variables)
     }
-    
+
     constraint_dir <- c(rep.int(">=", n_of_y_variables),
                         rep.int("<=", 2 * n_of_y_variables))
     constraint_rhs <- c(rep.int(-1, n_of_y_variables),
@@ -1091,7 +1092,7 @@ function(C, nc, control = list())
 
     pos_m <- function(i, k) {
         ## Position of variable m_{ik}.
-        n_of_y_variables + i + (k - 1) * no
+        n_of_y_variables + i + (k - 1L) * no
     }
 
     ind_o <- seq_len(no)
@@ -1185,7 +1186,7 @@ function(C, nc, control = list())
     ## Set up augmented target function, silly way.
     C <- array(C, c(dim(C), nc, nc))
     for(k in ind_c)
-        for(l in seq_len(k - 1))
+        for(l in seq_len(k - 1L))
             C[, , k, l] <- 0
 
     objective_in <- c(c(C), double(n_of_m_variables))

@@ -15,7 +15,7 @@ as.simple_triplet_matrix <-
 function(x)
     UseMethod("as.simple_triplet_matrix")
 
-as.simple_triplet_matrix.simple_triplet_matrix <- .identity
+as.simple_triplet_matrix.simple_triplet_matrix <- identity
 
 as.simple_triplet_matrix.matrix <-
 function(x)

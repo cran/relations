@@ -56,7 +56,7 @@ function(x, solver = c("lpsolve", "glpk", "symphony"), control = list())
         status <- out$status
     }
     else if(solver == "glpk") {
-        out <- Rglpk::Rglpl_solve_LP(x$objective,
+        out <- Rglpk::Rglpk_solve_LP(x$objective,
                                      x$constraints[[1L]],
                                      x$constraints[[2L]],
                                      x$constraints[[3L]],

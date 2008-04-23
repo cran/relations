@@ -115,6 +115,16 @@ function(x)
      && identical(rownames(x), colnames(x)))
 }
 
+relation_is_homogeneous <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    if(.has_property(x, "is_homogeneous"))
+        return(.get_property(x, "is_homogeneous"))
+    length(unique(.domain(x))) == 1L
+}
+
 relation_is_crisp <-
 function(x)
 {

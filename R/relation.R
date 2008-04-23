@@ -52,6 +52,67 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
     }
 }
 
+homorelation <-
+function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
+{
+    if(sum(is.null(incidence), is.null(graph), is.null(charfun)) != 2L)
+        stop("Need exactly one of 'incidence', 'graph', and 'charfun'.")
+
+    if(!is.null(domain)) {
+        arity <- length(domain)
+
+        ## merge domain labels
+        domain <- unique(unlist(domain))
+
+        ## recycle domain for charfun-generators
+        if (!is.null(charfun))
+            domain <- rep(list(domain), arity)
+    } else {
+        if(!is.null(graph)) {
+            ## merge domain labels
+            domain <- unique(unlist(graph))
+
+            ## for data frame graphs, fix domain names
+            if(!is.null(graph) && is.data.frame(graph))
+                names(graph) <- rep("X", ncol(graph))
+        } else if(!is.null(incidence)) {
+            dn <- dimnames(incidence)
+
+            ## merge domain labels taken from array dimnames
+            domain <- unique(unlist(dn))
+
+            ## match merged domain against actual labels
+            ind <- Map(match, list(domain), dn)
+
+            ## span target array using indices
+            incidence <- do.call("[", c(list(incidence), ind))
+
+            ## replace all NAs produced with 0
+            incidence[is.na(incidence)] <- 0
+        }
+    }
+
+    R <- relation(domain = domain, incidence = incidence,
+                  graph = graph, charfun = charfun)
+    .set_property(R, "is_homogeneous", TRUE)
+}
+
+endorelation <-
+function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
+{
+    if ((!is.null(incidence) && length(dim(incidence)) != 2L)
+        || (!is.null(graph)
+            && is.data.frame(graph) && ncol(graph) != 2L)
+        || (!is.null(graph)
+            && is.set(graph)
+            && any(sapply(graph, length) != 2L))
+        || (!is.null(charfun) && length(domain) != 2L ))
+        stop("Relation is not binary.")
+    R <- homorelation(domain = domain, incidence = incidence,
+                      graph = graph, charfun = charfun)
+    .set_property(R, "is_endorelation", TRUE)
+}
+
 ### extract functions
 "[.relation" <-
 function(x, ...)
@@ -106,7 +167,7 @@ function(x)
     UseMethod("as.relation")
 
 ## Obviously.
-as.relation.relation <- .identity
+as.relation.relation <- identity
 
 ## Logical vectors are taken as unary relations (predicates).
 as.relation.logical <-

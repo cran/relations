@@ -81,7 +81,7 @@ function(x)
 as.relation_ensemble.default <-
 function(x)
     relation_ensemble(x)
-as.relation_ensemble.relation_ensemble <- .identity
+as.relation_ensemble.relation_ensemble <- identity
 
 ### * Methods
 

@@ -6,6 +6,7 @@
 \alias{relation_is_bijective}
 \alias{relation_is_binary}
 \alias{relation_is_complete}
+\alias{relation_is_endorelation}
 \alias{relation_is_strongly_complete}
 \alias{relation_is_match}
 \alias{relation_is_coreflexive}
@@ -13,6 +14,7 @@
 \alias{relation_is_endorelation}
 \alias{relation_is_equivalence}
 \alias{relation_is_functional}
+\alias{relation_is_homogeneous}
 \alias{relation_is_injective}
 \alias{relation_is_interval_order}
 \alias{relation_is_irreflexive}
@@ -51,6 +53,7 @@ relation_is_crisp(x)
 relation_is_endorelation(x)
 relation_is_equivalence(x)
 relation_is_functional(x)
+relation_is_homogeneous(x)
 relation_is_injective(x)
 relation_is_interval_order(x)
 relation_is_irreflexive(x)
@@ -81,8 +84,10 @@ relation_is_quasiorder(x)
 \details{
   A binary relation is a relation with arity 2.
 
-  An \emph{endorelation} \eqn{R} on a set \eqn{X} is a relation with
-  domain \eqn{D(R) = (X, X)}, i.e., a binary relation on \eqn{X}.
+  A relation \eqn(R) on a set \eqn{X} is called
+  \emph{homogeneous} iff \eqn{D(R) = (X, \dots, X)}
+
+  An \emph{endorelation} is a binary homogeneous relation.
 
   For a crisp binary relation, let us write \eqn{x R y} iff \eqn{(x, y)}
   is contained in \eqn{R}.

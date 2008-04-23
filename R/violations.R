@@ -25,7 +25,7 @@ function(x, family = c("T", "transitive",
 .non_transitivity <-
 function(I)
     sum(sapply(seq_len(nrow(I)),
-               function(j) outer(I[, j], I[j, ], .T.) - I) > 1)
+               function(j) pmax(outer(I[, j], I[j, ], .T.) - I, 0)))
 
 .non_symmetry <-
 function(I)

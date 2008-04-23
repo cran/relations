@@ -186,6 +186,12 @@ function(relations, weights, control)
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "C", weights, control)
 
+### ** .relation_consensus_symdiff_R
+
+.relation_consensus_symdiff_R <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "R", weights, control)
+
 ### ** .relation_consensus_symdiff_E
 
 .relation_consensus_symdiff_E <-
@@ -437,6 +443,10 @@ set_relation_consensus_method("SD/S",
                               exponent = 1)
 set_relation_consensus_method("SD/T",
                               .relation_consensus_symdiff_T,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("SD/R",
+                              .relation_consensus_symdiff_R,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("manhattan",
