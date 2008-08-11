@@ -1,6 +1,7 @@
 \name{relation}
 \alias{relation}
 \alias{endorelation}
+\alias{homorelation}
 \alias{as.relation}
 \alias{is.relation}
 \alias{dual}
@@ -10,7 +11,8 @@
 \usage{
 relation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 endorelation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
-as.relation(x)
+homorelation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
+as.relation(x, \dots)
 is.relation(x)
 }
 \arguments{
@@ -32,6 +34,8 @@ is.relation(x)
     predicate function taking \eqn{k} arguments, with \eqn{k} equal to
     the arity of the relation.}
   \item{x}{an \R object.}
+  \item{\dots}{Further arguments passed to \code{as.relation}
+    methods (currently not used for those defined in the relations package).}
 }
 \details{
   Given \eqn{k} sets of objects \eqn{X_1}, \ldots, \eqn{X_k}, a
@@ -59,8 +63,10 @@ is.relation(x)
 
   Relations with arity 2, 3, and 4 are typically referred to as
   \emph{binary}, \emph{ternary}, and \emph{quaternary} relations,
-  respectively.  An \emph{endorelation} on \eqn{X} (or binary relation
-  \emph{over} \eqn{X}) is a binary relation with domain \eqn{(X, X)}.
+  respectively.  A \emph{homorelation} on \eqn{X} is a relation with
+  homogeneous domain, i.e. \eqn{(X, X, \dots, X)}.
+  An \emph{endorelation} on \eqn{X} (or binary relation
+  \emph{over} \eqn{X}) is a binary homorelation.
   See \link[relation_is_endorelation]{predicates} for the most important
   types of endorelations.
   
@@ -102,7 +108,7 @@ is.relation(x)
   and negation \eqn{N}) into account.  Let \eqn{R}, \eqn{R_1} and
   \eqn{R_2} be binary relations with appropriate domains.  Then the
   memberships for \eqn{(x, y)} of the complement, inverse and dual of
-  \eqn{R} are \eqn{N(R(x, y)}, \eqn{R(y, x)} and \eqn{N(R(y, x))},
+  \eqn{R} are \eqn{N(R(x, y))}, \eqn{R(y, x)} and \eqn{N(R(y, x))},
   respectively.  The membership of \eqn{(x, y)} for the composition of
   \eqn{R_1} and \eqn{R_2} is \eqn{\max_z T(R_1(x, z), R_2(z, y))}.
   
@@ -137,8 +143,8 @@ is.relation(x)
   There is a \code{\link[plot.relation]{plot}} method for certain crisp
   endorelations provided that package \pkg{Rgraphviz} is available.
 
-  The summary method applies all \link{predicates} available
-  and returns a logical vector with the result.
+  The \code{summary} method applies all \link{predicates} available
+  and returns a logical vector with the corresponding results.
 }
 \seealso{
   \code{\link{relation_incidence}} for obtaining incidences;
@@ -165,7 +171,7 @@ as.tuple(R)
 ## (the domain labels are missing).
 R <- relation(graph = set(tuple(1,2), tuple(1,3), tuple(2,4), tuple(3,4)))
 ## equivalent to:
-## relation(graph = list(1:2, c(1,3), c(2,4), c(3,4)))
+## relation(graph = list(c(1,2), c(1,3), c(2,4), c(3,4)))
 relation_incidence(R)
 
 ## Explicitly specifying the domain:

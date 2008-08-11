@@ -64,7 +64,8 @@ relation_graph(R)
 relation_graph(R) <- set(pair("a","B"), pair("a","C"), pair("b","C"))
 relation_graph(R)
 ## the same in data frame format:
-relation_graph(R) <- data.frame(c("a", "a", "b"), c("B", "C", "C"))
+relation_graph(R) <-
+    data.frame(c("a", "a", "b"), c("B", "C", "C"), stringsAsFactors = FALSE)
 relation_graph(R)
 
 }

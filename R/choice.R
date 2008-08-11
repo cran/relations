@@ -1,12 +1,9 @@
 relation_choice <-
 function(x, method = "symdiff", control = list(), ...)
 {
-    ## <FIXME>
-    ## Do we really want the ... argument?
     dots <- list(...)
     control[names(dots)] <- dots
-    ## </FIXME>
-    
+
     relations <- as.relation_ensemble(x)
 
     if(!length(relations))
@@ -66,17 +63,18 @@ function(relations, control)
     C <- .make_symdiff_winners_constraints(n, k, sparse = sparse)
     ## Underlying set of objects to choose from.
     ## (Domain of the choice problem.)
-    D <- relation_domain(relations)[[1L]]
+    D <- as.list(.domain(relations)[[1L]])
     ## Solve.
     if(all)
         return(.find_all_relation_symdiff_winners(alpha, beta, C, n, D,
                                                   solver, control))
-    integer_positions <-
-        .n_of_symdiff_choice_v_variables(n) + seq_len(n)
+    binary_positions <- .n_of_symdiff_choice_v_variables(n) + seq_len(n)
     out <- solve_MILP(MILP(obj, list(C$mat, C$dir, C$rhs),
-                           integer_positions, maximum = TRUE),
+                           types = .make_types(length(obj),
+                                               B = binary_positions),
+                           maximum = TRUE),
                       solver, control)
-    u <- out$solution[integer_positions]
+    u <- out$solution[binary_positions]
     as.set(D[u == 1])
 }
 
@@ -126,9 +124,9 @@ function(n, k, sparse = FALSE)
         mat[cbind(ind, p_u_i)] <- -1
         mat[cbind(ind, p_u_j)] <- -1
         ##            u_i       <= 1
-        mat[cbind(3 * n_v + seq_len(n_u), n_v + seq_len(n_u))] <- 1
+        mat[cbind(3L * n_v + seq_len(n_u), n_v + seq_len(n_u))] <- 1
         ##            sum(u_i)  == k
-        mat[3 * n_v + n_u + 1, n_v + seq_len(n_u)] <- 1
+        mat[3L * n_v + n_u + 1L, n_v + seq_len(n_u)] <- 1
     }
     else {
         mat_i <- c(rep.int(ind, 2L),
@@ -169,7 +167,7 @@ function(alpha, beta, C, n, domain, solver, control)
     node <- function(u, beta, value = 0, done = FALSE)
         list(u = u, beta = beta, value = value, done = done)
 
-    int_pos <- function(n)
+    bin_pos <- function(n)
         .n_of_symdiff_choice_v_variables(n) + seq_len(n)
 
     ## Constraints for the full problem.
@@ -179,14 +177,15 @@ function(alpha, beta, C, n, domain, solver, control)
 
     ## Value function for given problem instance.
     V <- function(obj, mat, dir, rhs, pos) {
-        out <- solve_MILP(MILP(obj, list(mat, dir, rhs), pos,
+        out <- solve_MILP(MILP(obj, list(mat, dir, rhs),
+                               types = .make_types(length(obj), B = pos),
                                maximum = TRUE),
                           solver, control)
         if(out$status != 0) return(-Inf)
         out$objval
     }
     ## Determine the optimal value.
-    Vopt <- V(c(alpha, beta), mat, dir, rhs, int_pos(n))
+    Vopt <- V(c(alpha, beta), mat, dir, rhs, bin_pos(n))
     ## <FIXME>
     ## Check status.
     ## </FIXME>
@@ -198,7 +197,7 @@ function(alpha, beta, C, n, domain, solver, control)
         if(node$done) return(node)
         tol <- 1e-10
         len <- length(rhs)
-        pos <- int_pos(n - 1L)
+        pos <- bin_pos(n - 1L)
         u <- node$u
         beta <- node$beta
         value <- node$value
@@ -238,12 +237,12 @@ function(alpha, beta, C, n, domain, solver, control)
         ## Move from n to n - 1.
         ## Reduce constraints.
         n_v <- .n_of_symdiff_choice_v_variables(n)
-        ind <- seq(from = n_v - n + 2, to = n_v)
+        ind <- seq(from = n_v - n + 2L, to = n_v)
         ## Drop elements from objective.
         delta <- alpha[ind]
         alpha <- alpha[-ind]
         ## Drop elements from constraints.
-        rind <- c(ind, ind + n_v, ind + 2 * n_v, 3 * n_v + n)
+        rind <- c(ind, ind + n_v, ind + 2L * n_v, 3L * n_v + n)
         mat <- mat[-rind, -c(ind, ncol(mat)), drop = FALSE]
         dir <- dir[-rind]
         rhs <- rhs[-rind]

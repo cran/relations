@@ -1,9 +1,11 @@
 ### * plot.relation
 
 plot.relation <-
-function(x, attrs = list(graph = list(rankdir = "BT"),
-                         edge = list(arrowsize = "0"),
-                         node = list(shape = "rectangle", fixedsize = FALSE)),
+function(x,
+         attrs = list(graph = list(rankdir = "BT"),
+                      edge = list(arrowsize = "0"),
+                      node = list(shape = "rectangle", fixedsize = FALSE)),
+         limit = 6L, labels = NULL,
          ...)
 {
     if(!relation_is_endorelation(x))
@@ -19,22 +21,35 @@ function(x, attrs = list(graph = list(rankdir = "BT"),
     ## if x is a preference, use dual of complement instead
     if (!relation_is_antisymmetric(x))
       x <- t(!x)
-    
+
     ## compute transitive reduction to avoid cluttered graph,
     ## and extract incidence
-    I <- unclass(relation_incidence(transitive_reduction(x)))
+    I <- unclass(relation_incidence(transitive_reduction(x), limit = limit))
 
     ## transform to graphViz-compatible incidence
-    dimnames(I) <- labels(I)
+    if (is.null(labels))
+        labels <- labels(I)
+    dimnames(I) <- lapply(labels, .make_unique_labels)
+
     plot(as(I, "graphNEL"), attrs = attrs, ...)
 }
+
+.make_unique_labels <-
+function(x)
+{
+    I <- which(duplicated(x))
+    x[I] <- paste(x[I], ".", seq_along(I), sep="")
+    x
+}
+
 
 ### * plot.relation_ensemble
 
 plot.relation_ensemble <-
-function(x, attrs = list(graph = list(rankdir = "BT"), 
-                         edge = list(arrowsize = "0"), 
-                         node = list(shape = "rectangle", fixedsize = FALSE)),
+function(x, attrs = list(list(graph = list(rankdir = "BT"),
+                              edge = list(arrowsize = "0"),
+                              node = list(shape = "rectangle",
+                                          fixedsize = FALSE))),
          ..., layout = NULL)
 {
     ## Why not?
@@ -49,6 +64,8 @@ function(x, attrs = list(graph = list(rankdir = "BT"),
                     && (relation_is_antisymmetric(e)
                         || relation_is_complete(e))))))
         stop("Plotting only available for ensembles of antisymmetric or complete transitive crisp relations.")
+    ## Make things a bit more efficient.
+    x <- unclass(x)
     if(!require("Rgraphviz"))
         stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
     ## Number of elements.
@@ -72,18 +89,19 @@ function(x, attrs = list(graph = list(rankdir = "BT"),
     else
         par(mfcol = c(nr, nc))
     on.exit(par(op))
+    attrs <- rep(attrs, length.out = length(x))
     for(i in seq_along(x)) {
         ## if x is a preference, use dual of complement instead
         if (!relation_is_antisymmetric(x[[i]]))
           x[[i]] <- t(!x[[i]])
-        
+
         ## compute transitive reduction to avoid cluttered graph
         ## and extract incidence
         I <- unclass(relation_incidence(transitive_reduction(x[[i]])))
-        dimnames(I) <- labels(I)
-        plot(as(I, "graphNEL"), attrs = attrs, ...)
+        dimnames(I) <- lapply(labels(I), .make_unique_labels)
+        plot(as(I, "graphNEL"), attrs = attrs[[i]], ...)
     }
-}    
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

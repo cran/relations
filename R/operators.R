@@ -1,3 +1,25 @@
+### methods for closure and reduction
+
+closure.relation <-
+function(x, operation = c("transitive", "reflexive"), ...)
+{
+    operation <- match.arg(operation)
+    if (operation == "transitive")
+        transitive_closure(x)
+    else
+        reflexive_closure(x)
+}
+
+reduction.relation <-
+function(x, operation = c("transitive", "reflexive"), ...)
+{
+    operation <- match.arg(operation)
+    if (operation == "transitive")
+        transitive_reduction(x)
+    else
+        reflexive_reduction(x)
+}
+
 ### * transitive_reduction
 
 transitive_reduction <-

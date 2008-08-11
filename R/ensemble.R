@@ -1,8 +1,13 @@
 ## Relation ensembls, cf. the cluster ensembles in CLUE.
 
 ## Note that ensembles are not implemented as containers.
-## Hence, properties (if at all) are stored as attributes with "hidden"
-## (leading dot) names.
+## Properties are stored as a list of .Meta attributes.
+## <NOTE>
+## It might be nice to encapsulate this a bit more by providing a
+## high-level .Meta() accessor.  For containers, .get_properties() does
+## this; we could have a .Meta() generic with corresponding methods, or
+## make relation_properties() generic.
+## </NOTE>
 ##
 ## <NOTE>
 ## It is possible to conveniently iterate through containers via
@@ -34,14 +39,18 @@ relation_ensemble <-
 function(..., list = NULL)
 {
     relations <- lapply(c(list(...), list), as.relation)
-    if(!length(relations))
+    if(!(len <- length(relations)))
         stop("Empty relation ensembles cannot be created.")
-    domains <- lapply(relations, relation_domain)
-    if(!all(sapply(domains, .domain_is_equal, domains[[1L]])))
-        stop("All relations must have the same domain.")
-    relations <-
-        lapply(relations, .canonicalize_relation, domains[[1L]])
-     .make_relation_ensemble_from_list_and_meta(relations)
+    domains <- lapply(relations, .domain)
+    if(len > 1L) {
+        ## Check whether all domains are the same.
+        if(!all(sapply(domains, .domain_is_equal, domains[[1L]]))) {
+            ## Only need to test domains[-1L] of course, but it is not
+            ## clear whether doing so really saves time.
+            stop("All relations must have the same domain.")
+        }
+    }
+    .make_relation_ensemble_from_list_and_meta(relations)
 }
 
 .make_relation_ensemble_from_list_and_meta <-
@@ -89,7 +98,7 @@ as.relation_ensemble.relation_ensemble <- identity
 function(x, i)
 {
     ## Make subscripting empty ensembles a noop.
-    if(length(x) == 0L) return(x)
+    if(!length(x)) return(x)
     ## What should we do when subscripting out of bounds?
     ## For lists, this gives NULL elements.  We could convert them to
     ## null relations (all incidences zero).  For now, we remove them.
@@ -100,45 +109,40 @@ function(x, i)
 
 ## <NOTE>
 ## We could have a [[ method which ensures that the ensemble metadata
-## (arity, domain and size) get tucked on.  But should we?
+## (arity, domain and size) get tucked on.  But why should we?
 # </NOTE>
 
-c.relation_ensemble <-
-function(..., recursive = FALSE)
+`[<-.relation_ensemble` <-
+function(x, i, value)
 {
-    relations <- unlist(lapply(list(...), as.relation_ensemble),
-                        recursive = FALSE)
-    relation_ensemble(list = relations)
+    value <- as.relation_ensemble(value)
+    if(!.domain_is_equal(.domain(x), .domain(value)))
+        stop("All relations must have the same domain.")
+    y <- NextMethod("[<-")
+    .make_relation_ensemble_from_list_and_meta(y, attr(x, ".Meta"))
 }
 
-t.relation_ensemble <-
-function(x)
-    .make_relation_ensemble_from_list_and_meta(lapply(x, t),
-                                               attr(x, ".Meta"))
-
-rep.relation_ensemble <-
-function(x, times, ...)
-    .make_relation_ensemble_from_list_and_meta(NextMethod("rep"),
-                                               attr(x, ".Meta"))
-
-unique.relation_ensemble <-
-function(x, incomparables = FALSE, ...)
-    .make_relation_ensemble_from_list_and_meta(NextMethod("unique"),
-                                               attr(x, ".Meta"))
-
-print.relation_ensemble <-
-function(x, ...)
+`[[<-.relation_ensemble` <-
+function(x, i, value)
 {
-    len <- length(x)
-    if(len > 0L)
-        writeLines(sprintf(ngettext(len,
-                                    "An ensemble of %d relation of size %s.",
-                                    "An ensemble of %d relations of size %s."),
-                           len,
-                           paste(.size(x), collapse = " x ")))
-    else
-        writeLines(gettext("An empty relation ensemble."))
-    invisible(x)
+    value <- as.relation(value)
+    if(!.domain_is_equal(.domain(x), .domain(value)))
+        stop("All relations must have the same domain.")
+    y <- NextMethod("[[<-")
+    .make_relation_ensemble_from_list_and_meta(y, attr(x, ".Meta"))
+}
+
+`$<-.relation_ensemble` <-
+function(x, i, value)
+{
+    value <- as.relation(value)
+    if(!.domain_is_equal(.domain(x), .domain(value)))
+        stop("All relations must have the same domain.")
+    ## This does not work:
+    ##    y <- NextMethod("$<-")
+    y <- unclass(x)
+    y[[i]] <- value
+    .make_relation_ensemble_from_list_and_meta(y, attr(x, ".Meta"))
 }
 
 Ops.relation_ensemble <-
@@ -187,12 +191,69 @@ function(..., na.rm = FALSE)
            })
 }
 
+all.equal.relation_ensemble <-
+function(target, current, check.attributes = TRUE, ...)
+{
+    ## For now, try avoiding set comparisons via all.equal (for the
+    ## domain information stored in the .Meta attributes).
+    attr(target, ".Meta") <- NULL
+    attr(current, ".Meta") <- NULL
+    NextMethod("all.equal")
+    ## For now, could also directly call
+    ##    all.equal.list(target, current,
+    ##                   check.attributes = check.attributs, ...)
+}
+
 as.list.relation_ensemble <-
 function(x, ...)
 {
-    attributes(x) <- NULL
+    ## We used to have
+    ##   attributes(x) <- NULL
+    ##   x
+    ## but why should we drop names?
+    x <- unclass(x)
+    attr(x, ".Meta") <- NULL
     x
 }
+
+c.relation_ensemble <-
+function(..., recursive = FALSE)
+{
+    relations <- unlist(lapply(list(...), as.relation_ensemble),
+                        recursive = FALSE)
+    relation_ensemble(list = relations)
+}
+
+print.relation_ensemble <-
+function(x, ...)
+{
+    len <- length(x)
+    if(len)
+        writeLines(sprintf(ngettext(len,
+                                    "An ensemble of %d relation of size %s.",
+                                    "An ensemble of %d relations of size %s."),
+                           len,
+                           paste(.size(x), collapse = " x ")))
+    else
+        writeLines(gettext("An empty relation ensemble."))
+    invisible(x)
+}
+
+rep.relation_ensemble <-
+function(x, times, ...)
+    .make_relation_ensemble_from_list_and_meta(NextMethod("rep"),
+                                               attr(x, ".Meta"))
+
+t.relation_ensemble <-
+function(x)
+    .make_relation_ensemble_from_list_and_meta(lapply(x, t),
+                                               attr(x, ".Meta"))
+
+unique.relation_ensemble <-
+function(x, incomparables = FALSE, ...)
+    .make_relation_ensemble_from_list_and_meta(NextMethod("unique"),
+                                               attr(x, ".Meta"))
+
 
 ### * Utilities
 
@@ -218,25 +279,29 @@ function(x)
 
 ### ** .canonicalize_relation_ensemble
 
-.canonicalize_relation_ensemble <-
-function(x, D)
-{
-    ## Canonicalize a relation ensemble to have its domain elements use
-    ## the same *internal* order as the elements of D (assuming that the
-    ## domain of the ensemble is known to equal D in the sense that the
-    ## respective elements are the same sets).
-    ##
-    ## Note that relation ensembles are always canonicalized.
+## <NOTE>
+## This should no longer be needed now that creating relations always
+## canonicalizes to the unique set order.
+## .canonicalize_relation_ensemble <-
+## function(x, D)
+## {
+##     ## Canonicalize a relation ensemble to have its domain elements use
+##     ## the same *internal* order as the elements of D (assuming that the
+##     ## domain of the ensemble is known to equal D in the sense that the
+##     ## respective elements are the same sets).
+##     ##
+##     ## Note that relation ensembles are always canonicalized.
 
-    if(length(x) == 0L) return(x)
-    pos <- .match_domain_components(lapply(D, as.set),
-                                    relation_domain(x))
-    if(!any(sapply(pos, is.unsorted))) return(x)
-    x <- lapply(x, .canonicalize_relation, D, pos)
-    size <- lapply(D, length)
-    meta <- list(arity = length(size), domain = D, size = size)
-    .make_relation_ensemble_from_list_and_meta(x, meta)
-}
+##     if(!length(x)) return(x)
+##     pos <- .match_domain_components(lapply(D, as.list),
+##                                     lapply(.domain(x), as.list))
+##     if(!any(sapply(pos, is.unsorted))) return(x)
+##     x <- lapply(x, .canonicalize_relation, D, pos)
+##     size <- lapply(D, length)
+##     meta <- list(arity = length(size), domain = D, size = size)
+##     .make_relation_ensemble_from_list_and_meta(x, meta)
+## }
+## </NOTE>
 
 ### ** .is_ensemble_of_endorelations
 
@@ -245,7 +310,10 @@ function(x)
 {
     ## Check whether we have an ensemble of endorelations (assuming that
     ## ensembles are known to have identical identical domains).
-    relation_is_endorelation(x[[1L]])
+    if(length(x))
+        relation_is_endorelation(x[[1L]])
+    else
+        length(unique(.domain(x))) == 1L
 }
 
 ### ** .is_ensemble_of_crisp_relations

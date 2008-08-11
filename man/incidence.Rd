@@ -5,10 +5,12 @@
   Determine the incidences of a relation.
 }
 \usage{
-relation_incidence(x)
+relation_incidence(x, \dots)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}}.}
+  \item{\dots}{Further arguments passed to the labeling functon used for
+    creating the dimnames of the incidence matrix.}
 }
 \value{
   For a \eqn{k}-ary relation, a \eqn{k}-dimensional numeric array with

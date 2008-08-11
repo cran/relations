@@ -28,12 +28,12 @@ R
 "\%|\%" <- relation_charfun(R)
 
 ## Use it.
-2 \%|\% 6
-c(2, 3, 4) \%|\% 6
-2 \%|\% c(2, 3, 6)
+2L \%|\% 6L
+2:4 \%|\% 6L
+2L \%|\% c(2:3, 6L)
 
 ## This also works:
-"\%|\%"(2, 6)
-## (and generally does for arities > 2).
+"\%|\%"(2L, 6L)
+## (and more generally does for arities > 2).
 }
 \keyword{math}

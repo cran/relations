@@ -21,7 +21,7 @@ function(x, method = NULL, weights = 1, control = list(), ...)
     if(!is.function(method)) {
         if(!inherits(method, "relation_consensus_method")) {
             ## Get the method definition from the registry.
-            if(!is.character(method) || (length(method) != 1))
+            if(!is.character(method) || (length(method) != 1L))
                 stop("Invalid 'method' argument.")
             entry <- get_relation_consensus_method(method)
             if(is.null(entry))
@@ -51,7 +51,7 @@ function(relations, weights, control)
 .relation_consensus_Copeland <-
 function(relations, weights, control)
     .relation_consensus_score(relations, weights, control,
-                              relation_scores, "differential")
+                              relation_scores, "Copeland")
 
 ### ** .relation_consensus_score
 
@@ -82,6 +82,32 @@ function(relations, weights, control, FUN, ...)
                  is_transitive = TRUE,
                  scores = scores)
     .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
+}
+
+### ** .relation_consensus_majority
+
+.relation_consensus_majority <-
+function(relations, weights, control)
+{
+    p <- control$p
+    if(is.null(p)) p <- 1 / 2
+    ## Add some sanity checking for p eventually.
+
+    incidences <- lapply(relations, relation_incidence)
+    weights <- rep(weights, length.out = length(relations))
+
+    I <- (.weighted_sum_of_arrays(incidences, weights, na.rm = TRUE) /
+          .weighted_sum_of_arrays(lapply(incidences, is.finite),
+                                  weights))
+    I <- if(p == 1)
+        I == 1
+    else
+        I > p
+
+    ## (Could add a tie-breaking mechanism a la Condorcet, with an
+    ## option for finding all solutions.)
+
+    .make_relation_from_domain_and_incidence(.domain(relations), I)
 }
 
 ### ** .relation_consensus_CS
@@ -160,18 +186,38 @@ function(relations, weights, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
+    all <- control$all
+    if(is.null(all)) all <- FALSE
+
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
-    diag(M) <- 1                        # Ensure reflexivity.
     I <- M >= 0                         # We do not break ties (>=).
     objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- list(is_endorelation = TRUE,
                  is_complete = TRUE,
-                 is_reflexive = TRUE,
-                 is_antisymmetric = all(M != 0),
                  objval = objval)
-    ## (We do not know about transitivity without computing ...) 
-    .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
+    if(!all) {
+        meta <- c(meta,
+                  list(is_reflexive = all(diag(M) >= 0),
+                       is_antisymmetric = all(M != 0)))
+        ## According to the way the default solution is defined.
+        ## We do not know about transitivity without computing ...
+    } else {
+        I <- list(I)
+        ind <- which(M == 0, arr.ind = TRUE)
+        ## Recursively generate all solutions by using 0 or 1 for the
+        ## zero entries of M.
+        splitter <- function(x, i, j) {
+            y <- x
+            ## By default we use 1 for the zero entries of M.
+            y[i, j] <- 0
+            list(x, y)
+        }
+        for(k in seq_len(nrow(ind)))
+            I <- do.call("c", lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
+    }
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
 ### ** .relation_consensus_symdiff_A
@@ -185,12 +231,6 @@ function(relations, weights, control)
 .relation_consensus_symdiff_C <-
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "C", weights, control)
-
-### ** .relation_consensus_symdiff_R
-
-.relation_consensus_symdiff_R <-
-function(relations, weights, control)
-    .relation_consensus_symdiff(relations, "R", weights, control)
 
 ### ** .relation_consensus_symdiff_E
 
@@ -233,6 +273,12 @@ function(relations, weights, control)
     else
         .relation_consensus_symdiff(relations, "P", weights, control)
 }
+
+### ** .relation_consensus_symdiff_R
+
+.relation_consensus_symdiff_R <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "R", weights, control)
 
 ### ** .relation_consensus_symdiff_S
 
@@ -278,8 +324,7 @@ function(relations, weights, control)
     weights <- weights / sum(weights)
     incidences <- lapply(relations, relation_incidence)
     ## Incidences of the consensus relation are the weighted means.
-    I <- array(rowSums(mapply("*", incidences, weights)),
-               dim = dim(incidences[[1L]]))
+    I <- .weighted_sum_of_arrays(incidences, weights)
     meta <-
         list(objval =
              .relation_consensus_euclidean_objval(I, incidences, weights))
@@ -340,6 +385,12 @@ function(relations, weights, control)
         .relation_consensus_symdiff(relations, "P", weights, control, TRUE)
 }
 
+### ** .relation_consensus_euclidean_R
+
+.relation_consensus_euclidean_R <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "R", weights, control, TRUE)
+
 ### ** .relation_consensus_euclidean_S
 
 .relation_consensus_euclidean_S <-
@@ -351,7 +402,6 @@ function(relations, weights, control)
 .relation_consensus_euclidean_T <-
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "T", weights, control, TRUE)
-
 
 ### * Relation consensus method registration
 
@@ -365,9 +415,7 @@ function(relations, weights, control)
 ##       objects(db)
 ##   get_method_from_db <-
 ##   function(db, name)
-##   {
 ##       db[[name]]
-##   }
 ##   put_method_into_db <-
 ##   function(db, name, value)
 ##       db[[name]] <- value
@@ -399,6 +447,8 @@ set_relation_consensus_method("Borda",
                               .relation_consensus_Borda)
 set_relation_consensus_method("Copeland",
                               .relation_consensus_Copeland)
+set_relation_consensus_method("majority",
+                              .relation_consensus_majority)
 ## Note that constructive methods do not necessarily give central
 ## relations.
 set_relation_consensus_method("CS",
@@ -437,16 +487,16 @@ set_relation_consensus_method("SD/P",
                               .relation_consensus_symdiff_P,
                               dissimilarity = "symdiff",
                               exponent = 1)
+set_relation_consensus_method("SD/R",
+                              .relation_consensus_symdiff_R,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
 set_relation_consensus_method("SD/S",
                               .relation_consensus_symdiff_S,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("SD/T",
                               .relation_consensus_symdiff_T,
-                              dissimilarity = "symdiff",
-                              exponent = 1)
-set_relation_consensus_method("SD/R",
-                              .relation_consensus_symdiff_R,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("manhattan",
@@ -483,6 +533,10 @@ set_relation_consensus_method("euclidean/O",
                               exponent = 2)
 set_relation_consensus_method("euclidean/P",
                               .relation_consensus_euclidean_P,
+                              dissimilarity = "euclidean",
+                              exponent = 2)
+set_relation_consensus_method("euclidean/R",
+                              .relation_consensus_euclidean_R,
                               dissimilarity = "euclidean",
                               exponent = 2)
 set_relation_consensus_method("euclidean/S",
@@ -568,9 +622,7 @@ function(incidences, weights)
     w <- rep(weights, length.out = length(incidences))
     if(is.relation_ensemble(incidences))
         incidences <- lapply(incidences, relation_incidence)
-    M <- array(rowSums(mapply("*", incidences, w)),
-               dim = dim(incidences[[1L]]),
-               dimnames = dimnames(incidences[[1L]]))
+    M <- .weighted_sum_of_arrays(incidences, w)
     2 * M - sum(w)
 }
 

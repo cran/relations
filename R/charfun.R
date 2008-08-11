@@ -7,10 +7,10 @@ function(x, components = FALSE)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    local({I <- relation_incidence(x)
-           D <- relation_domain(x)
+    local({I <- .incidence(x)
+           D <- .domain(x)
            a <- .arity(x)
-           if (!components)
+           f <- if (!components)
                function(...) {
                    args <- list(...)
                    if (a == 2L) {
@@ -21,14 +21,29 @@ function(x, components = FALSE)
                    if(length(args) != a)
                        stop("Wrong number of arguments.")
                    t <- .split_into_components(do.call("cbind", args))
-                   as.logical(I[rbind(mapply(match, t, D))])
+                   ind <- rbind(mapply(sets:::.exact_match, t, D))
+                   if (any(is.na(ind)))
+                       stop("Out-of-domain elements.")
+                   as.logical(I[ind])
                }
            else
                function(t) {
                    t <- .split_into_components(t)
-                   as.logical(I[rbind(mapply(match, t, D))])
+                   ind <- rbind(mapply(sets:::.exact_match, t, D))
+                   if (any(is.na(ind)))
+                       stop("Out-of-domain elements.")
+                   as.logical(I[ind])
                }
+           structure(f, class = "relation_charfun")
        })
+}
+
+print.relation_charfun <-
+function(x, ...)
+{
+    writeLines(gettextf("The characteristic function of a relation with arity %d.",
+                        environment(x)$a))
+    invisible(x)
 }
 
 ### Local variables: ***

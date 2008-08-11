@@ -20,12 +20,14 @@ function(x, margin = NULL)
 
     ## Generally, incidences are aggregated using the T-conorm.
     ## However, for crisp relations, we use 'any' for performance reasons.
-    S.FUN <- if(relation_is_crisp(x))
+    I <- relation_incidence(x)
+    S.FUN <- if(relation_is_crisp(x)) {
+        mode(I) <- "logical"
         any
-    else
+    } else
         function(i) Reduce(.S., i)
-    I <- apply(relation_incidence(x), ind, S.FUN)
-    .make_relation_from_domain_and_incidence(.domain(x)[ind], I)
+    .make_relation_from_domain_and_incidence(.domain(x)[ind],
+                                             apply(I, ind, S.FUN))
 }
 
 ### * relation_selection (= subset)
@@ -57,23 +59,22 @@ function(x, y, ...)
 {
     if (missing(y)) return(x)
     l <- list(...)
-    if (length(l) > 0L)
+    if(length(l))
         return(Recall(x, Recall(y, ...)))
     T.FUN <- if(relation_is_crisp(x) && relation_is_crisp(y))
         "*"
     else
         .T.
-    .make_relation_from_domain_and_incidence(c(relation_domain(x),
-                                               relation_domain(y)),
-                                             outer(relation_incidence(x),
-                                                   relation_incidence(y),
+    .make_relation_from_domain_and_incidence(c(.domain(x), .domain(y)),
+                                             outer(.incidence(x),
+                                                   .incidence(y),
                                                    T.FUN)
                                              )
 }
 
 ### * relation_union
 
-## For union of relations, we also allow non-identical domain levels.
+## For union of relations, we also allow non-identical domain labels.
 
 "%U%" <-
 relation_union <-
@@ -82,7 +83,7 @@ function(x, y, ...)
     ## handle 1 and more than 2 arguments
     if (missing(y)) return(x)
     l <- list(...)
-    if (length(l) > 0L)
+    if(length(l))
         return(Recall(x, Recall(y, ...)))
 
     ## check arities
@@ -97,12 +98,13 @@ function(x, y, ...)
     Dxy <- Map(set_union, Dx, Dy)
 
     ## extract incidences for combined domain
-    Ix <- Iy <- array(0, sapply(Dxy, length), lapply(Dxy, unlist))
+    Ix <- Iy <- array(0, sapply(Dxy, length),
+                      lapply(Dxy, LABELS, quote = FALSE))
     Ix <- do.call("[<-", c(list(Ix),
-                           lapply(Dx, function(i) as.character(unlist(i))),
+                           lapply(Dx, LABELS, quote = FALSE),
                            list(relation_incidence(x))))
     Iy <- do.call("[<-", c(list(Iy),
-                           lapply(Dy, function(i) as.character(unlist(i))),
+                           lapply(Dy, LABELS, quote = FALSE),
                            list(relation_incidence(y))))
 
     ## and put things together
@@ -115,8 +117,14 @@ function(x, y, ...)
 ## For the intersection, we also allow non-identical domain levels.
 
 relation_intersection <-
-function(x, y)
+function(x, y, ...)
 {
+    ## handle 1 and more than 2 arguments
+    if (missing(y)) return(x)
+    l <- list(...)
+    if(length(l))
+        return(Recall(x, Recall(y, ...)))
+
     ## check arities
     ## (use relation_domain() instead of .domain() here,
     ## since we need tuples of sets for the combination.)
@@ -134,9 +142,9 @@ function(x, y)
 
     ## extract incidences for common domain
     Ix <- do.call("[", c(list(relation_incidence(x)),
-                         lapply(Dxy, function(i) as.character(unlist(i)))))
+                         lapply(Dxy, LABELS, quote = FALSE)))
     Iy <- do.call("[", c(list(relation_incidence(y)),
-                         lapply(Dxy, function(i) as.character(unlist(i)))))
+                         lapply(Dxy, LABELS, quote = FALSE)))
 
     ## and put things together
     .make_relation_from_domain_and_incidence(Dxy, .T.(Ix, Iy))
@@ -152,7 +160,16 @@ function(x, y = NULL)
         return(.make_relation_from_domain_and_incidence(.domain(x),
                                                         .N.(.incidence(x))))
 
-    relation_intersection(x, relation_complement(y))
+    Dx <- .domain(x)
+    Dy <- .domain(y)
+    if (length(Dx) != length(Dy))
+        stop("Relation arity mismatch.")
+
+    ## extract incidences for common domain
+    I <- do.call("[", c(list(.incidence(y)), Map(sets:::.exact_match, Dx, Dy)))
+    I[is.na(I)] <- 0
+    relation_intersection(x,
+        relation_complement(.make_relation_from_domain_and_incidence(Dx, I)))
 }
 
 ### * relation_symdiff

@@ -1,6 +1,37 @@
+Changes to 0.4:
+
+  o SD fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
+    addition to lp_solve, and optionally use sparse constraint matrices
+
+  o more methods added to relation_violations().
+    optionally, return all tuples violating a property.
+
+  o relation_scores() now also works for relation ensembles
+
+  o [tansitive,reflexive]_[closure,reduction]() are now available as
+    methods for closure and reduction generics (provided by sets)
+
+  o During creation of relations, domains are converted to sets and
+    incidences are canonicalized to match the internal order of the domain
+
+  o relation_consensus() can now compute all solutions for the Condorcet
+    method, and gains a 'majority' method
+
+  o subassignment method for ensembles added
+
+  o set_intersection() accepts any number of arguments
+
+  o as.relation() generic now has a ... argument
+
+  o the 'attrs' argument in plot.relation_ensemble() is now a list, so
+    that the Rgraphviz parameters can be changed in each plot
+    individually
+
+  o all.equal() methods added for relations and ensembles
+
 Changes to 0.3:
 
-  o rank method is default for relation_scores
+  o rank method is default for relation_scores()
 
   o the relations in the SVM Benchmark data are now all reflexive
 
@@ -16,7 +47,7 @@ Changes to 0.3:
 
   o fitters for Cook-Seiford method and Euclidean consensus added
 
-  o new summary method for relations which computes all implemented
+  o new summary() method for relations which computes all implemented
     predicates
 
   o relation_choice() for choosing "winner" objects based on an ensemble
@@ -44,7 +75,7 @@ Changes to 0.2:
 
   o Summary methods for tuples and sets added
 
-  o Ops and t - methods for the relation_ensemble class added
+  o Ops and t() methods for the relation_ensemble class added
 
   o plot.relation() fixed 
     (used to plot the dual, now changes the graphviz layout)

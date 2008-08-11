@@ -51,6 +51,10 @@ function(x)
 function(x)
     x$domain
 
+as.tuple.relation_domain <-
+function(x)
+    structure(x, class = "tuple")
+
 print.relation_domain <-
 function(x, ...)
 {
@@ -59,7 +63,7 @@ function(x, ...)
     s <- if (is.null(n))
       ""
     else
-      paste(format(as.tuple(n)), " ", sep = "")
+      paste(format(as.tuple(n), quote = FALSE), " ", sep = "")
 
     writeLines(sprintf("%s %swith elements:", sets:::.ntuple(x, A = TRUE), s))
     for (i in x) print(i)

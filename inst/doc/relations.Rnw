@@ -150,11 +150,11 @@ R <- relation(domain = list(1 : 10, 1 : 10), charfun = divides)
 R
 "%|%" <- relation_charfun(R)
 
-2 %|% 6
-c(2, 3, 4) %|% 6
-2 %|% c(2, 3, 6)
+2L %|% 6L
+2:4 %|% 6L
+2L %|% c(2:3, 6L)
 
-"%|%"(2, 6)
+"%|%"(2L, 6L)
 @
 
 Quite a few \codefun{relation\_is\_\var{foo}} predicate functions are
@@ -203,21 +203,26 @@ the functions provided (see Table~\ref{tab:combinations}).
   \centering
   \begin{tabular}{|l|l|}
     \hline
-    reflexive & $x R x$ for all $x$.\\
-    irreflexive & there is no $x$ such that $x R x$.\\
-    coreflexive & $x R y$ implies $x = y$.\\
-    symmetric & $x R y$ implies $y R x$.\\
-    asymmetric & $x R y$ implies that not $y R x$.\\
-    antisymmetric & $x R y$ and $y R x$ imply that
-    $x = y$.\\
-    transitive & $x R y$ and $y R z$ imply that
-    $x R z$.\\
-    complete & for all $x$ and $y$, $x R y$ or
-    $y R x$.\\
+    reflexive & $x R x$ for all $x$. \\
+    irreflexive & there is no $x$ such that $x R x$. \\
+    coreflexive & $x R y$ implies $x = y$. \\
+    symmetric & $x R y$ implies $y R x$. \\
+    asymmetric & $x R y$ implies that not $y R x$. \\
+    antisymmetric & $x R y$ and $y R x$ imply that $x = y$. \\
+    transitive & $x R y$ and $y R z$ imply that $x R z$. \\
+    complete & for all distinct $x$ and $y$, $x R y$ or $y R x$. \\
+    strongly complete & for all $x$ and $y$, $x R y$ or $y R x$. \\
+    negatively transitive & not $x R y$ and not $y R z$ imply that not
+      $x R z$. \\
+    Ferrers & $x R y$ and $z R w$ imply $x R w$ or $y R z$. \\
+    semitransitive & $x R y$ and $y R z$ imply $x R w$ or $w R z$. \\
+    trichotomous & exactly one of $x R y$, $y R x$, or $x = y$ holds. \\
+    Euclidean & $x R y$ and $x R z$ imply $y R z$. \\
     \hline
   \end{tabular}
   \caption{Some properties \var{bar} of endorelations---the predicates
-    in \pkg{relations} are \texttt{relation\_is\_\var{bar}()}.}
+    in \pkg{relations} are \texttt{relation\_is\_\var{bar}()} (with
+    spaces replaced by underscores).}
   \label{tab:endorelations}
 \end{table}
 
@@ -225,16 +230,18 @@ the functions provided (see Table~\ref{tab:combinations}).
   \centering
   \begin{tabular}{|l|l|}
     \hline
-    preorder & reflexive and transitive.\\
-    quasiorder & the same as preorder.\\
-    equivalence & a symmetric preorder.\\
-    weak order & complete and transitive.\\
-    preference & the same as weak order.\\
-    partial order & an antisymmetric preorder.\\
-    strict partial order & irreflexive, transitive and antisymmetric.\\
-    linear order & a complete partial order.\\
-    strict linear order & a complete strict partial order.\\
-    tournament & complete and antisymmetric.\\
+    preorder & reflexive and transitive. \\
+    quasiorder & the same as preorder. \\
+    equivalence & a symmetric preorder. \\
+    weak order & complete and transitive. \\
+    preference & the same as weak order. \\
+    partial order & an antisymmetric preorder. \\
+    strict partial order & irreflexive, transitive and antisymmetric. \\
+    linear order & a complete partial order. \\
+    strict linear order & a complete strict partial order. \\
+    tournament & complete and antisymmetric. \\
+    interval order & complete and Ferrers. \\
+    semiorder & a semitransitive interval order. \\
     \hline
   \end{tabular}
   \caption{Some categories \var{baz} of endorelations---the predicates

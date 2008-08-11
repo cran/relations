@@ -13,8 +13,8 @@
 relation_pclust(x, k, method, m = 1, weights = 1, control = list())
 }
 \arguments{
-  \item{x}{an ensemble of relations, or something coercible to that (see
-    \code{\link{relation_ensemble}}).}
+  \item{x}{an ensemble of relations, or something which can be coerced
+    to this (see \code{\link{relation_ensemble}}).}
   \item{k}{an integer giving the number of classes to be used in the
     partition.}
   \item{method}{the consensus method to be employed, see
@@ -31,7 +31,7 @@ relation_pclust(x, k, method, m = 1, weights = 1, control = list())
   \item{control}{a list of control parameters.  See \bold{Details}.}
 }
 \value{
-  An object of class \code{"\link[clue:cl_partition]{cl_partition}"}.
+  An object of class \code{\link[clue:cl_partition]{cl_partition}}.
 }
 \details{
   For \eqn{m = 1}, a generalization of the Lloyd-Forgy variant of the

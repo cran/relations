@@ -6,12 +6,12 @@
   endorelations and other codings.
 }
 \usage{
-transform_incidences(x, from = c("PO","SO","01","-1+1"),
-                        to = c("PO","SO","01","-1+1"))
+transform_incidences(x, from = c("PO", "SO", "01", "-1+1"),
+                        to = c("PO", "SO", "01", "-1+1"))
 }
 \arguments{
   \item{x}{An incidence matrix from an endorelation.}
-  \item{from, to}{The coding scheme (see details).}
+  \item{from, to}{The coding scheme (see \sQuote{Details}).}
 }
 \details{
 In the following, we consider an incidence matrix \eqn{X} with cells
@@ -44,7 +44,7 @@ represented by 0, and \eqn{x_{jk} = -1} if \emph{not} \eqn{a_j R b_k}.
   \code{\link{relation_incidence}}.
 }
 \examples{
-x <- relation(domain = 1:4,
+x <- relation(domain = c(1,2,3,4),
               graph = set(pair(1,2), pair(4,2), pair(1,3), pair(1,4),
                           pair(3,2), pair(2,1)))
 inc <- relation_incidence(x)

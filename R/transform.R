@@ -1,13 +1,15 @@
-transform_incidences <- function(x, from = c("PO","SO","01","-1+1"),
-                                    to = c("PO","SO","01","-1+1")) {
+transform_incidences <-
+function(x, from = c("PO","SO","01","-1+1"),
+         to = c("PO","SO","01","-1+1"))
+{
   from <- match.arg(from)
   to <- match.arg(to)
 
   ## check endorelation
-  if ((length(dim(x)) != 2) || (length(unique(dimnames(x))) != 1))
+  if ((length(dim(x)) != 2L) || (length(unique(dimnames(x))) != 1L))
     stop("Transformations only available for endorelations.")
 
-  ## convert `from` to canonical `PO` representation
+  ## convert 'from' to canonical 'PO' representation
   SO_2_PO <- function(z) {
     tmp <- z + (z == t(z))
     tmp[is.na(tmp)] <- 0

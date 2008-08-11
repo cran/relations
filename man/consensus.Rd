@@ -67,7 +67,9 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       times that \eqn{x R_b y} is no less than the weighted number of
       times that this is not the case.  Even when aggregating linear
       orders, this can lead to intransitive consensus solutions
-      (\dQuote{effet Condorcet}).}
+      (\dQuote{effet Condorcet}).  One can obtain a relation ensemble
+      with \emph{all} consensus relations by setting the control
+      parameter \code{all} to \code{TRUE}.}
     \item{\code{"CS"}}{the consensus method of Cook and Seiford (1978)
       which determines a linear order minimizing the criterion function
       \eqn{L} with \eqn{d} as generalized Cook-Seiford (ranking)
@@ -84,8 +86,8 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       \describe{
 	\item{\code{E}}{equivalence relations: reflexive, symmetric, and
 	  transitive.}
-	\item{\code{L}}{linear orders: complete, antisymmetric, and
-	  transitive.}
+	\item{\code{L}}{linear orders: complete, reflexive,
+	  antisymmetric, and transitive.}
 	\item{\code{O}}{partial orders: reflexive, antisymmetric and
 	  transitive.}
 	\item{\code{P}}{complete preorders (preference relations,
@@ -99,13 +101,22 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
 	\item{\code{R}}{tRansitive relations.}
       }
       Consensus relations are determined by reformulating the consensus
-      problem as an integer program (for the relation incidences), which
-      is solved via package \pkg{lpSolve}.  See Hornik and Meyer (2007)
-      for details.
+      problem as an integer program (for the relation incidences), see
+      Hornik and Meyer (2007) for details.  The solver employed can be
+      specified via the control argument \code{solver}, with currently
+      possible values \code{"lpsolve"}, \code{"glpk"}, \code{"symphony"}
+      or \code{"cplex"} or a unique abbreviation thereof, specifying to
+      use the solvers from packages \pkg{lpSolve} (default),
+      \pkg{Rglpk}, \pkg{Rsymphony}, or \pkg{Rcplex}, respectively.
+      If control option \code{sparse} is true, a sparse formulation of
+      the integer program is used, which is typically more efficient and
+      will become the default eventually.
 
       For fitting equivalences and preferences (cases \code{E} and
-      \code{P}) it is possible to specify a maximal number of classes
-      \eqn{k} using the control parameter \code{k}.
+      \code{P}) it is possible to specify the number of classes \eqn{k}
+      using the control parameter \code{k}.  For fitting preferences,
+      one can also specify the number of elements in the classes via
+      control parameter \code{l}.
 
       Additional constraints on the incidences of the consensus solution
       can be given via the control parameter \code{constraints}, in the
@@ -133,6 +144,12 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       \eqn{p = 2} over a suitable family of crisp endorelations as
       indicated by \var{F}, with available families control parameters
       as for methods \code{"SD/\var{F}"}.
+    }
+    \item{\code{"majority"}}{a generalized majority method for which the
+      consensus relation contains of all tuples occurring with a
+      relative frequency of more than \eqn{100 p} percent (100 percent
+      if \eqn{p = 1}).  The fraction \eqn{p} can be specified via the
+      control parameter \code{p}.  By default, \eqn{p = 1/2} is used.
     }
   }
 }

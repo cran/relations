@@ -3,8 +3,8 @@
 \alias{relation_classes}
 \title{Relation Equivalence Classes}
 \description{
-  Provide class ids (classes) for an equivalence relation, or the indifference
-  relation of a weak order.
+  Provide class ids or classes, respectively, for an equivalence
+  relation or the indifference relation of a weak order.
 }
 \usage{
 relation_class_ids(x)
@@ -19,11 +19,12 @@ relation_classes(x)
   a numeric vector with class ids corresponding to the classes of the
   equivalence relation, or the indifference relation of the weak order
   with ids ordered according to increasing preference.
+  
   For \code{relation_classes}, an object of class
-  \code{"relation_classes_of_objects"}, which is a
-  named list of character vectors, where the list
-  components correspond to the classes, the component names to the class
-  ids, and each character vector to the object labels of each class.
+  \code{relation_classes_of_objects}, which is a named list of character
+  vectors, where the list components correspond to the classes, the
+  component names to the class ids, and each character vector to the
+  object labels of each class.
   
 }
 \examples{

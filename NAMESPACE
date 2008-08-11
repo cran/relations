@@ -1,13 +1,13 @@
 importFrom("cluster", "silhouette")
 importFrom("stats", "median")
-importFrom("sets", "as.set")
-importFrom("sets", "as.gset")
-importFrom("sets", "as.tuple")
+importFrom("sets", "as.set", "as.gset", "as.tuple", "closure",
+           "make_set_with_order", "reduction")
 
 export("as.relation",
        "as.relation_ensemble",
        "dual",
        "endorelation",
+       "homorelation",
        "is.relation",
        "is.relation_ensemble",
        "reflexive_reduction",
@@ -29,6 +29,7 @@ export("as.relation",
        "relation_graph<-",
        "relation_incidence",
        "relation_incidence<-",
+       "relation_is_Euclidean",
        "relation_is_Ferrers",
        "relation_is_antisymmetric",
        "relation_is_asymmetric",
@@ -62,6 +63,7 @@ export("as.relation",
        "relation_is_symmetric",
        "relation_is_tournament",
        "relation_is_transitive",
+       "relation_is_trichotomous",
        "relation_is_weak_order",
        "relation_is_preorder",
        "relation_is_quasiorder",
@@ -77,20 +79,27 @@ export("as.relation",
        "transitive_closure"
        )
 
-S3method("dual", "relation")
-S3method("[", "relation_ensemble")
 S3method("[", "relation")
+S3method("[", "relation_ensemble")
+S3method("[<-", "relation_ensemble")
+S3method("[[<-", "relation_ensemble")
+S3method("$<-", "relation_ensemble")
 S3method("Ops", "relation")
 S3method("Ops", "relation_ensemble")
+S3method("relation_scores", "relation")
+S3method("relation_scores", "relation_ensemble")
 S3method("Summary", "relation")
 S3method("Summary", "relation_ensemble")
+S3method("all.equal", "relation")
+S3method("all.equal", "relation_ensemble")
 S3method("as.list", "relation_ensemble")
 S3method("c", "relation_ensemble")
 S3method("cut", "relation")
-S3method("t", "relation_ensemble")
+S3method("dim", "relation")
 S3method("plot", "relation")
 S3method("plot", "relation_ensemble")
 S3method("print", "relation")
+S3method("print", "relation_charfun")
 S3method("print", "relation_classes_of_objects")
 S3method("print", "relation_domain")
 S3method("print", "relation_graph")
@@ -102,7 +111,13 @@ S3method("print", "summary.relation")
 S3method("rep", "relation_ensemble")
 S3method("summary", "relation")
 S3method("t", "relation")
+S3method("t", "relation_ensemble")
 S3method("unique", "relation_ensemble")
+
+S3method("closure", "relation")
+S3method("reduction", "relation")
+
+S3method("dual", "relation")
 
 S3method("as.relation", "character")
 S3method("as.relation", "cl_partition")
@@ -185,5 +200,16 @@ S3method("as.simple_triplet_matrix", "matrix")
 S3method("as.simple_triplet_matrix", "simple_triplet_matrix")
 S3method("cbind", "simple_triplet_matrix")
 S3method("dim", "simple_triplet_matrix")
+S3method("dimnames", "simple_triplet_matrix")
+S3method("duplicated", "simple_triplet_matrix")
 S3method("rbind", "simple_triplet_matrix")
 S3method("t", "simple_triplet_matrix")
+S3method("unique", "simple_triplet_matrix")
+
+S3method("[", "simple_sparse_array")
+if(getRversion() >= "2.8.0")
+    S3method("as.array", "simple_sparse_array")
+S3method("as.simple_sparse_array", "array")
+S3method("as.simple_sparse_array", "simple_sparse_array")
+S3method("dim", "simple_sparse_array")
+S3method("dimnames", "simple_sparse_array")

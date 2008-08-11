@@ -1,22 +1,31 @@
 \name{scores}
 \encoding{UTF-8}
 \alias{relation_scores}
+\alias{relation_scores.relation}
+\alias{relation_scores.relation_ensemble}
 \title{Relation Scores}
 \description{
-  Compute scores for the tuples of an endorelation.
+  Compute scores for the tuples of (ensemles of) endorelations.
 }
 \usage{
-relation_scores(x,
+\method{relation_scores}{relation}(x,
                 method = c("ranks", "Barthelemy/Monjardet", "Borda",
-                           "Kendall", "Wei", "differential"),
+                           "Kendall", "Wei", "differential", "Copeland"),
                 normalize = FALSE, \dots)
+\method{relation_scores}{relation_ensemble}(x,
+                method = c("Borda", "Kendall", "differential", "Copeland"),
+                normalize = FALSE,
+                weights = 1, \dots)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}},
     representing an endorelation.}
-  \item{method}{character string indicating the method (see details).}
+  \item{method}{character string indicating the method (see
+    \sQuote{Details}).}
   \item{normalize}{logical indicating whether the score vector should be
     normalized to sum up to 1.}
+  \item{weights}{Numeric vector of weights used in incidence
+    aggregation, recycled as needed.}
   \item{\dots}{further arguments to be passed to methods.}
 }
 \details{
@@ -30,29 +39,32 @@ relation_scores(x,
   \eqn{R} is a preference relation with a \eqn{\le} intepretation,
   \eqn{D(a)} is the difference between the numbers of objects dominated
   by \eqn{a} (i.e., \eqn{< a}) and dominating \eqn{a} (i.e., \eqn{> a}),
-  as ``ties'' cancel out.
+  as \dQuote{ties} cancel out.
 
-  Available built-in score methods are as follows:
+  \code{relation_score()} is generic with methods for relations and
+  relation ensembles. Available built-in score methods for the
+  relation method are as follows:
   
   \describe{
     \item{\code{"ranks"}}{generalized ranks.  A linear transformation of
       the differential \eqn{D} to the range from 1 to \eqn{n}.  An
       additional argument \code{decreasing} can be used to specify the
       order of the ranks.  By default, or if \code{decreasing} is true,
-      objects are ranked according to decreasing differential (``from
-      the largest to the smallest in the \eqn{\le} preference context)
-      using \eqn{(n + 1 - D(a)) / 2}.  Otherwise, if \code{decreasing}
-      is false, objects are ranked via \eqn{(n + 1 + D(a)) / 2} (``from
-      the smallest to the largest).  See Regenwetter and Rykhlevskaia
-      (2004) for more details on generalized ranks.
+      objects are ranked according to decreasing differential
+      (\dQuote{from the largest to the smallest} in the \eqn{\le}
+      preference context) using \eqn{(n + 1 - D(a)) / 2}.
+      Otherwise, if \code{decreasing} is false, objects are ranked via
+      \eqn{(n + 1 + D(a)) / 2} (\dQuote{from the smallest to the largest}).
+      See Regenwetter and Rykhlevskaia (2004) for more details on
+      generalized ranks.
     }
     \item{\code{"Barthelemy/Monjardet"}}{\eqn{(M(a) + N(a) - 1) / 2},
       where \eqn{M(a)} and \eqn{N(a)} are the numbers of objects \eqn{b}
       such that \eqn{b R a}, and \eqn{b R a} and not \eqn{a R b},
       respectively.  If \eqn{R} is a \eqn{\le} preference relation, we
       get the number of dominated objects plus half the number of the
-      equivalent objects minus 1 (the ``usual'' average ranks minus one
-      if the relation is complete).  See Barthélemy and Monjardet
+      equivalent objects minus 1 (the \dQuote{usual} average ranks minus
+      one if the relation is complete).  See Barthélemy and Monjardet
       (1981).
     }
     \item{\code{"Borda"}, \code{"Kendall"}}{the out-degrees.
@@ -62,10 +74,16 @@ relation_scores(x,
       eigenvalue of the incidence matrix of the complement of \eqn{R}.
       See Wei (1952).
     }
-    \item{\code{"differential"}}{the differentials, equivalent to the
-      negative \emph{net flow} of Bouyssou (1992).}
+    \item{\code{"differential"}, \code{"Copeland"}}{the differentials,
+    equivalent to the negative \emph{net flow} of Bouyssou (1992), and
+    also to the Copeland scores.}
   }
 
+  For relation ensembles, currently only
+  \code{"differential"}/\code{"Copeland"} and
+  \code{"Borda"}/\code{"Kendall"} are implemented. They are computed on
+  the aggregated incidences of the ensembles' relations.
+  
   Definitions of scores for \dQuote{preference relations} \eqn{R} are
   somewhat ambiguous because \eqn{R} can encode \eqn{\le} or \eqn{\ge}
   (or strict variants thereof) relationships (and all such variants are
@@ -124,5 +142,18 @@ cbind(
       Wei = relation_scores(R, method = "Wei", normalize = TRUE)
      )
 
+## Example taken from Cook and Cress (1992, p.136)
+## Note that the results indicated for the Copeland scores have
+## (erroneously?) been computed from the *unweighted* votes.
+## Also, they report the votes as strict preferences, so we
+## create the dual relations.
+
+D <- letters[1:5]
+X <- as.relation(ordered(D, levels = c("b", "c", "a", "d", "e")))
+Y <- as.relation(ordered(D, levels = c("d", "a", "e", "c", "b")))
+Z <- as.relation(ordered(D, levels = c("e", "c", "b", "a", "d")))
+E <- relation_ensemble(X, Y, Z)
+relation_scores(E, "Copeland")
+relation_scores(E, "Borda", weights = c(4, 3, 2))
 }
 \keyword{math}

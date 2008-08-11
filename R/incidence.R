@@ -3,14 +3,19 @@
 ## * relation_incidence
 
 relation_incidence <-
-function(x)
+function(x, ...)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    I <- .incidence(.get_representation(x))
-    structure(as.array(I),
-              dimnames = lapply(relation_domain(x), LABELS),
-              class = "relation_incidence")
+    I <- as.array(.incidence(.get_representation(x)))
+    structure(I,
+              dimnames = lapply(.domain(x), LABELS, ..., quote = FALSE),
+              class = c("relation_incidence",
+                        if(length(dim(I)) == 2L) "matrix" else "array"))
+    ## We used to have class = "relation_incidence", but then there is
+    ## no dispatch to matrix methods.  As older versions might have set
+    ## class to "relation_incidence" for the internal representation, we
+    ## cannot simply do class = c("relation_incidence", class(I)) ...
 }
 
 .incidence <-
@@ -55,7 +60,7 @@ function(x, value)
 .is_valid_relation_incidence <-
 function(x)
 {
-    if(length(x) == 0L) return(FALSE)
+    if(!length(x)) return(FALSE)
     x <- as.array(x)
     if(any(dim(x) == 0L)) return(FALSE)
     (is.logical(x)

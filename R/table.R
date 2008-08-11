@@ -15,12 +15,12 @@ print.relation_table <-
 function(x, ...)
 {
     y <- as.data.frame(x)
-    if (length(row.names(y)) == 0L)
-      print.data.frame(y)
+    if(!length(row.names(y)))
+        print.data.frame(y)
     else {
-      y <- as.matrix(format(y, justify = "left"))
-      rownames(y) <- rep.int("", nrow(y))
-      print(y, quote = FALSE)
+        y <- as.matrix(format(y, justify = "left"))
+        rownames(y) <- rep.int("", nrow(y))
+        print(y, quote = FALSE)
     }
     invisible(x)
 

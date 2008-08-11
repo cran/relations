@@ -48,7 +48,7 @@ function(x, value)
 print.relation_graph <-
 function(x, ...)
 {
-    writeLines("Relation graph:\n")
+    writeLines("Relation graph:")
     if (length(x) < 1L)
        writeLines("The empty set.")
     else {
@@ -95,13 +95,15 @@ function(x)
 .make_relation_graph_components.set <-
 function(x)
 {
+    if (length(x) < 1L) return(list())
     l <- length(as.list(x)[[1L]])
+    if (l < 1L) return(list())
     if (!all(sapply(x, length) == l))
         stop("All elements need to be of same length!")
     ## <NOTE>
     ## We could try making this more efficient by building a big
     ## list and slicing into components ...
-    lapply(seq_len(l), function(i) sapply(x, function(j) j[[i]]))
+    lapply(seq_len(l), function(i) lapply(x, function(j) j[[i]]))
     ## </NOTE>
 }
 
@@ -113,8 +115,8 @@ function(x)
 .make_relation_graph_components.relation <-
 function(x)
 {
-    I <- relation_incidence(x)
-    D <- relation_domain(x)
+    I <- .incidence(x)
+    D <- .domain(x)
     ind <- as.logical(c(I))
     ## Set missings to TRUE (will index NAs in domain).
     ind[is.na(ind)] <- TRUE
@@ -138,7 +140,7 @@ function(x)
 
 .make_relation_graph_components.data.frame <-
 function(x)
-    as.list(x)
+    if(nrow(x)) as.list(x) else list()
 
 .make_relation_graph_components.matrix <-
 function(x)

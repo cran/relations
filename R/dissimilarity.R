@@ -49,14 +49,13 @@ function(x, y = NULL, method = "symdiff", ...)
     else if(is.function(method))
         method_name <- "user-defined method"
     else
-        stop("Invalid argument 'method'.")
+        stop("Invalid 'method' argument.")
 
     if(!is.null(y)) {
         y <- as.relation_ensemble(y)
         D <- relation_domain(x)
         if(!.domain_is_equal(relation_domain(y), D))
             stop("All relations must have the same domain.")
-        y <- .canonicalize_relation_ensemble(y, D)
         ## Build a cross-proximity object of cross-dissimilarities.
         ## <FIXME>
         ## Not yet: if we don't want to require clue, all we can return
@@ -75,13 +74,14 @@ function(x, y = NULL, method = "symdiff", ...)
     ## Not yet: if we don't want to require clue, all we can return
     ## is a dist object ...
     n <- length(x)
-    d <- vector("list", length = n - 1)
+    d <- vector("list", length = n - 1L)
     ind <- seq_len(n)
     while(length(ind) > 1L) {
         j <- ind[1L]
         ind <- ind[-1L]
         d[[j]] <- sapply(x[ind], method, x[[j]])
     }
+    ## </FIXME>
     ## Grr ... see clue:::.dist_from_vector().
     structure(unlist(d), Size = n, Labels = names(x),
               class = "dist", description = method_name)
@@ -159,7 +159,7 @@ function(x, y, score = NULL, Delta = 1)
     if(is.null(score)) {
         s_x <- relation_scores(x)
         s_y <- relation_scores(y)
-    } else if(is.character(score) && (length(score) == 1)) {
+    } else if(is.character(score) && (length(score) == 1L)) {
         s_x <- relation_scores(x, score)
         s_y <- relation_scores(y, score)
     } else if(is.function(score)) {

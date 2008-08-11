@@ -30,7 +30,7 @@ relation_selection(x, subset)
 relation_cartesian(x, y, \dots)
 relation_union(x, y, \dots)
 relation_complement(x, y)
-relation_intersection(x, y)
+relation_intersection(x, y, \dots)
 relation_symdiff(x, y)
 relation_division(x, y)
 relation_remainder(x, y)
@@ -45,7 +45,8 @@ relation_antijoin(x, y, \dots)
   \item{subset}{Expression resulting in a logical vector of length equal
     to the number of tuples in the graph.}
   \item{\dots}{For \code{relation_cartesian} and \code{relation_union}:
-    relation objects; else: parameters passed to \code{\link[base]{merge}}.}
+    relation objects; otherwise, parameters passed to
+    \code{\link[base]{merge}}.}
 }
 \details{
   These functions provide functionality similar to the corresponding
@@ -108,10 +109,17 @@ relation_antijoin(x, y, \dots)
   projected to the attributes of \eqn{X} (\eqn{Y}).
   Thus, it yields all tuples of \eqn{X}
   (\eqn{Y}) \emph{not} participating in the join of \eqn{X} and \eqn{Y}. 
+
+  The operators \code{\%><\%}, \code{\%=><\%}, \code{\%><=\%},
+  \code{\%=><=\%}, \code{\%|><\%}, \code{\%><|\%}, \code{\%|><|\%},
+  \code{\%|>\%}, \code{\%<|\%}, and \code{\%U\%} can be used for the
+  cartesian product, left outer join, right outer join, full outer join,
+  left semi-join, right semi-join, join, left antijoin, right antijoin,
+  and union, respectively.
   
 }
 \references{
-  E. F. Codd (1970).
+  E. F. Codd (1970),
   A relational model of data for large shared data banks.
   \emph{Communications of the ACM}, \bold{13}(6), 377--387. 
 }

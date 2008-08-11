@@ -1,5 +1,6 @@
 \name{plot}
 \alias{plot.relation}
+\alias{plot.relation_ensemble}
 \title{Visualize Relations}
 \description{
   Visualize certain crisp endorelations by plotting a Hasse Diagram of
@@ -11,12 +12,29 @@
                                edge = list(arrowsize = "0"),
                                node = list(shape = "rectangle",
                                            fixedsize = FALSE)),
+     limit = 6L,
+     labels = NULL,
      ...)
+
+\method{plot}{relation_ensemble}(x,
+     attrs = list(list(graph = list(rankdir = "BT"),
+                                    edge = list(arrowsize = "0"),
+                                    node = list(shape = "rectangle",
+                                                fixedsize = FALSE))),
+     ..., layout = NULL)
 }
 \arguments{
   \item{x}{an \R object inheriting from class \code{\link{relation}} .}
   \item{attrs}{argument passed to the plot method for class
-    \code{\link[graph:graphNEL-class]{graphNEL}}.}
+    \code{\link[graph:graphNEL-class]{graphNEL}}. For the
+    \code{relation_ensemble} method, it is a \emph{list} of such objects,
+    recycled as needed.}
+  \item{limit}{Argument passed to the labeling function creating default
+    labels for the nodes (see \code{\link[sets]{LABELS}}).}
+  \item{labels}{Optional list of character vectors defining unique
+    labels for the nodes.}
+  \item{layout}{integer vector of length 2 specifying the number of rows
+     and columns of the screen layout. If \code{NULL}, the layout is sqare.}
   \item{\dots}{Other arguments passed to the
     \code{\link[graph:graphNEL-class]{graphNEL}} plot method.}
 }

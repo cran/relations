@@ -36,7 +36,8 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
             stop("Only crisp or fuzzy sets allowed.")
         G <- .make_relation_graph_components(graph)
         ## Be nice and recycle domain (useful for endorelations).
-        domain <- rep(domain, length.out = length(G))
+        if (length(G) > 0)
+            domain <- rep(domain, length.out = length(G))
         return(.make_relation_from_domain_and_graph_components(domain, G))
     }
 
@@ -66,7 +67,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 
         ## recycle domain for charfun-generators
         if (!is.null(charfun))
-            domain <- rep(list(domain), arity)
+            domain <- rep.int(list(domain), arity)
     } else {
         if(!is.null(graph)) {
             ## merge domain labels
@@ -74,7 +75,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 
             ## for data frame graphs, fix domain names
             if(!is.null(graph) && is.data.frame(graph))
-                names(graph) <- rep("X", ncol(graph))
+                names(graph) <- rep.int("X", ncol(graph))
         } else if(!is.null(incidence)) {
             dn <- dimnames(incidence)
 
@@ -113,47 +114,6 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
     .set_property(R, "is_endorelation", TRUE)
 }
 
-### extract functions
-"[.relation" <-
-function(x, ...)
-{
-    l <- match.call()[-(1:2)]
-    D <- .domain(x)
-    I <- relation_incidence(x)
-    d <- dim(I)
-    dn <- dimnames(I)
-
-    if (length(l) != length(D))
-        stop("Wrong number of arguments.")
-
-    ## complete empty indices
-    l <- lapply(seq_along(l), function(i) {
-        ## check missings
-        if (is.symbol(l[[i]]))
-            return(seq_len(d[i]))
-        ## retrieve parameter
-        e <- eval(l[[i]])
-        ## integer arg -> use as index
-        if (is.numeric(e) && (e %% trunc(e) == 0L))
-            e
-        ## character arg -> match against dimnames labels
-        else if (is.character(e))
-            match(e, dn[[i]])
-        ## else: match against domain elements
-        else
-            match(list(e), D[[i]])
-    })
-
-    ## subset domain
-    D <- Map("[", D, l)
-
-    ## subset incidence matrix using standard method
-    I <- do.call("[", c(list(I), l, drop = FALSE))
-
-    ## return new relation
-    .make_relation_from_domain_and_incidence(D, I)
-}
-
 ### * is.relation
 
 is.relation <-
@@ -163,17 +123,18 @@ function(x)
 ### * as.relation
 
 as.relation <-
-function(x)
+function(x, ...)
     UseMethod("as.relation")
 
 ## Obviously.
-as.relation.relation <- identity
+as.relation.relation <-
+function(x, ...) x
 
 ## Logical vectors are taken as unary relations (predicates).
 as.relation.logical <-
-function(x)
+function(x, ...)
 {
-    D <- if(!is.null(nms <- names(x)))
+    D <- if(!is.null(nms <- names(x)) && !any(duplicated(nms)))
         list(nms)
     else
         NULL
@@ -185,9 +146,38 @@ function(x)
 
 ## Numeric vectors and ordered factors are taken as order relations.
 as.relation.numeric <-
-function(x)
+function(x, ...)
 {
-    D <- if(!is.null(nms <- names(x)))
+    D <- if(!is.null(nms <- names(x)) && !any(duplicated(nms)))
+        list(nms, nms)
+    else if(!any(duplicated(x)))
+        rep.int(list(x), 2L)
+    else
+        NULL
+    I <- outer(x, x, "<=")
+    meta <- if(any(is.na(x)))
+        list(is_endorelation = TRUE,
+             is_complete = NA,
+             is_reflexive = NA,
+             is_antisymmetric = NA,
+             is_transitive = NA)
+    else
+        list(is_endorelation = TRUE,
+             is_complete = TRUE,
+             is_reflexive = TRUE,
+             is_antisymmetric = !any(duplicated(x)),
+             is_transitive = TRUE)
+    .make_relation_from_domain_and_incidence(D, I, meta)
+}
+as.relation.integer <- as.relation.numeric
+
+## This is almost identical to as.relation.numeric, but when generating
+## domains from unique values we use these as is in the numeric case,
+## but use as.character() of these for (ordered) factors.
+as.relation.ordered <-
+function(x, ...)
+{
+    D <- if(!is.null(nms <- names(x)) && !any(duplicated(nms)))
         list(nms, nms)
     else if(!any(duplicated(x)))
         rep.int(list(as.character(x)), 2L)
@@ -208,14 +198,12 @@ function(x)
              is_transitive = TRUE)
     .make_relation_from_domain_and_incidence(D, I, meta)
 }
-as.relation.integer <- as.relation.numeric
-as.relation.ordered <- as.relation.numeric
 
 ## Unordered factors are taken as equivalence relations.
 as.relation.factor <-
-function(x)
+function(x, ...)
 {
-    D <- if(!is.null(nms <- names(x)))
+    D <- if(!is.null(nms <- names(x)) && !any(duplicated(nms)))
         list(nms, nms)
     else if(!any(duplicated(x)))
         rep.int(list(as.character(x)), 2L)
@@ -238,21 +226,21 @@ function(x)
 }
 
 as.relation.character <-
-function(x)
+function(x, ...)
     as.relation(factor(x))
 
 as.relation.set <-
-function(x)
+function(x, ...)
     relation(graph = x)
 
 as.relation.gset <-
-function(x)
+function(x, ...)
     relation(graph = x)
 
 ## Matrices and arrays are taken as incidences of relations, provided
 ## that they are feasible.
 as.relation.matrix <-
-function(x)
+function(x, ...)
 {
     if(!.is_valid_relation_incidence(x))
         stop("Invalid relation incidence.")
@@ -264,7 +252,7 @@ as.relation.array <- as.relation.matrix
 
 ## Data frames are taken as relation graph components.
 as.relation.data.frame <-
-function(x)
+function(x, ...)
 {
     ## Get the domain.
     D <- lapply(x, unique)
@@ -289,16 +277,16 @@ function(x)
 ## mapped) to fuzzy equivalence relations.
 ## </FIXME>
 as.relation.cl_partition <-
-function(x)
+function(x, ...)
     as.relation(factor(clue::cl_class_ids(x)))
 
 ## Package seriation: ser_permutation objects.
 as.relation.ser_permutation <-
-function(x)
+function(x, ...)
 {
     o <- seriation::get_order(x)
     oo <- order(o)
-    D <- if(!is.null(nms <- names(o)[oo]))
+    D <- if(!is.null(nms <- names(o)[oo]) && !any(duplicated(nms)))
         list(nms, nms)
     else
         NULL
@@ -309,6 +297,93 @@ function(x)
 
 
 ### * Relation methods
+
+### ** [.relation
+
+`[.relation` <-
+function(x, ...)
+{
+    l <- match.call()[- (1 : 2)]
+    D <- .domain(x)
+    I <- relation_incidence(x)
+    d <- dim(I)
+    dn <- dimnames(I)
+
+    if (length(l) != length(D))
+        stop("Wrong number of arguments.")
+
+    ## complete empty indices
+    l <- lapply(seq_along(l), function(i) {
+        ## check missings
+        if (identical(l[[i]], alist(, )[[1L]]))
+            return(seq_len(d[i]))
+        ## retrieve parameter
+        e <- eval(l[[i]])
+        ## integer arg -> use as index
+        if (is.numeric(e) && (e == as.integer(e)))
+            e
+        ## character arg -> match against dimnames labels
+        else if (is.character(e))
+            match(e, dn[[i]])
+        ## else: match against domain elements
+        else
+            sets:::.exact_match(list(e), D[[i]])
+    })
+
+    ## subset domain
+    D <- Map(sets:::.set_subset, D, l)
+
+    ## subset incidence matrix using standard method
+    I <- do.call("[", c(list(I), l, drop = FALSE))
+
+    ## return new relation
+    .make_relation_from_domain_and_incidence(D, I)
+}
+
+### ** all.equal.relation
+
+all.equal.relation <-
+function(target, current, check.attributes = TRUE, ...)
+{
+    ## Note that we really do not know what 'current' is.  So we compare
+    ## classes before anything else.
+    if(data.class(target) != data.class(current)) {
+        ## Common msg style, but i18ned.
+        return(gettextf("target is %s, current is %s",
+                        data.class(target), data.class(current)))
+    }
+
+    msg <- if(check.attributes)
+        attr.all.equal(relation_properties(target),
+                       relation_properties(current), ...)
+
+    ## Compare arities, then sizes, then domains.
+    D_t <- relation_domain(target)
+    D_c <- relation_domain(current)
+    a_t <- length(D_t)
+    a_c <- length(D_c)
+    if(a_t != a_c)
+        return(c(msg,
+                 gettextf("Relation arities (%d, %d) differ.",
+                          a_t, a_c)))
+    s_t <- sapply(D_t, length)
+    s_c <- sapply(D_c, length)
+    if(!identical(s_t, s_c))
+        return(c(msg,
+                 gettextf("Relation sizes (%s, %s) differ.",
+                          paste(s_t, collapse = "/"),
+                          paste(s_c, collapse = "/"))))
+    if(!relations:::.domain_is_equal(D_t, D_c)) {
+        ## Maybe use all.equal.set eventually.
+        return(c(msg,
+                 gettextf("Relation domains differ in elements.")))
+    }
+    aei <- all.equal(relation_incidence(target),
+                     relation_incidence(current))
+    if(!identical(aei, TRUE))
+        aei <- c("Relation incidences differ:", aei)
+    c(msg, aei)
+}
 
 ### ** as.data.frame.relation
 
@@ -342,16 +417,16 @@ function(x)
     pair(Domain = D, Graph = G)
 }
 
-as.tuple.relation_domain <-
-function(x)
-    structure(x, class = "tuple")
-
 ### * cut.relation
 
 cut.relation <-
 function(x, level = 1, ...)
     .make_relation_from_domain_and_incidence(.domain(x),
                                              .incidence(x) >= level)
+
+### * dim.relation
+
+dim.relation <- relation_size
 
 ### ** print.relation
 
@@ -444,8 +519,8 @@ function(e1, e2)
            "%%" = return(relation_remainder(e1, e2))
            )
 
-    D1 <- relation_domain(e1)
-    D2 <- relation_domain(e2)
+    D1 <- .domain(e1)
+    D2 <- .domain(e2)
     I1 <- .incidence(e1)
     I2 <- .incidence(e2)
 
@@ -459,9 +534,8 @@ function(e1, e2)
         ## When composing indicidences, need the same *internal* order
         ## for D2[[1L]] as for D1[[2L]].
         if(relation_is_crisp(e1) && relation_is_crisp(e2))
-            I <- ((I1 %*% I2[match(D1[[2L]], D2[[1L]]), ]) > 0)
+            I <- ((I1 %*% I2) > 0)
         else {
-            I2 <- I2[match(D1[[2L]], D2[[1L]]), ]
             n <- ncol(I1)               # Same as nrow(I2).
             I <- matrix(0, nrow = nrow(I1), ncol = ncol(I2))
             for(j in seq_len(n))
@@ -470,8 +544,6 @@ function(e1, e2)
         ## The composition has domain (D1[[1L]], D2[[2L]]) (and
         ## appropriate names).  Information about auto-generation of
         ## domains is currently ignored.
-        D1 <- .domain(e1)
-        D2 <- .domain(e2)
         D <- list(D1[[1L]], D2[[2L]])
         if(!is.null(nms <- names(D1)))
             names(D)[1L] <- nms[1L]
@@ -483,10 +555,6 @@ function(e1, e2)
     ## In the remaining cases, the relations must have equal domains.
     if(!.domain_is_equal(D1, D2))
         stop("Relations need equal domains.")
-    ## Use the same *internal* order for D2 as for D1.
-    I2 <- .reorder_incidence(I2, .match_domain_components(D1, D2))
-    ## And now do it.
-    D <- .domain(e1)
     switch(.Generic,
            "<=" = all(I1 <= I2),
            "<"  = all(I1 <= I2) && any(I1 < I2),
@@ -494,8 +562,8 @@ function(e1, e2)
            ">"  = all(I1 >= I2) && any(I1 > I2),
            "==" = all(I1 == I2),
            "!=" = any(I1 != I2),
-           "&" = .make_relation_from_domain_and_incidence(D, .T.(I1, I2)),
-           "|" = .make_relation_from_domain_and_incidence(D, .S.(I1, I2))
+           "&" = .make_relation_from_domain_and_incidence(D1, .T.(I1, I2)),
+           "|" = .make_relation_from_domain_and_incidence(D1, .S.(I1, I2))
            )
 }
 
@@ -530,6 +598,23 @@ function(D, I)
     dimnames(I) <- NULL
     size <- dim(I)
 
+    ## Now canonicalize by turning all domain components into sets, and
+    ## reordering the incidences accordingly.  Note that components
+    ## which are already sets are already in the canonical order.
+    ind <- sapply(D, is.set)
+    if(!all(ind)) {
+        ## If all components are sets there is nothing we need to do.
+        pos <- vector("list", length = length(D))
+        if(any(ind)) pos[ind] <- lapply(D[ind], seq_along)
+        ind <- !ind
+        sets_with_order <- lapply(D[ind], make_set_with_order)
+        ## Turn all non-set domain components into sets.
+        D[ind] <- lapply(sets_with_order, `[[`, "set")
+        ## Reorder incidences accordingly.
+        pos[ind] <- lapply(sets_with_order, `[[`, "order")
+        I <- do.call(`[`, c(list(I), pos, list(drop = FALSE)))
+    }
+
     structure(list(domain = D,
                    incidence = I,
                    .arity = length(size),
@@ -548,7 +633,7 @@ function(x, meta = NULL)
 ### ** .make_relation_from_domain_and_incidence
 
 .make_relation_from_domain_and_incidence <-
-function(D, I, meta = NULL)
+function(D, I, meta = list())
 {
     ## Canonicalize a valid incidence and determine whether it is crisp
     ## or not.
@@ -563,7 +648,7 @@ function(D, I, meta = NULL)
         is_crisp <- all((I %% 1) == 0)
     }
     R <- .make_relation_by_domain_and_incidence(D, I)
-    meta <- c(list(is_crisp = is_crisp), meta)
+    meta["is_crisp"] <- is_crisp
     .make_relation_from_representation_and_meta(R, meta)
 }
 
@@ -578,16 +663,19 @@ function(D, G)
 
     ## Get the domain.
     if(!is.null(D)) {
-        if(length(D) != length(G))
+        L <- length(G)
+        if((L > 0) && (length(D) != L))
             stop("Relation arity mismatch between domain and graph.")
         D <- lapply(D, as.set)
         ## Check containment.
-        if(!all(mapply(function(s, t) all(s %in% t),
-                       .transform_factors_into_characters(values),
-                       .transform_factors_into_characters(D))))
+        ## FIXME: do we really need/want the factor transformation?
+###         if((L > 0) && !all(mapply(set_is_subset,
+###                                   .transform_factors_into_characters(values),
+###                                   .transform_factors_into_characters(D))))
+###             stop("Invalid graph with out-of-domain elements.")
+        if((L > 0) && !all(mapply(set_is_subset, values, D)))
             stop("Invalid graph with out-of-domain elements.")
-    }
-    else
+    } else
         D <- values
 
     ## Get the incidences.
@@ -605,31 +693,34 @@ function(D, G)
 
 ### ** .canonicalize_relation
 
-.canonicalize_relation <-
-function(R, D, pos = NULL)
-{
-    ## For a relation R with domain known to equal D in the sense that
-    ## the respective domain elements are the same sets (as tested for
-    ## by .domain_is_equal()), "canonicalize" R to have its domain
-    ## elements use the same *internal* order as the elements of D.
-    if(is.null(pos)) {
-        pos <- .match_domain_components(lapply(D, as.set),
-                                        relation_domain(R))
-        ## If already canonical, do nothing.
-        if(!any(sapply(pos, is.unsorted))) return(R)
-    }
-    ## Use the reference domain, and reorder incidences.
-    I <- .reorder_incidence(.incidence(R), pos)
-    meta <- relation_properties(R)
-    .make_relation_from_domain_and_incidence(D, I, meta)
-}
+## <NOTE>
+## This should no longer be needed now that creating relations always
+## canonicalizes to the unique set order.
+## .canonicalize_relation <-
+## function(R, D, pos = NULL)
+## {
+##     ## For a relation R with domain known to equal D in the sense that
+##     ## the respective domain elements are the same sets (as tested for
+##     ## by .domain_is_equal()), "canonicalize" R to have its domain
+##     ## elements use the same *internal* order as the elements of D.
+##     if(is.null(pos)) {
+##         pos <- .match_domain_components(lapply(D, as.list), lapply(.domain(R), as.list))
+##         ## If already canonical, do nothing.
+##         if(!any(sapply(pos, is.unsorted))) return(R)
+##     }
+##     ## Use the reference domain, and reorder incidences.
+##     I <- .reorder_incidence(.incidence(R), pos)
+##     meta <- relation_properties(R)
+##     .make_relation_from_domain_and_incidence(D, I, meta)
+## }
+## </NOTE>
 
 ### ** .make_data_frame_from_list
 
 .make_data_frame_from_list <-
 function(x, row.names = NULL)
 {
-    if(length(x) > 0L) {
+    if(length(x)) {
         len <- length(x[[1L]])
         row.names <- if(!is.null(row.names)) {
             ## Do some checking ...
@@ -670,7 +761,8 @@ function(D, G, size = NULL)
 {
     if(is.null(size)) size <- sapply(D, length)
     I <- array(0, size)
-    I[rbind(mapply(match, G, D))] <- 1
+    if(length(G) > 0)
+        I[rbind(mapply(sets:::.exact_match, G, D))] <- 1
     I
 }
 

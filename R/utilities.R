@@ -2,13 +2,12 @@
 
 .domain_is_equal <-
 function(D1, D2)
-    all(mapply(set_is_equal, lapply(D1, as.set), lapply(D2, as.set)))
-
-### * .is_subsettable
-### FIXME: not needed anymore?
-#.is_subsettable <-
-#function(x)
-#    tryCatch({x[[1L]]; TRUE}, error = function(e) FALSE)
+{
+    ((length(D1) == length(D2))
+     && all(mapply(set_is_equal,
+                   lapply(D1, as.set),
+                   lapply(D2, as.set))))
+}
 
 ### * .is_valid_relation_domain
 
@@ -22,29 +21,24 @@ function(x)
 {
     (is.list(x)
      && (length(x) != 0L)
-     && all(sapply(x, length) > 0L))
+     && all(sapply(x, length) > 0L)
+     && !any(unlist(sapply(x, duplicated))))
 }
 
 ### * .make_set_of_tuples_from_relation_graph_components
 
 .make_set_of_tuples_from_relation_graph_components <-
-sets:::.make_set_of_tuples_from_list_of_lists
+    sets:::.make_set_of_tuples_from_list_of_lists
 
 ### * .match_domain_components
 
-.match_domain_components <-
-function(x, y)
-    mapply(match, x, y, SIMPLIFY = FALSE)
-
-### * .negate
-
-## <FIXME>
-## Remove eventually once we have Negate() or equivalent in a released
-## version of R.
-.negate <-
-function(f)
-    function(...) ! match.fun(f)(...)
-## </FIXME>
+## <NOTE>
+## This should no longer be needed now that creating relations always
+## canonicalizes to the unique set order.
+## .match_domain_components <-
+## function(x, y)
+##     Map(match, x, y)
+## </NOTE>
 
 ### * .offdiag
 
@@ -55,7 +49,14 @@ function(x)
 ### * .relation_meta_db
 
 .relation_meta_db <-
-    list(E =
+    list(
+         A =
+         list(is_endorelation = TRUE,
+              is_antisymmetric = TRUE),
+         C =
+         list(is_endorelation = TRUE,
+              is_complete = TRUE),
+         E =
          list(is_endorelation = TRUE,
               is_reflexive = TRUE,
               is_symmetric = TRUE,
@@ -63,10 +64,16 @@ function(x)
          L =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
+              is_reflexive = TRUE,
               is_antisymmetric = TRUE,
               is_transitive = TRUE),
+         M =
+         list(is_endorelation = TRUE,
+              is_complete = TRUE,
+              is_reflexive = TRUE),
          O =
          list(is_endorelation = TRUE,
+              is_reflexive = TRUE,
               is_antisymmetric = TRUE,
               is_transitive = TRUE),
          P =
@@ -74,32 +81,29 @@ function(x)
               is_complete = TRUE,
               is_reflexive = TRUE,
               is_transitive = TRUE),
+         R =
+         list(is_endorelation = TRUE,
+              is_transitive = TRUE),
+         S =
+         list(is_endorelation = TRUE,
+              is_symmetric = TRUE),
          T =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
               is_irreflexive = TRUE,
               is_antisymmetric = TRUE,
-              is_asymmetric = TRUE),
-         C =
-         list(is_endorelation = TRUE,
-              is_complete = TRUE),
-         A =
-         list(is_endorelation = TRUE,
-              is_antisymmetric = TRUE),
-         S =
-         list(is_endorelation = TRUE,
-              is_symmetric = TRUE),
-         M =
-         list(is_endorelation = TRUE,
-              is_complete = TRUE,
-              is_reflexive = TRUE)
+              is_asymmetric = TRUE)
          )
 
 ### * .reorder_incidence
 
-.reorder_incidence <-
-function(I, pos)
-    do.call("[", c(list(I), pos, list(drop = FALSE)))
+## <NOTE>
+## This should no longer be needed now that creating relations always
+## canonicalizes to the unique set order.
+## .reorder_incidence <-
+## function(I, pos)
+##     do.call("[", c(list(I), pos, list(drop = FALSE)))
+## </NOTE>
 
 ### * .split_into_components
 
@@ -119,12 +123,24 @@ function(x)
 ## <FIXME>
 ## This seems necessary because match() incorrectly (?) handles
 ## comparisons of lists of characters and lists of factors
-.transform_factors_into_characters <-
-function(x)
-    lapply(x,
-           lapply,
-           function(i) if(is.factor(i)) as.character(i) else i)
+## .transform_factors_into_characters <-
+## function(x)
+##     lapply(x,
+##            function(j) as.set(lapply(j, function(i)
+##                               if(is.factor(i)) as.character(i) else i)))
 ## </FIXME>
+
+### * .weighted_sum_of_arrays
+
+.weighted_sum_of_arrays <-
+function(x, w = NULL, na.rm = FALSE)
+{
+    ## Compute weighted sum \sum w_b x_b for conforming arrays x_b.
+    if(is.null(w)) w <- rep.int(1, length(x))
+    array(rowSums(mapply("*", x, w), na.rm = na.rm),
+          dim = dim(x[[1L]]), dimnames = dimnames(x[[1L]]))
+}
+
 
 ### Local variables: ***
 ### mode: outline-minor ***

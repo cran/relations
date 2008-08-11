@@ -1,5 +1,6 @@
 \name{predicates}
 \alias{predicates}
+\alias{relation_is_Euclidean}
 \alias{relation_is_Ferrers}
 \alias{relation_is_antisymmetric}
 \alias{relation_is_asymmetric}
@@ -32,6 +33,7 @@
 \alias{relation_is_symmetric}
 \alias{relation_is_tournament}
 \alias{relation_is_transitive}
+\alias{relation_is_trichotomous}
 \alias{relation_is_weak_order}
 \alias{relation_is_preference}
 \alias{relation_is_preorder}
@@ -42,6 +44,7 @@
   endorelations, and special kinds thereof.
 }
 \usage{
+relation_is_Euclidean(x)
 relation_is_Ferrers(x)
 relation_is_antisymmetric(x)
 relation_is_asymmetric(x)
@@ -62,6 +65,9 @@ relation_is_linear_order(x)
 relation_is_match
 relation_is_negatively_transitive
 relation_is_partial_order(x)
+relation_is_preference(x)
+relation_is_preorder(x)
+relation_is_quasiorder(x)
 relation_is_reflexive(x)
 relation_is_right_total(x)
 relation_is_semiorder(x)
@@ -73,10 +79,8 @@ relation_is_surjective(x)
 relation_is_symmetric(x)
 relation_is_tournament(x)
 relation_is_transitive(x)
+relation_is_trichotomous(x)
 relation_is_weak_order(x)
-relation_is_preference(x)
-relation_is_preorder(x)
-relation_is_quasiorder(x)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}}.}
@@ -128,6 +132,9 @@ relation_is_quasiorder(x)
       \eqn{y R z}.}
     \item{semitransitive}{\eqn{x R y} and \eqn{y R z} imply \eqn{x R w}
       or \eqn{w R z}.}
+    \item{trichotomous}{exactly one of \eqn{x R y}, \eqn{y R x}, or
+      \eqn{x = y} holds.}
+    \item{Euclidean}{\eqn{x R y} and \eqn{x R z} imply \eqn{y R z}.}
   }
 
   Some combinations of these basic properties have special names
@@ -135,24 +142,24 @@ relation_is_quasiorder(x)
   \describe{
     \item{preorder:}{reflexive and transitive.}
     \item{quasiorder:}{the same as preorder.}
-    \item{equivalence:}{a symmetric preorder (reflexive, symmetric and
+    \item{equivalence:}{a symmetric preorder (reflexive, symmetric, and
       transitive).}
-    \item{weak order:}{complete and transitive.}
+    \item{weak order:}{a complete preorder (complete, reflexive, and
+      transitive).}
     \item{preference:}{the same as weak order.}
-    \item{partial order:}{antisymmetric and transitive.}
-    \item{strict partial order:}{an irreflexive partial order (i.e.,
-      irreflexive, antisymmetric and transitive, or equivalently:
-      asymmetric and transitive).}
+    \item{partial order:}{an antisymmetric preorder (reflexive,
+      antisymmetric, and transitive).}
+    \item{strict partial order:}{irreflexive, antisymmetric, and
+      transitive, or equivalently: asymmetric and transitive).}
     \item{linear order:}{a complete partial order.}
     \item{match:}{strongly complete.}
-    \item{strict linear order:}{an irreflexive linear order, or
-      equivalently: a complete strict partial order.}
+    \item{strict linear order:}{a complete strict partial order.}
     \item{tournament:}{complete and asymmetric.}
     \item{interval order:}{complete and Ferrers.}
     \item{semiorder:}{a semitransitive interval order.}
   }
 
-  If \eqn{R} is a weak order (\dQuote{weak preference relation}),
+  If \eqn{R} is a weak order (\dQuote{(weak) preference relation}),
   \eqn{I = I(R)} defined by \eqn{x I y} iff \eqn{x R y} and \eqn{y R x}
   is an equivalence, the \emph{indifference relation} corresponding to
   \eqn{R}.
@@ -174,11 +181,11 @@ relation_is_quasiorder(x)
     \item{asymmetric:}{
       \eqn{T(R(x, y), R(y, x)) = 0} for all \eqn{x, y}.} 
     \item{antisymmetric:}{
-      \eqn{T(R(x, y), R(y, x)) = 0} for all \eqn{x \ne y}.}
+      \eqn{T(R(x, y), R(y, x)) = 0} for all \eqn{x \ne y}{x != y}.}
     \item{transitive:}{\eqn{T(R(x, y), R(y, z)) \le R(x, z)} for all
       \eqn{x, y, z}.}
     \item{complete:}{
-      \eqn{S(R(x, y), R(y, x)) = 1} for all \eqn{x \ne y}.}
+      \eqn{S(R(x, y), R(y, x)) = 1} for all \eqn{x \ne y}{x != y}.}
     \item{strongly complete:}{
       \eqn{S(R(x, y), R(y, x)) = 1} for all \eqn{x, y}.}
     \item{negatively transitive:}{

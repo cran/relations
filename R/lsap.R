@@ -53,9 +53,9 @@ function(x, maximum = FALSE)
     ## Main loop.
     n <- nrow(x)
     nodes <- list(node(x, integer(), 0))
-    while(n > 1) {
+    while(n > 1L) {
         nodes <- do.call("c", lapply(nodes, splitter))
-        n <- n - 1
+        n <- n - 1L
     }
 
     lapply(nodes, finisher)

@@ -16,21 +16,21 @@ function(x)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    .arity(x) == 2
+    .arity(x) == 2L
 }
 relation_is_ternary <-
 function(x)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    .arity(x) == 3
+    .arity(x) == 3L
 }
 relation_is_quaternary <-
 function(x)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
-    .arity(x) == 4
+    .arity(x) == 4L
 }
 
 ### * Predicates for general binary relations
@@ -266,7 +266,7 @@ function(x)
     if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
     n <- nrow(x)
     for(j in seq_len(n))
-        for(l in seq_len(x)) {
+        for(l in seq_len(n)) {
             ## Relation is Ferrers iff for all i, j, k, l
             ##   T(R(i,j), R(k,l)) <= S(R(i,l), R(k,j))
             if(any(outer(x[, j], x[, l], .T.) >
@@ -295,13 +295,32 @@ function(x)
     TRUE
 }
 
-## <FIXME>
-## Add predicates for the following:
-## Trichotomous: exactly one of xRy, yRx, or x=y holds.
-## Euclidean: xRy & xRz => yRz.
-## But how do these generalize to fuzzy relations?
-## </FIXME>
+relation_is_trichotomous <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    ## Trichotomous: exactly one of xRy, yRx, or x=y holds.
+    ## Interpret this literally so that for y=x xRx cannot hold (i.e.,
+    ## the relation must be irreflexive).
+    all(diag(x) == 0) && all(abs(x - t(x))[row(x) != col(x)] == 1)
+}
 
+relation_is_Euclidean <-
+function(x)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    ## Euclidean: xRy & xRz => yRz.
+    for(j in seq_len(nrow(x)))
+        if(any(outer(x[j, ], x[j, ], .T.) > x)) return(FALSE)
+    TRUE
+}
+    
 ## And now combine:
 ## Of course, these could be made more efficient by doing all
 ## computations [on incidences] just once ...
@@ -332,6 +351,7 @@ function(x)
 relation_is_partial_order <-
 function(x)
     (relation_is_endorelation(x)
+     && relation_is_reflexive(x)
      && relation_is_antisymmetric(x)
      && relation_is_transitive(x))
 
@@ -381,7 +401,7 @@ function(x)
 .check_all_predicates <-
 function(x)
 {
-    preds <- ls("package:relations", pattern="relation_is.*")
+    preds <- ls("package:relations", pattern="relation_is_.*")
     props <- sapply(preds, do.call, list(x))
     names(props) <- sub("relation_is_", "", names(props))
     props
