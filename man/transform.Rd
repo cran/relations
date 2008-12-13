@@ -11,7 +11,7 @@ transform_incidences(x, from = c("PO", "SO", "01", "-1+1"),
 }
 \arguments{
   \item{x}{An incidence matrix from an endorelation.}
-  \item{from, to}{The coding scheme (see \sQuote{Details}).}
+  \item{from, to}{The coding scheme (see \bold{Details}).}
 }
 \details{
 In the following, we consider an incidence matrix \eqn{X} with cells

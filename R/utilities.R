@@ -9,6 +9,12 @@ function(D1, D2)
                    lapply(D2, as.set))))
 }
 
+### * .get_elements_in_homorelation
+
+.get_elements_in_homorelation <-
+function(x)    
+    as.list(relation_domain(x)[[1L]])
+
 ### * .is_valid_relation_domain
 
 ## <NOTE>
@@ -76,14 +82,6 @@ function(x)
               is_reflexive = TRUE,
               is_antisymmetric = TRUE,
               is_transitive = TRUE),
-         P =
-         list(is_endorelation = TRUE,
-              is_complete = TRUE,
-              is_reflexive = TRUE,
-              is_transitive = TRUE),
-         R =
-         list(is_endorelation = TRUE,
-              is_transitive = TRUE),
          S =
          list(is_endorelation = TRUE,
               is_symmetric = TRUE),
@@ -92,7 +90,19 @@ function(x)
               is_complete = TRUE,
               is_irreflexive = TRUE,
               is_antisymmetric = TRUE,
-              is_asymmetric = TRUE)
+              is_asymmetric = TRUE), 
+         W =
+         list(is_endorelation = TRUE,
+              is_complete = TRUE,
+              is_reflexive = TRUE,
+              is_transitive = TRUE),
+         preorder =
+         list(is_endorelation = TRUE,
+              is_reflexive = TRUE,
+              is_transitive = TRUE),
+         transitive =
+         list(is_endorelation = TRUE,
+              is_transitive = TRUE)
          )
 
 ### * .reorder_incidence

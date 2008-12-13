@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: relations\n"
-"Report-Msgid-Bugs-To: Kurt.Hornik@R-project.org\n"
-"POT-Creation-Date: 2007-12-15 11:15\n"
-"PO-Revision-Date: 2007-12-15 12:10+0100\n"
+"Report-Msgid-Bugs-To: bugs@r-project.org\n"
+"POT-Creation-Date: 2008-08-27 08:56\n"
+"PO-Revision-Date: 2008-08-27 09:07+0200\n"
 "Last-Translator: Kurt Hornik <Kurt.Hornik@R-project.org>\n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -38,14 +38,20 @@ msgstr "Argument ‘x’ must be a relation."
 msgid "Wrong number of arguments."
 msgstr "Wrong number of arguments."
 
+msgid "Out-of-domain elements."
+msgstr "Out-of-domain elements."
+
+msgid "The characteristic function of a relation with arity %d."
+msgstr "The characteristic function of a relation with arity %d."
+
 msgid "Cannot compute choice from empty ensemble."
 msgstr "Cannot compute choice from empty ensemble."
 
 msgid "Method '%s' is not a valid choice method."
 msgstr "Method ‘%s’ is not a valid choice method."
 
-msgid "Invalid argument 'method'."
-msgstr "Invalid argument ‘method’."
+msgid "Invalid 'method' argument."
+msgstr "Invalid ‘method’ argument."
 
 msgid "Need an ensemble of endorelations."
 msgstr "Need an ensemble of endorelations."
@@ -62,17 +68,20 @@ msgstr "Argument ‘weights’ has negative elements."
 msgid "Argument 'weights' has no positive elements."
 msgstr "Argument ‘weights’ has no positive elements."
 
-msgid "Invalid 'method' argument."
-msgstr "Invalid ‘method’ argument."
-
 msgid "Method '%s' is not a valid consensus method."
 msgstr "Method ‘%s’ is not a valid consensus method."
 
-msgid "Need an ensemble of crip relations."
-msgstr "Need an ensemble of crip relations."
-
 msgid "Invalid consensus method '%s'."
 msgstr "Invalid consensus method ‘%s’."
+
+msgid "All arguments must be named."
+msgstr "All arguments must be named."
+
+msgid "All arguments must have the same length."
+msgstr "All arguments must have the same length."
+
+msgid "An empty data table."
+msgstr "An empty data table."
 
 msgid "Method '%s' is not a valid dissimilarity method."
 msgstr "Method ‘%s’ is not a valid dissimilarity method."
@@ -98,20 +107,20 @@ msgstr "Relation arity mismatch between ‘x’ and ‘value’."
 msgid "Relation size mismatch between 'x' and 'value'."
 msgstr "Relation size mismatch between ‘x’ and ‘value’."
 
-msgid "Argument 'x' must be an endorelation."
-msgstr "Argument ‘x’ must be an endorelation."
+msgid "Argument 'x' must be a binary relation."
+msgstr "Argument ‘x’ must be a binary relation."
 
 msgid "Empty relation ensembles cannot be created."
 msgstr "Empty relation ensembles cannot be created."
-
-msgid "An empty relation ensemble."
-msgstr "An empty relation ensemble."
 
 msgid "Unary '%s' not defined for \"%s\" objects."
 msgstr "Unary ‘%s’ not defined for “%s” objects."
 
 msgid "Generic '%s' not defined for \"%s\" objects."
 msgstr "Generic ‘%s’ not defined for “%s” objects."
+
+msgid "An empty relation ensemble."
+msgstr "An empty relation ensemble."
 
 msgid "Argument 'x' must be a relation ensemble."
 msgstr "Argument ‘x’ must be a relation ensemble."
@@ -134,11 +143,23 @@ msgstr "Invalid specification of class sizes."
 msgid "Can only determine class ids for equivalences and weak orders."
 msgstr "Can only determine class ids for equivalences and weak orders."
 
+msgid "Argument 'x' must be an endorelation."
+msgstr "Argument ‘x’ must be an endorelation."
+
+msgid "Elements of 'e' must be contained in the domain components."
+msgstr "Elements of ‘e’ must be contained in the domain components."
+
 msgid "Not implemented."
 msgstr "Not implemented."
 
-msgid "All elements need to be of same length!"
-msgstr "All elements need to be of same length!"
+msgid "All elements need to be of same length."
+msgstr "All elements need to be of same length."
+
+msgid "Solver currently does not support variable bounds."
+msgstr "Solver currently does not support variable bounds."
+
+msgid "Invalid MILP variable types."
+msgstr "Invalid MILP variable types."
 
 msgid "Argument 'x' must be a crisp relation."
 msgstr "Argument ‘x’ must be a crisp relation."
@@ -158,18 +179,19 @@ msgstr ""
 "A soft partition (degree m = %f) of a relation ensemble with %d elements "
 "into %d classes."
 
-msgid "Plot only available for endorelations."
-msgstr "Plot only available for endorelations."
+msgid "Plotting only available for endorelations."
+msgstr "Plotring only available for endorelations."
 
-msgid "Plot only available for crisp relations."
-msgstr "Plot only available for crisp relations."
+msgid "Plotting only available for crisp relations."
+msgstr "Plotting only available for crisp relations."
 
-msgid "Plot only available for antisymmetric or complete transitive relations."
+msgid ""
+"Plotting only available for antisymmetric or complete transitive relations."
 msgstr ""
-"Plot only available for antisymmetric or complete transitive relations."
+"Plotting only available for antisymmetric or complete transitive relations."
 
-msgid "Need Rgraphviz package (obtainable from bioconductor.org))!"
-msgstr "Need Rgraphviz package (obtainable from bioconductor.org))!"
+msgid "Plotting requires package 'Rgraphviz'."
+msgstr "Plotting requires package ‘Rgraphviz’."
 
 msgid "Wrong class."
 msgstr "Wrong class."
@@ -195,6 +217,21 @@ msgstr "Only crisp or fuzzy sets allowed."
 
 msgid "Need domain along with characteristic function."
 msgstr "Need domain along with characteristic function."
+
+msgid "Relation is not binary."
+msgstr "Relation is not binary."
+
+msgid "target is %s, current is %s"
+msgstr "target is %s, current is %s"
+
+msgid "Relation arities (%d, %d) differ."
+msgstr "Relation arities (%d, %d) differ."
+
+msgid "Relation sizes (%s, %s) differ."
+msgstr "Relation sizes (%s, %s) differ."
+
+msgid "Relation domains differ in elements."
+msgstr "Relation domains differ in elements."
 
 msgid "A unary relation of size %s."
 msgstr "A unary relation of size %s."
@@ -232,8 +269,14 @@ msgstr "Invalid graph with out-of-domain elements."
 msgid "Incorrect length of given 'row.names'."
 msgstr "Incorrect length of given ‘row.names’."
 
+msgid "Relation scores are only available for (ensembles of) endorelations."
+msgstr "Relation scores are only available for (ensembles of) endorelations."
+
 msgid "Relation scores are only available for endorelations."
 msgstr "Relation scores are only available for endorelations."
+
+msgid "Invalid dimnames."
+msgstr "Invalid dimnames."
 
 msgid "Logical subscripting currently not implemented."
 msgstr "Logical subscripting currently not implemented."
@@ -253,14 +296,20 @@ msgstr "Only numeric two-index subscripting is implemented."
 msgid "Repeated indices currently not allowed."
 msgstr "Repeated indices currently not allowed."
 
-msgid "Only numeric 2-index subscripting is implemented."
-msgstr "Only numeric 2-index subscripting is implemented."
-
 msgid "Numbers of columns of matrices must match."
 msgstr "Numbers of columns of matrices must match."
 
 msgid "Numbers of rows of matrices must match."
 msgstr "Numbers of rows of matrices must match."
+
+msgid "Invalid margin."
+msgstr "Invalid margin."
+
+msgid "Incorrect number of dimensions."
+msgstr "Incorrect number of dimensions."
+
+msgid "Only numeric multi-index subscripting is implemented."
+msgstr "Only numeric multi-index subscripting is implemented."
 
 msgid "Transformations only available for endorelations."
 msgstr "Transformations only available for endorelations."

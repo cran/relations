@@ -14,6 +14,7 @@
                                            fixedsize = FALSE)),
      limit = 6L,
      labels = NULL,
+     main = NULL,
      ...)
 
 \method{plot}{relation_ensemble}(x,
@@ -21,7 +22,7 @@
                                     edge = list(arrowsize = "0"),
                                     node = list(shape = "rectangle",
                                                 fixedsize = FALSE))),
-     ..., layout = NULL)
+     ..., layout = NULL, main = NULL)
 }
 \arguments{
   \item{x}{an \R object inheriting from class \code{\link{relation}} .}
@@ -37,14 +38,20 @@
      and columns of the screen layout. If \code{NULL}, the layout is sqare.}
   \item{\dots}{Other arguments passed to the
     \code{\link[graph:graphNEL-class]{graphNEL}} plot method.}
+  \item{main}{character vector used for the main title(s). If \code{NULL},
+     the title(s) is (are) set to the type of the visualized relation(s).}
 }
 \details{
-  Visualization is currently only provided for either antisymmetric or
-  complete transitive crisp endorelations and requires that package
-  \pkg{Rgraphviz} is available.  In case of transitive complete
-  relations (preferences), the dual is plotted.  Note that the
-  default settings create a diagram with nodes ordered bottom-up and
-  with no arrows.
+  Visualization
+%  is currently only provided for either antisymmetric or
+%  complete transitive crisp endorelations and
+requires that package \pkg{Rgraphviz} is available.
+For partial orders, a Hasse diagram is plotted.
+In case of transitive complete
+relations (weak orders, preferences), the dual is plotted. For all
+other relations, the asymmetric part is plotted. Note that the
+default settings create a diagram with nodes ordered bottom-up and
+with no arrows.
 }
 \seealso{
   \code{\link{relation}}

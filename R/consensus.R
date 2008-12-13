@@ -7,8 +7,14 @@ function(x, method = NULL, weights = 1, control = list(), ...)
 {
     dots <- list(...)
     control[names(dots)] <- dots
-    relations <- as.relation_ensemble(x)
 
+    if(inherits(x, "gset")) {
+        relations <- relation_ensemble(list = gset_support(x))
+        weights <- gset_memberships(x)
+    } else {
+        relations <- as.relation_ensemble(x)
+    }
+    
     if(!length(relations))
         stop("Cannot compute consensus of empty ensemble.")
 
@@ -133,8 +139,7 @@ function(relations, weights, control)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
 
-    all <- control$all
-    if(is.null(all)) all <- FALSE
+    all <- identical(control$all, TRUE)
 
     n <- relation_size(relations)[1L]
     C <- matrix(0, n, n)
@@ -186,8 +191,7 @@ function(relations, weights, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
-    all <- control$all
-    if(is.null(all)) all <- FALSE
+    all <- identical(control$all, TRUE)
 
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
@@ -262,23 +266,17 @@ function(relations, weights, control)
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "O", weights, control)
 
-### ** .relation_consensus_symdiff_P
+### ** .relation_consensus_symdiff_W
 
-.relation_consensus_symdiff_P <-
+.relation_consensus_symdiff_W <-
 function(relations, weights, control)
 {
     k <- control$k
     if(!is.null(k))
-        .relation_consensus_symdiff_P_k(relations, weights, k, control)
+        .relation_consensus_symdiff_W_k(relations, weights, k, control)
     else
-        .relation_consensus_symdiff(relations, "P", weights, control)
+        .relation_consensus_symdiff(relations, "W", weights, control)
 }
-
-### ** .relation_consensus_symdiff_R
-
-.relation_consensus_symdiff_R <-
-function(relations, weights, control)
-    .relation_consensus_symdiff(relations, "R", weights, control)
 
 ### ** .relation_consensus_symdiff_S
 
@@ -291,6 +289,18 @@ function(relations, weights, control)
 .relation_consensus_symdiff_T <-
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "T", weights, control)
+
+### ** .relation_consensus_symdiff_preorder
+
+.relation_consensus_symdiff_preorder <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "preorder", weights, control)
+
+### ** .relation_consensus_symdiff_transitive
+
+.relation_consensus_symdiff_transitive <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "transitive", weights, control)
 
 ### ** .relation_consensus_manhattan
 
@@ -373,23 +383,17 @@ function(relations, weights, control)
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "O", weights, control, TRUE)
 
-### ** .relation_consensus_euclidean_P
+### ** .relation_consensus_euclidean_W
 
-.relation_consensus_euclidean_P <-
+.relation_consensus_euclidean_W <-
 function(relations, weights, control)
 {
     k <- control$k
     if(!is.null(k))
-        .relation_consensus_symdiff_P_k(relations, weights, k, control, TRUE)
+        .relation_consensus_symdiff_W_k(relations, weights, k, control, TRUE)
     else
-        .relation_consensus_symdiff(relations, "P", weights, control, TRUE)
+        .relation_consensus_symdiff(relations, "W", weights, control, TRUE)
 }
-
-### ** .relation_consensus_euclidean_R
-
-.relation_consensus_euclidean_R <-
-function(relations, weights, control)
-    .relation_consensus_symdiff(relations, "R", weights, control, TRUE)
 
 ### ** .relation_consensus_euclidean_S
 
@@ -402,6 +406,199 @@ function(relations, weights, control)
 .relation_consensus_euclidean_T <-
 function(relations, weights, control)
     .relation_consensus_symdiff(relations, "T", weights, control, TRUE)
+
+### ** .relation_consensus_euclidean_preorder
+
+.relation_consensus_euclidean_preorder <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "preorder",
+                                weights, control, TRUE)
+
+### ** .relation_consensus_euclidean_transitive
+
+.relation_consensus_euclidean_transitive <-
+function(relations, weights, control)
+    .relation_consensus_symdiff(relations, "transitive",
+                                weights, control, TRUE)
+
+## Consensus methods for central relations using CKS distance.
+## Currently we only have fitters for crisp ensembles and families where
+## the CKS consensus problem can be reduced to a binary linear program.
+
+### ** .relation_consensus_CKS_A
+
+.relation_consensus_CKS_A <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "A", weights, control)
+
+### ** .relation_consensus_CKS_C
+
+.relation_consensus_CKS_C <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "C", weights, control)
+
+### ** .relation_consensus_CKS_E
+
+## <NOTE>
+## Could add support for CKS/E/k ...
+## </NOTE>
+.relation_consensus_CKS_E <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "E", weights, control)
+
+## ** .relation_consensus_CKS_G
+
+.relation_consensus_CKS_G <-
+function(relations, weights, control)
+{
+    ## Generalized (Cook-Kress-Seiford) majority.
+    
+    incidences <- lapply(relations, relation_incidence)
+
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
+    Q <- .make_fit_relation_CKS_Q(incidences, weights)
+    w <- sum(weights)
+
+    I <- (M >= 0) | ((Q < 0) & (M + Q >= - w))
+    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    meta <- list(is_endorelation = TRUE, objval = objval)
+
+    if(identical(control$all, TRUE)) {
+        I <- list(I)
+
+        ## Split diagonal terms when m_{ii} = 0.
+        for(i in which(diag(M) == 0)) {
+            I <- do.call("c",
+                         lapply(I,
+                                function(x, i) {
+                                    y <- x
+                                    y[i, i] <- 0
+                                    list(x, y)
+                                },
+                                i))
+        }
+        
+        ## Splitting non-diagonal terms is somewhat tricky as we cannot
+        ## independently split x_{ij}/x_{ji} for split positions.
+        ## Theory shows that the optimum is characterized via
+        ##   \max(q_{ij}, p_{ij}, p_{ji}, 0)
+        ## corresponding to 0/0, 1/0, 0/1 and 1/1 for x_{ij}/x_{ji}.
+        ## Splits are characterized by \max(q_{ij}, p_{ij}, p_{ji}) = 0.
+        ## <FIXME>
+        ## Check whether the above generalized majority rule always
+        ## takes indicidence as one when possible.
+        ## </CHECK>
+        P <- .make_fit_relation_CKS_P(incidences, weights)
+        ## Only need to know where P and Q are zero.
+        P <- (P == 0)
+        Q <- (Q == 0)
+        ## And maybe whether i < j.
+        U <- row(P) < col(P)
+        ## Helper.
+        do_split <- function(I, fun, ind) {
+            for(k in seq_len(nrow(ind)))
+                I <- do.call("c",
+                             lapply(I, fun, ind[k, 1L], ind[k, 2L]))
+            I
+        }
+        ## If q_{ij} = p_{ij} = 0, can take 0/0 1/0 1/1.
+        I <- do_split(I,
+                      function(x, i, j) {
+                          z <- y <- x
+                          x[i, j] <- x[j, i] <- 1
+                          y[i, j] <- 1; y[j, i] <- 0
+                          z[i, j] <- z[j, i] <- 0
+                          list(x, y, z)
+                      },
+                      which(P & Q, arr.ind = TRUE))
+        ## If p_{ij} = p_{ji} = 0, can take 1/0 0/1 1/1.
+        I <- do_split(I,
+                      function(x, i, j) {
+                          z <- y <- x
+                          x[i, j] <- x[j, i] <- 1
+                          y[i, j] <- 1; y[j, i] <- 0
+                          z[i, j] <- 0; z[j, i] <- 1
+                          list(x, y, z)
+                      },
+                      which((P & t(P)) & U, arr.ind = TRUE))
+        ## If only q_{ij} = 0, can take 0/1 1/1.
+        I <- do_split(I,
+                      function(x, i, j) {
+                          y <- x
+                          x[i, j] <- x[j, i] <- 1
+                          y[i, j] <- y[j, i] <- 0
+                          list(x, y)
+                      },
+                      which((Q & !P) & !t(P), arr.ind = TRUE))
+        ## If only p_{ij} = 0, can take 1/0 1/1.
+        I <- do_split(I,
+                      function(x, i, j) {
+                          y <- x
+                          x[i, j] <- x[j, i] <- 1
+                          y[i, j] <- 1; y[j, i] <- 0
+                          list(x, y)
+                      },
+                      which((P & Q) & !t(P), arr.ind = TRUE))
+    }
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+### ** .relation_consensus_CKS_L
+
+.relation_consensus_CKS_L <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "L", weights, control)
+
+### ** .relation_consensus_CKS_M
+
+.relation_consensus_CKS_M <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "M", weights, control)
+
+### ** .relation_consensus_CKS_O
+
+.relation_consensus_CKS_O <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "O", weights, control)
+
+### ** .relation_consensus_CKS_W
+
+.relation_consensus_CKS_W <-
+function(relations, weights, control)
+{
+    k <- control$k
+    if(!is.null(k))
+        .relation_consensus_CKS_W_k(relations, weights, k, control)
+    else
+        .relation_consensus_CKS(relations, "W", weights, control)
+}
+
+### ** .relation_consensus_CKS_S
+
+.relation_consensus_CKS_S <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "S", weights, control)
+
+### ** .relation_consensus_CKS_T
+
+.relation_consensus_CKS_T <-
+function(relations, weights, control)
+    .relation_consensus_CKS(relations, "T", weights, control)
+
+### ** .relation_consensus_CKS_preorder
+
+.relation_consensus_CKS_preorder <-
+function(relations, weights, control)
+    .relation_consensus_CKS_via_QP(relations, "preorder",
+                                   weights, control)
+
+### ** .relation_consensus_CKS_transitive
+
+.relation_consensus_CKS_transitive <-
+function(relations, weights, control)
+    .relation_consensus_CKS_via_QP(relations, "transitive",
+                                   weights, control)
 
 ### * Relation consensus method registration
 
@@ -442,7 +639,6 @@ function(name, definition, ...)
     relation_consensus_methods_db[[name]] <- value
 }
 
-
 set_relation_consensus_method("Borda",
                               .relation_consensus_Borda)
 set_relation_consensus_method("Copeland",
@@ -451,6 +647,55 @@ set_relation_consensus_method("majority",
                               .relation_consensus_majority)
 ## Note that constructive methods do not necessarily give central
 ## relations.
+set_relation_consensus_method("CKS/A",
+                              .relation_consensus_CKS_A,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/C",
+                              .relation_consensus_CKS_C,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/E",
+                              .relation_consensus_CKS_E,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/G",
+                              .relation_consensus_CKS_G,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/L",
+                              .relation_consensus_CKS_L,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/M",
+                              .relation_consensus_CKS_M,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/O",
+                              .relation_consensus_CKS_O,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/S",
+                              .relation_consensus_CKS_S,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/T",
+                              .relation_consensus_CKS_T,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/W",
+                              .relation_consensus_CKS_W,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/preorder",
+                              .relation_consensus_CKS_preorder,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+set_relation_consensus_method("CKS/transitive",
+                              .relation_consensus_CKS_transitive,
+                              dissimilarity = "CKS",
+                              exponent = 1)
+
 set_relation_consensus_method("CS",
                               .relation_consensus_CS,
                               dissimilarity = "CS",
@@ -471,6 +716,10 @@ set_relation_consensus_method("SD/E",
                               .relation_consensus_symdiff_E,
                               dissimilarity = "symdiff",
                               exponent = 1)
+set_relation_consensus_method("SD/G",
+                              .relation_consensus_Condorcet,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
 set_relation_consensus_method("SD/L",
                               .relation_consensus_symdiff_L,
                               dissimilarity = "symdiff",
@@ -483,20 +732,31 @@ set_relation_consensus_method("SD/O",
                               .relation_consensus_symdiff_O,
                               dissimilarity = "symdiff",
                               exponent = 1)
+## <NOTE>
+## Keep this for back-compatibility.
 set_relation_consensus_method("SD/P",
-                              .relation_consensus_symdiff_P,
+                              .relation_consensus_symdiff_W,
                               dissimilarity = "symdiff",
                               exponent = 1)
-set_relation_consensus_method("SD/R",
-                              .relation_consensus_symdiff_R,
-                              dissimilarity = "symdiff",
-                              exponent = 1)
+## </NOTE>
 set_relation_consensus_method("SD/S",
                               .relation_consensus_symdiff_S,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("SD/T",
                               .relation_consensus_symdiff_T,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("SD/W",
+                              .relation_consensus_symdiff_W,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("SD/preorder",
+                              .relation_consensus_symdiff_preorder,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("SD/transitive",
+                              .relation_consensus_symdiff_transitive,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("manhattan",
@@ -519,6 +779,10 @@ set_relation_consensus_method("euclidean/E",
                               .relation_consensus_euclidean_E,
                               dissimilarity = "euclidean",
                               exponent = 2)
+set_relation_consensus_method("euclidean/G",
+                              .relation_consensus_Condorcet,
+                              dissimilarity = "euclidean",
+                              exponent = 2)
 set_relation_consensus_method("euclidean/L",
                               .relation_consensus_euclidean_L,
                               dissimilarity = "euclidean",
@@ -531,20 +795,24 @@ set_relation_consensus_method("euclidean/O",
                               .relation_consensus_euclidean_O,
                               dissimilarity = "euclidean",
                               exponent = 2)
-set_relation_consensus_method("euclidean/P",
-                              .relation_consensus_euclidean_P,
-                              dissimilarity = "euclidean",
-                              exponent = 2)
-set_relation_consensus_method("euclidean/R",
-                              .relation_consensus_euclidean_R,
-                              dissimilarity = "euclidean",
-                              exponent = 2)
 set_relation_consensus_method("euclidean/S",
                               .relation_consensus_euclidean_S,
                               dissimilarity = "euclidean",
                               exponent = 2)
 set_relation_consensus_method("euclidean/T",
                               .relation_consensus_euclidean_T,
+                              dissimilarity = "euclidean",
+                              exponent = 2)
+set_relation_consensus_method("euclidean/W",
+                              .relation_consensus_euclidean_W,
+                              dissimilarity = "euclidean",
+                              exponent = 2)
+set_relation_consensus_method("euclidean/preorder",
+                              .relation_consensus_euclidean_preorder,
+                              dissimilarity = "euclidean",
+                              exponent = 2)
+set_relation_consensus_method("euclidean/transitive",
+                              .relation_consensus_euclidean_transitive,
                               dissimilarity = "euclidean",
                               exponent = 2)
 
@@ -588,9 +856,9 @@ function(relations, weights, k, control, euclidean = FALSE)
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
-### ** .relation_consensus_symdiff_P_k
+### ** .relation_consensus_symdiff_W_k
 
-.relation_consensus_symdiff_P_k <-
+.relation_consensus_symdiff_W_k <-
 function(relations, weights, k, control, euclidean = FALSE)
 {
     if(!.is_ensemble_of_endorelations(relations))
@@ -600,12 +868,120 @@ function(relations, weights, k, control, euclidean = FALSE)
 
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
-    I <- fit_relation_symdiff_P_k(M, k, control)
+    I <- fit_relation_symdiff_W_k(M, k, control)
     objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
-    meta <- c(.relation_meta_db[["P"]], list(objval = objval))
+    meta <- c(.relation_meta_db[["W"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
+
+## ** .relation_consensus_CKS
+
+.relation_consensus_CKS <-
+function(relations, family, weights, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    ## Solve via QP formulation if requested explicitly.
+    ## Mostly useful for testing purposes.
+    if(identical(control$simplify, FALSE))
+       return(.relation_consensus_CKS_via_QP(relations, family,
+                                             weights, control))
+
+    incidences <- lapply(relations, relation_incidence)
+    if(family %in% c("C", "L", "M", "T", "W")) {
+        ## For the complete families, we can fit CKS via transforming
+        ## incidences and fitting symdiff.
+        incidences <-
+            lapply(incidences,
+                   function(I) {
+                       ind <- row(I) != col(I)
+                       I[ind] <- pmax(I, 1 - t(I))[ind]
+                       I
+                   })
+        M <- .make_fit_relation_symdiff_M(incidences, weights)
+    } else if(family %in% c("O", "A")) {
+        ## If the consensus relation is antisymmetric, the CKS consensus
+        ## problem reduces to a linear program with coefficients
+        ## $p_{ij} - q_{ij}$ and $- q_{ii}$ for the off-diagonal and
+        ## diagonal terms, respectively.
+        ## For O, the diagonal is "fixed" by the family.
+        ## For A, it is handled by the majority rule.
+        P <- .make_fit_relation_CKS_P(incidences, weights)
+        Q <- .make_fit_relation_CKS_Q(incidences, weights)
+        M <- P - Q
+        ## Note that $p_{ii} = \sum_b w_b (1 - 2 p_{ii}(b)) = \sum_b w_b.
+        diag(M) <- diag(M) - sum(weights)
+        ## Alternatively, do diag(M) <- - diag(Q).
+    } else if(family %in% c("E", "S")) {
+        ## If the consensus relation is symmetric, the CKS consensus
+        ## problem reduces to a linear program with coefficients
+        ## $- q_{ij} / 2$ and $- q_{ii}$ for the off-diagonal and
+        ## diagonal terms, respectively.
+        ## For E, the diagonal is "fixed" by the family.
+        ## For S, it is handled by the majority diagonal rule
+        ## Note that it is not necessary to halve the off-diagonal terms
+        ## as the diagonal and off-diagonal terms are handled separately
+        ## by symdiff fitting.
+        M <- - .make_fit_relation_CKS_Q(incidences, weights)
+    } else {
+        stop("Not implemented.")
+    }
+    I <- fit_relation_symdiff(M, family, control)
+    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[[family]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+## ** .relation_consensus_CKS_W_k
+
+.relation_consensus_CKS_W_k <- 
+function(relations, weights, k, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    incidences <-
+        lapply(relations,
+               function(R) {
+                   I <- relation_incidence(R)
+                   ind <- row(I) != col(I)
+                   I[ind] <- pmax(I, 1 - t(I))[ind]
+                   I
+               })
+    M <- .make_fit_relation_symdiff_M(incidences, weights)
+    I <- fit_relation_symdiff_W_k(M, k, control)
+    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[["W"]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+## ** .relation_consensus_CKS_via_QP
+
+.relation_consensus_CKS_via_QP <-
+function(relations, family, weights, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    incidences <- lapply(relations, relation_incidence)
+    P <- .make_fit_relation_CKS_P(incidences, weights)
+    Q <- .make_fit_relation_CKS_Q(incidences, weights)
+    I <- fit_relation_CKS_via_QP(P, Q, family, control)
+    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[[family]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}    
 
 ### * Utilities
 
@@ -625,6 +1001,23 @@ function(incidences, weights)
     M <- .weighted_sum_of_arrays(incidences, w)
     2 * M - sum(w)
 }
+
+### ** .make_fit_relation_CKS_P
+
+.make_fit_relation_CKS_P <-
+function(incidences, weights)
+    .make_fit_relation_symdiff_M(lapply(incidences,
+                                        function(I) pmin(I, 1 - t(I))),
+                                 weights)
+
+### ** .make_fit_relation_CKS_Q
+
+.make_fit_relation_CKS_Q <-
+function(incidences, weights)
+    .make_fit_relation_symdiff_M(lapply(incidences,
+                                        function(I) 1 - pmax(I, t(I))),
+                                 weights)
+
 
 ### ** .make_consensus_from_incidences
 
@@ -686,6 +1079,19 @@ function(I, incidences, weights)
 
     sum(weights * sapply(incidences, .incidence_dissimilarity_CS, I))
 }
+
+### ** .relation_consensus_CKS_objval
+
+.relation_consensus_CKS_objval <-
+function(I, incidences, weights)
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+
+    sum(weights * sapply(incidences, .incidence_dissimilarity_CKS, I))
+}    
 
 ### Local variables: ***
 ### mode: outline-minor ***

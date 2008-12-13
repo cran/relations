@@ -40,24 +40,24 @@ data("SVM_Benchmarking_Regression_Consensus")
   ensembles of consensus relations fitted to the benchmark
   results. For each of the following three endorelation families:
   \code{SD/L} (\dQuote{linear orders}),
-  \code{SD/O} (\dQuote{partial orders}), and \code{SD/P}
-  (\dQuote{preferences}), \emph{all} possible consensus
+  \code{SD/O} (\dQuote{partial orders}), and \code{SD/W}
+  (\dQuote{weak orders}), \emph{all} possible consensus
   relations have been computed (see \code{\link{relation_consensus}}).
   For both classification and regression,
   the three relation ensembles obtained are provided as a named list of
   length 3. See Hornik et Meyer (2007) for details on the meta-analysis.
 }
 \source{
-D. Meyer, F. Leisch, and K. Hornik (2003),
-The support vector machine under test.
-\emph{Neurocomputing}, \bold{55}:169--186.
+  D. Meyer, F. Leisch, and K. Hornik (2003),
+  The support vector machine under test.
+  \emph{Neurocomputing}, \bold{55}, 169--186.
 
-K. Hornik and D. Meyer (2007),
-Deriving consensus rankings from benchmarking experiments.
-In R. Decker and H.-J. Lenz,
-\emph{Advances in Data Analysis}.
-Studies in Classification, Data Analysis, and Knowledge Organization.
-Springer-Verlag.
+  K. Hornik and D. Meyer (2007),
+  Deriving consensus rankings from benchmarking experiments.
+  In R. Decker and H.-J. Lenz,
+  \emph{Advances in Data Analysis}.
+  Studies in Classification, Data Analysis, and Knowledge Organization.
+  Springer-Verlag: Heidelberg, 163--170.  
 }
 \examples{
 data("SVM_Benchmarking_Classification")
@@ -68,15 +68,15 @@ names(SVM_Benchmarking_Classification)
 ## 17 methods
 relation_domain(SVM_Benchmarking_Classification)
 
-## select preferences
-preferences <-
-    Filter(relation_is_preference, SVM_Benchmarking_Classification)
+## select weak orders
+weak_orders <-
+    Filter(relation_is_weak_order, SVM_Benchmarking_Classification)
 
-## only the artifical data sets yield preferences
-names(preferences)
+## only the artifical data sets yield weak orders
+names(weak_orders)
 
 ## visualize them using Hasse diagrams
-if(require("Rgraphviz")) plot(preferences)
+if(require("Rgraphviz")) plot(weak_orders)
 
 ## Same for regression:
 data("SVM_Benchmarking_Regression")
@@ -87,15 +87,15 @@ names(SVM_Benchmarking_Regression)
 ## 10 methods
 relation_domain(SVM_Benchmarking_Regression)
 
-## select preferences
-preferences <-
-    Filter(relation_is_preference, SVM_Benchmarking_Regression)
+## select weak orders
+weak_orders <-
+    Filter(relation_is_weak_order, SVM_Benchmarking_Regression)
 
-## only two of the artifical data sets yield preferences
-names(preferences)
+## only two of the artifical data sets yield weak orders
+names(weak_orders)
 
 ## visualize them using Hasse diagrams
-if(require("Rgraphviz")) plot(preferences)
+if(require("Rgraphviz")) plot(weak_orders)
 
 ## Consensus solutions:
 
@@ -106,20 +106,20 @@ data("SVM_Benchmarking_Regression_Consensus")
 print(SVM_Benchmarking_Classification_Consensus)
 print(SVM_Benchmarking_Regression_Consensus)
 
-## visualize the consensus preferences
-classP <- SVM_Benchmarking_Classification_Consensus$P
-regrP <- SVM_Benchmarking_Regression_Consensus$P
+## visualize the consensus weak orders
+classW <- SVM_Benchmarking_Classification_Consensus$W
+regrW <- SVM_Benchmarking_Regression_Consensus$W
 if(require("Rgraphviz")) {
-    plot(classP)
-    plot(regrP)
+    plot(classW)
+    plot(regrW)
 }
 
 ## in tabular style:
 ranking <- function(x) rev(names(sort(relation_class_ids(x))))
-sapply(classP, ranking)
-sapply(regrP, ranking)
+sapply(classW, ranking)
+sapply(regrW, ranking)
 
 ## (prettier and more informative:)
-relation_classes(classP[[1L]])
+relation_classes(classW[[1L]])
 }
 \keyword{datasets}

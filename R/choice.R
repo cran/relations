@@ -1,16 +1,31 @@
 relation_choice <-
-function(x, method = "symdiff", control = list(), ...)
+function(x, method = "symdiff", weights = 1, control = list(), ...)
 {
     dots <- list(...)
     control[names(dots)] <- dots
 
-    relations <- as.relation_ensemble(x)
+    if(inherits(x, "gset")) {
+        relations <- relation_ensemble(list = gset_support(x))
+        control$weights <- gset_memberships(x)
+    } else {
+        relations <- as.relation_ensemble(x)
+    }
 
     if(!length(relations))
         stop("Cannot compute choice from empty ensemble.")
 
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    
+    weights <- rep(weights, length.out = length(relations))
+    if(any(weights < 0))
+        stop("Argument 'weights' has negative elements.")
+    if(!any(weights > 0))
+        stop("Argument 'weights' has no positive elements.")
+
     known_methods <-
-        list("symdiff" = ".relation_choice_symdiff")
+        list("symdiff" = ".relation_choice_symdiff",
+             "CKS" = ".relation_choice_CKS")
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
@@ -18,9 +33,9 @@ function(x, method = "symdiff", control = list(), ...)
         method <- get(known_methods[[ind]][1L])
     }
     else if(!is.function(method))
-        stop("Invalid argument 'method'.")
+        stop("Invalid 'method' argument.")
 
-    method(relations, control)
+    method(relations, weights, control)
 }
 
 ## <FIXME>
@@ -28,239 +43,183 @@ function(x, method = "symdiff", control = list(), ...)
 ## </FIXME>
 
 .relation_choice_symdiff <-
-function(relations, control)
+function(relations, weights, control)
 {
-    ## <FIXME>
-    ## Shouldn't this be true for all choice functions?
-    ## (As we choose from given preferences on a set of objects.)
-    ## </FIXME>
-    if(!.is_ensemble_of_endorelations(relations))
-        stop("Need an ensemble of endorelations.")
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
     ## Argument handling.
     k <- control$k
     if(is.null(k)) k <- 1L              # Single winner by default.
-    all <- control$all
-    if(is.null(all)) all <- FALSE
-    sparse <- control$sparse
-    if(is.null(sparse)) sparse <- FALSE
-    solver <- control$solver
-    control <- control$control
-    ## And of course, more sanity checking would be nice ...
 
-    x <- .make_fit_relation_symdiff_M(relations, 1)
-    n <- nrow(x)
-    ## Set diagonal to 0.
-    diag(x) <- 0
-    ## Compute coefficients of target function.
-    beta <- colSums(pmin(x, 0)) - rowSums(pmax(x, 0))
-    x <- abs(x)
-    alpha <- (x + t(x))[upper.tri(x)]
-    obj <- c(alpha, beta)
-    ## Constraints.
-    C <- .make_symdiff_winners_constraints(n, k, sparse = sparse)
+    ## Coefficients of the choice QP.
+    B <- .make_fit_relation_symdiff_M(relations, weights)
+    if(identical(control$reverse, TRUE))
+        B <- t(B)
+    ## Explicitly, we have
+    ##   C <- pmax(B, 0)
+    ##   M <- C + t(C) - B
+    ##   diag(M) <- 0
+    ## which can be simplified to:    
+    M <- pmax(t(B), 0) - pmin(B, 0)
+    diag(M) <- 0
+
     ## Underlying set of objects to choose from.
     ## (Domain of the choice problem.)
-    D <- as.list(.domain(relations)[[1L]])
-    ## Solve.
-    if(all)
-        return(.find_all_relation_symdiff_winners(alpha, beta, C, n, D,
-                                                  solver, control))
-    binary_positions <- .n_of_symdiff_choice_v_variables(n) + seq_len(n)
-    out <- solve_MILP(MILP(obj, list(C$mat, C$dir, C$rhs),
-                           types = .make_types(length(obj),
-                                               B = binary_positions),
-                           maximum = TRUE),
-                      solver, control)
-    u <- out$solution[binary_positions]
-    as.set(D[u == 1])
+    D <- .get_elements_in_homorelation(relations)
+
+    .find_SD_or_CKS_choice(M, k, D, control)
 }
 
-## Number of v variables for symdiff winners.
-.n_of_symdiff_choice_v_variables <- function(n) n * (n - 1) / 2
-## Number of u variables for symdiff winners.
-.n_of_symdiff_choice_u_variables <- function(n) n
-
-.make_symdiff_winners_constraints <-
-function(n, k, sparse = FALSE)
+.relation_choice_CKS <-
+function(relations, weights, control)    
 {
-    ## Constraints:
-    ##   v_{ij} - u_i       <= 0
-    ##   v_{ij}       - u_j <= 0
-    ##   v_{ij} - u_i - u_j >= -1
-    ##            u_i       <= 1
-    ##            sum(u_i)  == k
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
 
-    n_u <- n
-    n_v <- .n_of_symdiff_choice_v_variables(n)
+    ## Argument handling.
+    k <- control$k
+    if(is.null(k)) k <- 1L              # Single winner by default.
 
-    ## Create a matrix with all combinations of triples i < j in the
-    ## rows (note that we use the same order as in upper.tri()).
-    ind <- seq_len(n)
-    z <- as.matrix(expand.grid(ind, ind))
-    z <- z[z[, 1L] < z[, 2L], , drop = FALSE]
-    ## Constraint mat.
-    ## Note that we v_ij are arranged in the same order as z, so that
-    ## the v_ij constraint parts are blocks of identity matrices.
-    ind <- p_v_ij <- seq_len(n_v)
-    p_u_i <- n_v + z[, 1L]
-    p_u_j <- n_v + z[, 2L]
-    mat_nr <- 3L * n_v + n_u + 1L
-    mat_nc <- n_v + n_u
-    if(!sparse) {
-        mat <- matrix(0, mat_nr, mat_nc)
-        ##   v_{ij} - u_i       <= 0
-        mat[cbind(ind, p_v_ij)] <- 1
-        mat[cbind(ind, p_u_i)] <- -1
-        ##   v_{ij}       - u_j <= 0
-        ind <- ind + n_v
-        mat[cbind(ind, p_v_ij)] <- 1
-        mat[cbind(ind, p_u_j)] <- -1
-        ##   v_{ij} - u_i - u_j >= -1
-        ind <- ind + n_v
-        mat[cbind(ind, p_v_ij)] <- 1
-        mat[cbind(ind, p_u_i)] <- -1
-        mat[cbind(ind, p_u_j)] <- -1
-        ##            u_i       <= 1
-        mat[cbind(3L * n_v + seq_len(n_u), n_v + seq_len(n_u))] <- 1
-        ##            sum(u_i)  == k
-        mat[3L * n_v + n_u + 1L, n_v + seq_len(n_u)] <- 1
-    }
-    else {
-        mat_i <- c(rep.int(ind, 2L),
-                   rep.int(ind + n_v, 2L),
-                   rep.int(ind + 2L * n_v, 3L),
-                   3L * n_v + seq_len(n_u),
-                   rep.int(3L * n_v + n_u + 1L, n_u))
-        mat_j <- c(p_v_ij, p_u_i,
-                   p_v_ij, p_u_j,
-                   p_v_ij, p_u_i, p_u_j,
-                   rep.int(n_v + seq_len(n_u), 2L))
-        mat_v <- c(rep.int(1, n_v), rep.int(-1, n_v),
-                   rep.int(1, n_v), rep.int(-1, n_v),
-                   rep.int(1, n_v), rep.int(-1, 2L * n_v),
-                   rep.int(1, 2L * n_u))
-        mat <- simple_triplet_matrix(mat_i, mat_j, mat_v,
-                                     mat_nr, mat_nc)
-    }
-    ## Constraint dir.
-    dir <- c(rep.int("<=", 2L * n_v),
-             rep.int(">=", n_v),
-             rep.int("<=", n_u),
-             "==")
-    ## Constraint rhs.
-    rhs <- c(rep.int(0, 2L * n_v),
-             rep.int(-1, n_v),
-             rep.int(1, n_u),
-             k)
-    list(mat = mat, dir = dir, rhs = rhs)
+    ## Coefficients of the choice QP.
+    incidences <- lapply(relations, relation_incidence)
+    P <- .make_fit_relation_CKS_P(incidences, weights)
+    if(identical(control$reverse, TRUE))
+        P <- t(P)
+    Q <- .make_fit_relation_CKS_Q(incidences, weights)
+    ## Explicitly, we have
+    ##   B <- P - Q
+    ##   diag(B) <- - diag(Q)
+    ##   C <- (pmax(Q, P, t(P), 0) - Q) / 2
+    ##   diag(C) <- pmax(- diag(Q), 0)
+    ##   M <- 2 * C - B
+    ##   diag(M) <- 0
+    ## which can be simplified to:
+    M <- pmax(0, P, t(P), Q) - P
+    diag(M) <- 0
+
+    ## Underlying set of objects to choose from.
+    ## (Domain of the choice problem.)
+    D <- .get_elements_in_homorelation(relations)
+
+    .find_SD_or_CKS_choice(M, k, D, control)
 }
 
-.find_all_relation_symdiff_winners <-
-function(alpha, beta, C, n, domain, solver, control)
+.find_SD_or_CKS_choice <-
+function(M, k, D, control)
 {
-    ## Find all relation symdiff "winners" by a simple branch-and-cut
-    ## strategy, using successive reductions.
-
-    node <- function(u, beta, value = 0, done = FALSE)
-        list(u = u, beta = beta, value = value, done = done)
-
-    bin_pos <- function(n)
-        .n_of_symdiff_choice_v_variables(n) + seq_len(n)
-
-    ## Constraints for the full problem.
-    mat <- C$mat
-    dir <- C$dir
-    rhs <- C$rhs
-
-    ## Value function for given problem instance.
-    V <- function(obj, mat, dir, rhs, pos) {
-        out <- solve_MILP(MILP(obj, list(mat, dir, rhs),
-                               types = .make_types(length(obj), B = pos),
-                               maximum = TRUE),
-                          solver, control)
-        if(out$status != 0) return(-Inf)
-        out$objval
-    }
-    ## Determine the optimal value.
-    Vopt <- V(c(alpha, beta), mat, dir, rhs, bin_pos(n))
-    ## <FIXME>
-    ## Check status.
-    ## </FIXME>
-
-    k <- rhs[length(rhs)]
-
-    splitter <- function(node, n, alpha, delta, mat, dir, rhs) {
-        ## This to be called for n > 1.
-        if(node$done) return(node)
-        tol <- 1e-10
-        len <- length(rhs)
-        pos <- bin_pos(n - 1L)
-        u <- node$u
-        beta <- node$beta
-        value <- node$value
-        ## Solution with last u = 0.
-        beta_0 <- beta[-n]
-        rhs_0 <- rhs
-        rhs_0[len] <- k - sum(u)
-        value_0 <- value
-        node_0 <- node(c(u, 0), beta_0, value_0)
-        ## Solution with last u = 1.
-        beta_1 <- beta_0 + delta
-        rhs_1 <- rhs_0
-        rhs_1[len] <- rhs_0[len] - 1
-        value_1 <- value_0 + beta[n]
-        node_1 <- node(c(u, 1), beta_1, value_1)
-        ## Try u = 0.
-        v <- V(c(alpha, beta_0), mat, dir, rhs_0, pos)
-        if(value_0 + v < Vopt - tol) return(list(node_1))
-        ## Try u = 1.
-        v <- V(c(alpha, beta_1), mat, dir, rhs_1, pos)
-        if(value_1 + v < Vopt - tol) return(list(node_0))
-        ## If both are optimal, branch:
-        list(node_0, node_1)
-    }
-
-    finisher <- function(node) {
-        ## This to be called for n = 1.
-        ## Remeber we proceed from right to left and leave one off.
-        u <- node$u
-        u <- rev(c(u, k - sum(u)))
-        as.set(domain[u == 1])
-    }
-
-    ## Main loop.
-    nodes <- list(node(integer(), beta))
-    while(n > 1L) {
-        ## Move from n to n - 1.
-        ## Reduce constraints.
-        n_v <- .n_of_symdiff_choice_v_variables(n)
-        ind <- seq(from = n_v - n + 2L, to = n_v)
-        ## Drop elements from objective.
-        delta <- alpha[ind]
-        alpha <- alpha[-ind]
-        ## Drop elements from constraints.
-        rind <- c(ind, ind + n_v, ind + 2L * n_v, 3L * n_v + n)
-        mat <- mat[-rind, -c(ind, ncol(mat)), drop = FALSE]
-        dir <- dir[-rind]
-        rhs <- rhs[-rind]
-        ## Branch and cut.
-        nodes <- do.call("c",
-                         lapply(nodes, splitter, n, alpha, delta, mat,
-                                dir, rhs))
-        ## cat("n:", n, "n of nodes", length(nodes), "\n")
-        n <- n - 1L
-    }
-
-    nodes <- lapply(nodes, finisher)
-
-    nodes
+    ## It is somewhat unclear which formulation in general works
+    ## better.
+    ## For CPLEX, it seems that any linearization of the BQP is better
+    ## than directly solving the QP formulation.
+    ## For the other solvers, the "tailor-made" direct linearization
+    ## seems to perform better than the general purpose linearization of
+    ## the QP formulation.  Not sure why, as in general the latter
+    ## results in smaller problems---its number of continuous variables
+    ## is n(n-1)/2 minus half the number of zero off-diagonal terms of
+    ## sym(M), whereas for the former the number is n(n-1) minus the
+    ## number of zero off-diagonal terms.
+    ## But for the direct linearization the binary variables occur in
+    ## the constraints only---maybe this accounts for the difference.
+    ## Hence, by default we use the direct linearization.
+    ## We might change the QP formulation to also linearize by default.
+    if(identical(control$QP, TRUE))
+        .find_SD_or_CKS_choice_via_QP(M, k, D, control)
+    else
+        .find_SD_or_CKS_choice_via_LP(M, k, D, control)
 }
 
-## And now use along the lines of
-##   data("SVM_Benchmarking_Regression")
-##   relation_choice(SVM_Benchmarking_Regression, k = 1)
-##   relation_choice(SVM_Benchmarking_Regression, k = 2)
-## etc.
+## Solve SD/CKS choice problem via LP.
+
+.find_SD_or_CKS_choice_via_LP <-
+function(M, k, D, control)
+{
+    ## Solve SD/CKS choice problem via LP using a "tailor-made"
+    ## linearization.
+    ## With u the committee/winners indicator, the BQP is
+    ##   \sum_{i,j} (1 - u_i) m_{ij} u_j \to \min
+    ## subject to \sum_i u_i = k, where m_{ij} \ge 0 and m_{ii} = 0.
+    ## Letting I be the set of (i,j) with m_{ij} > 0 and
+    ##   z_{ij} = (1 - u_i) u_j
+    ## for (i,j) \in I, we can write the BQP as
+    ##   \sum_I m_{ij} z_{ij} \to \min
+    ## subject to
+    ##   z_{ij} + u_i - u_j \ge 0
+    ## (as z_{ij} \ge (1 - u_i) + u_j - 1 = - u_i + u_j) and
+    ##   \sum_i u_i = k.
+    ## We use c(u, z) for the decision variables.
+
+    ## Argument handling.
+    all <- identical(control$all, TRUE)
+    MIP <- identical(control$MIP, TRUE)
+    sparse <- !identical(control$sparse, FALSE)
+    solver <- control$solver
+    control <- control$control
+
+    ind <- which(M > 0, arr.ind = TRUE)
+    n_u <- nrow(M)
+    n_z <- nrow(ind)
+    pos <- seq_len(n_z)
+    if(sparse) {
+        mat <- simple_triplet_matrix(c(rep.int(pos, 3L),
+                                       rep.int(n_z + 1L, n_u)),
+                                     c(c(ind), n_u + pos, seq_len(n_u)),
+                                     rep.int(c(1, -1, 1),
+                                             c(n_z, n_z, n_z + n_u)),
+                                     n_z + 1L,
+                                     n_u + n_z)
+    } else {
+        mat <- matrix(0, n_z, n_u)
+        mat[cbind(pos, ind[, 1L])] <- 1
+        mat[cbind(pos, ind[, 2L])] <- -1
+        mat <- rbind(cbind(mat, diag(1, n_z)),
+                     rep.int(c(1, 0), c(n_u, n_z)))
+    }
+
+    milp <- MILP(c(rep.int(0, n_u), M[ind]),
+                 list(mat,
+                      c(rep.int(">=", n_z), "=="),
+                      c(double(n_z), k)),
+                 types = rep.int(c("B", "C"), c(n_u, n_z)),
+                 maximum = FALSE)
+    nos <- if(all) NA_integer_ else 1L
+    out <- solve_MILP(milp, solver, c(list(n = nos), control))
+    
+    pos <- seq_len(n_u)  
+    finisher <- function(e) as.set(D[e$solution[pos] == 1])
+    out <- if(all) lapply(out, finisher) else finisher(out)
+    if(MIP) attr(out, "MIP") <- milp
+    out
+}
+
+## Solve SD/CKS choice problem via QP.
+
+.find_SD_or_CKS_choice_via_QP <-
+function(M, k, D, control)
+{
+    ## Argument handling.
+    all <- identical(control$all, TRUE)
+    MIP <- identical(control$MIP, TRUE)
+    sparse <- !identical(control$sparse, FALSE)
+    solver <- control$solver
+    control <- control$control
+
+    n <- nrow(M)
+    mat <- if(sparse)
+        simple_triplet_matrix(rep.int(1, n), seq_len(n), rep.int(1, n),
+                              1L, n)
+    else
+        matrix(1, 1L, n)
+
+    miqp <- MIQP(list(2 * M, - colSums(M)),
+                 list(mat, "==", k),
+                 types = "B",
+                 maximum = TRUE)
+    nos <- if(all) NA_integer_ else 1L
+    out <- solve_MIQP(miqp, solver, c(list(n = nos), control))
+    
+    finisher <- function(e) as.set(D[e$solution == 1])
+    out <- if(all) lapply(out, finisher) else finisher(out)
+    if(MIP) attr(out, "MIP") <- miqp
+    out
+}

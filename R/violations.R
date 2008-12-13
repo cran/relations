@@ -26,7 +26,7 @@ function(x,
                        list(I))
         if(!nrow(ind)) return(set())
         ## And construct a set of violating tuples from this.
-        D <- rep.int(list(as.list(relation_domain(x)[[1L]])), ncol(ind))
+        D <- rep.int(list(.get_elements_in_homorelation(x)), ncol(ind))
         as.set(apply(ind, 1L, function(i) as.tuple(Map(`[[`, D, i))))
     }
 }

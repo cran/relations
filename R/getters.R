@@ -1,3 +1,5 @@
+### * relation_class_ids
+
 relation_class_ids <-
 function(x)
 {
@@ -21,10 +23,12 @@ function(x)
         stop("Can only determine class ids for equivalences and weak orders.")
 }
 
+### * relation_classes
+
 relation_classes <-
 function(x)
 {
-    ids <- relation_class_ids(x)
+    ids <- relation_class_ids(as.relation(x))
     out <- split(seq_along(ids), ids)
     class(out) <- c("relation_classes_of_objects")
     attr(out, "labels") <- names(ids)
@@ -58,6 +62,8 @@ function(x)
     y
 }
 
+### * relation_elements
+
 ## Let R be an endorelation.
 ## An element x is minimal if there is no "smaller" one, i.e.:
 ##   There is no y != x with y R x
@@ -73,66 +79,88 @@ function(x)
 ## Note that sets cannot directly be indexed positionally.
 ## (Well, as of 2008-08-08 there is sets:::.set_subset() ...)
 
-relation_minimal_elements <-
-function(x, na.rm = TRUE)
+relation_elements <-
+function(x, which, ...)
 {
-    if(!relation_is_endorelation(x))
+    ## We try to minimize code duplication, so that the respective
+    ## getters only do computations based on incidences.  Of course, the
+    ## 'elements' concept would at least make sense for arbitrary (not
+    ## necessarily binary) homorelations ...
+    if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
-    X <- as.list(relation_domain(x)[[1L]])
-    I <- .incidence(x)
-    diag(I) <- 0
-    as.set(X[colSums(I, na.rm = na.rm) == 0])
+    which <- match.arg(which,
+                       c("first", "minimal", "maximal", "last"))
+    ## Allowing for user-defined 'which' functions is somewhat moot,
+    ## because all we can do then is call which(x, ...), which users
+    ## could have called directly in the first place.
+    ind <- do.call(sprintf(".find_elements_being_%s", which),
+                   list(.incidence(x), ...))
+    as.set(.get_elements_in_homorelation(x)[ind])
 }
 
-relation_first_elements <-
-function(x, na.rm = FALSE)
+.find_elements_being_minimal <-
+function(I, na.rm = TRUE)
 {
-    if(!relation_is_endorelation(x))
-        stop("Argument 'x' must be an endorelation.")
-    X <- as.list(relation_domain(x)[[1L]])
-    I <- .incidence(x)
+    diag(I) <- 0
+    colSums(I, na.rm = na.rm) == 0
+}
+
+.find_elements_being_first <-
+function(I, na.rm = FALSE)
+{
     diag(I) <- 1
     ind <- rowSums(I != 1, na.rm = na.rm) == 0
-    as.set(X[!is.na(ind) & ind])
+    !is.na(ind) & ind
 }
 
-relation_last_elements <-
-function(x, na.rm = FALSE)
+.find_elements_being_last <-
+function(I, na.rm = FALSE)
 {
-    if(!relation_is_endorelation(x))
-        stop("Argument 'x' must be an endorelation.")
-    X <- as.list(relation_domain(x)[[1L]])
-    I <- .incidence(x)
     diag(I) <- 1
     ind <- colSums(I != 1, na.rm = na.rm) == 0
-    as.set(X[!is.na(ind) & ind])
+    !is.na(ind) & ind
 }
 
-relation_maximal_elements <-
-function(x, na.rm = TRUE)
+.find_elements_being_maximal <-
+function(I, na.rm = TRUE)
 {
-    if(!relation_is_endorelation(x))
-        stop("Argument 'x' must be an endorelation.")
-    X <- as.list(relation_domain(x)[[1L]])
-    I <- .incidence(x)
     diag(I) <- 0
-    as.set(X[rowSums(I, na.rm = na.rm) == 0])
+    rowSums(I, na.rm = na.rm) == 0
 }
 
-## Let R be an endorelation.
-## An element y is a *successor* of an element x if y != x, x R y
-## and for all z != y with x R z we have y R z.
-## <FIXME>
-## One should verify that this is really the "official" definition.
-## </FIXME>
+## * relation_successors
+
+## See http://en.wikipedia.org/wiki/Covering_relation:
+## Let X be a poset with associated strict partial order <.
+## Then y covers x if x < y but there is no z with x < z and z < y.
+## For the case of a general endorelation R, we use the following
+## generalization: let P = R & !t(R) be the asymmetric part of R, and
+## take y to cover x if x P y but there is no z with x P z and z P y.
+##
+## Note that there seem to be other definitions of covering as well.
+## E.g., Brandt and Fischer, "Computational Aspects of Covering in
+## Dominance Graphs" (In R. C. Holte and A. Howe, editors, Proceedings
+## of the 22nd Conference on Artificial Intelligence (AAAI), pages
+## 694-699. AAAI Press, 2007.), URL:
+## http://www.tcs.informatik.uni-muenchen.de/~pamas/papers/aaai2007.pdf
+## have upward, downward and bidirectional covering for dominance
+## (asymmetric and irreflexive) relations > defined as
+##   x C_u y: x > y and for all z, z > x implies z > y
+##   x C_d y: x > y and for all z, y > z implies x > z
+##   x C_b y: x C_u y and x C_d y
+## Note that this is different from the Wikipedia definition.  If we
+## take {1, 2, 3} with the natural > strict order and x=3 and y=1, then
+## x C_b y because there is no z with z > x or y > z.
+##
+## Eventually, we could add a 'which' argument to relation_cover() ...
 
 relation_successors <-
 function(x, e = NULL)
 {
-    if(!relation_is_endorelation(x))
+    if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
 
-    X <- as.list(relation_domain(x)[[1L]])
+    X <- .get_elements_in_homorelation(x)
     ## Need to find the positions of e in X.
     if(is.null(e)) {
         pos <- seq_along(X)
@@ -147,21 +175,57 @@ function(x, e = NULL)
     ## but then what is the tuple (X, X) called?  (And what is used in
     ## the general k-ary case?)  [Wikipedia says that X_1, ..., X_k are
     ## the domains of the relation.]
-    I <- relation_incidence(x)
-    class(I) <- "matrix"
-    diag(I) <- 0
-    out <- lapply(pos,
-                  function(p) {
-                      candidates <- which(I[p, ] == 1)
-                      ## Need to find those candidates y for which there
-                      ## is no z != y with z R y.
-                      ind <- candidates[colSums(I[candidates,
-                                                  candidates,
-                                                  drop = FALSE]) == 0]
-                      as.set(X[ind])
-                  })
+    I <- .relation_cover_incidences(relation_incidence(x), pos)
+    out <- lapply(pos, function(p) as.set(X[I[p, ] == 1]))
+    ## (Yes there may be more efficient ways ...)
     names(out) <- rownames(I)[pos]
     out
 }
 
 ## Should similarly have something for finding precursors.
+
+### * relation_cover
+
+relation_cover <-
+function(x)
+{
+    if(!(is.relation(x) && relation_is_endorelation(x)))
+        stop("Argument 'x' must be an endorelation.")
+
+    D <- .domain(x)
+    I <- .relation_cover_incidences(.incidence(x), seq_along(D[[1L]]))
+    meta <- list(is_endorelation = TRUE,
+                 is_irreflexive = TRUE,
+                 is_antisymmetric = TRUE,
+                 is_asymmetric = TRUE)
+    .make_relation_from_domain_and_incidence(D, I, meta)
+}
+
+.relation_cover_incidences <-
+function(I, pos)
+{
+    ## Compute the incidences of the covering relation for the given
+    ## positions.  When computing successors of a subset of elements
+    ## this only computes what is needed (although not necessarily in
+    ## the most effective way).
+
+    ## Determine the incidences of the strict preference P(R) associated
+    ## with R.
+    I <- I * (1 - t(I))
+
+    J <- I
+    for(p in pos) {
+        ## Compute all z for which x P(R) z.
+        candidates <- which(I[p, ] == 1)
+        ## Need to find those candidates y for which there is no z != y
+        ## with z P(R) y.
+        J[p, candidates] <-
+            (colSums(I[candidates, candidates, drop = FALSE]) == 0)
+    }
+    J
+}
+
+### Local variables: ***
+### mode: outline-minor ***
+### outline-regexp: "### [*]+" ***
+### End: ***

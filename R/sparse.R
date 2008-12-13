@@ -26,6 +26,7 @@ function(x)
                                      nrow = nrow(x), ncol = ncol(x),
                                      dimnames = dimnames(x)))
     ind <- which(x != vector(typeof(x), 1L), arr.ind = TRUE)
+    dimnames(ind) <- NULL
     simple_triplet_matrix(ind[, 1L], ind[, 2L], x[ind],
                           nrow = nrow(x), ncol = ncol(x),
                           dimnames = dimnames(x))
@@ -51,12 +52,75 @@ function(x, ...)
 ##       Dim = c(nrow, ncol))
 ## (Note that these have C-style indices starting at zero.)
 
+Ops.simple_triplet_matrix <-
+function(e1, e2)
+{
+    ## Currently, we only implement binary addition of two simple
+    ## triplet matrices, and multiplication and division of a simple
+    ## triplet matrix by a number.
+    ## More could be added (but note that the elements could have
+    ## arbitrary modes).
+    
+    if(nargs() == 1L)
+        stop(gettextf("Unary '%s' not defined for \"%s\" objects.",
+                      .Generic, .Class))
+
+    if(!(as.character(.Generic) %in% c("+", "*", "/")))
+        stop(gettextf("Generic '%s' not defined for \"%s\" objects.",
+                      .Generic, .Class))
+
+    ## Obviously, the following could be generalized ...
+    if(as.character(.Generic) == "*") {
+        if(length(e1) == 1L) {
+            e2$v <- e2$v * e1
+            return(e2)
+        }
+        if(length(e2) == 1L) {
+            e1$v <- e1$v * e2
+            return(e1)
+        }
+        stop("Not implemented.")
+    }
+    if(as.character(.Generic) == "/") {
+        if(length(e2) == 1L) {
+            e1$v <- e1$v / e2
+            return(e1)
+        }
+        stop("Not implemented.")
+    }
+
+    ## This leaves adding two simple triplet matrices.
+    e1 <- as.simple_triplet_matrix(e1)
+    e2 <- as.simple_triplet_matrix(e2)
+    ## Check dimensions: currently, no recycling.
+    if((e1$nrow != e2$nrow) || (e1$ncol != e2$ncol))
+        stop("Incompatible dimensions.")
+    if(length(e1$v) < length(e2$v)) {
+        ## Swap e1 and e2 so that duplicated indices can be found more
+        ## efficiently.
+        e3 <- e1
+        e1 <- e2
+        e2 <- e3
+    }
+    ## Find duplicated indices.
+    pos <- match(paste(e2$i, e2$j, sep = "\r"),
+                 paste(e1$i, e1$j, sep = "\r"),
+                 nomatch = 0L)
+    ind <- which(pos == 0L)
+    e1$v[pos] <- e1$v[pos] + e2$v[pos > 0L]
+    e1$i <- c(e1$i, e2$i[ind])
+    e1$j <- c(e1$j, e2$j[ind])
+    e1$v <- c(e1$v, e2$v[ind])
+    ## Maybe do some more about dimnames eventually.
+    e1
+}
+
 dim.simple_triplet_matrix <-
 function(x)
     c(x$nrow, x$ncol)
 
 ## <TODO>
-## Add a dim setter ...
+## Add a dim setter.
 ## </TODO>
 
 dimnames.simple_triplet_matrix <-
@@ -85,20 +149,15 @@ function(x, value)
     x
 }
 
-## <TODO>
-## Add dimnames support for
-##   [ rbind cbind
-## methods for simple_triplet_matrix.
-## Could also add dim and dimnames setters ...
-## </TODO>
-
 `[.simple_triplet_matrix` <-
 function(x, i, j, ...)
 {
     ## (Well, we certainly don't drop ...)
 
+    ## Note that calling x[] with a simple triplet matrix x will call
+    ## the subscript method with args x and missing ...
     na <- nargs()
-    if(na == 1L)
+    if((na == 1L) || (na == 2L) && missing(i))
         return(x)
 
     nr <- x$nrow
@@ -132,10 +191,14 @@ function(x, i, j, ...)
                 stop("Invalid subscript.")
             i <- i[!apply(i == 0, 1L, any), , drop = FALSE]
             out <- vector(mode = typeof(x$v), length = nrow(i))
-            pi <- match(i[, 1L], x$i)
-            pj <- match(i[, 2L], x$j)
-            ind <- which(pi == pj)
-            out[ind] <- x$v[pi[ind]]
+            ##  pi <- match(i[, 1L], x$i)
+            ##  pj <- match(i[, 2L], x$j)
+            ##  ind <- which(pi == pj)
+            ##  out[ind] <- x$v[pi[ind]]
+            pos <- match(paste(i[,1L], i[,2L], sep = "\r"),
+                         paste(x$i, x$j, sep = "\r"),
+                         nomatch = 0L)
+            out[pos > 0] <- x$v[pos]
         }
     }
     else {
@@ -285,6 +348,21 @@ function(x, incomparables = FALSE, MARGIN = 1L, fromLast = FALSE, ...)
         x[, which(ind)]
 }
 
+c.simple_triplet_matrix <-
+function(..., recursive = FALSE)
+{
+    args <- list(...)
+    ind <- which(sapply(args, inherits, "simple_triplet_matrix"))
+    args[ind] <-
+        lapply(args[ind],
+               function(x) {
+                   y <- vector(typeof(x$v), x$nrow * x$ncol)
+                   y[x$i + (x$j - 1L) * x$nrow] <- x$v
+                   y
+               })
+    do.call(c, args)
+}
+
 ## Utitilies for creating special simple triplet matrices:
 
 .simple_triplet_zero_matrix <-
@@ -338,12 +416,10 @@ function(x)
         simple_sparse_array(array(integer(), dim(x)), c(x),
                             dim(x), dimnames(x))
     ind <- which(x != vector(typeof(x), 1L), arr.ind = TRUE)
+    dimnames(ind) <- NULL
     simple_sparse_array(ind, x[ind], dim(x), dimnames(x))
 }
 
-## <FIXME>
-## R 2.8.0 has made as.array() generic.
-## Once we depend on R (>= 2.8.0), register this.
 as.array.simple_sparse_array <-
 function(x, ...)
 {
@@ -354,7 +430,6 @@ function(x, ...)
     y[x$i] <- v
     y
 }
-## </FIXME>
 
 dim.simple_sparse_array <-
 function(x)
@@ -364,11 +439,17 @@ dimnames.simple_sparse_array <-
 function(x)
     x$dimnames
 
+## <TODO>
+## Add dim and dimnames setters.
+## </TODO>
+
 `[.simple_sparse_array` <-
 function(x, ...)
 {
+    ## Note that calling x[] with a simple sparse array x will call the
+    ## subscript method with args x and missing ...
     na <- nargs()
-    if(na == 1L)
+    if((na == 1L) || (na == 2L) && missing(..1))
         return(x)
 
     nd <- length(x$dim)

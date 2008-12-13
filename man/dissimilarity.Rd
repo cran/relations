@@ -33,8 +33,10 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       This computes the cardinality of the symmetric difference of two
       relations, i.e., the number of tuples contained in exactly one of
       two relations.  For preference relations, this coincides with the
-      \emph{Kemeny-Snell} metric (Kemeny and Snell, 1962).  Can also be
-      referred to as \code{"manhattan"}.
+      \emph{Kemeny-Snell} metric (Kemeny and Snell, 1962).  For linear
+      orders, it gives Kendall's \eqn{\tau} metric (Diaconis, 1988).
+      
+      Can also be referred to as \code{"manhattan"}.
     }
 
     \item{\code{"euclidean"}}{the Euclidean distance between the
@@ -51,7 +53,8 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       relations, this gives the usual Kendall ranks arranged according
       to decreasing preference (and averaged for ties).  Then the
       generalized Cook-Seiford distance is defined as the \eqn{l_1}
-      distance between the generalized ranks.
+      distance between the generalized ranks.  For linear orders, this
+      gives Spearman's footrule metric (Diaconis, 1988).
     }
 
     \item{\code{"CKS"}}{Cook-Kress-Seiford distance, a generalization of
@@ -82,7 +85,8 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       number \eqn{p \ge 1}, the usual \eqn{l_p} distance is used.
       Otherwise, it must be a function given the distance function.
       The defaults correspond to using the default relation scores and
-      \eqn{p = 1}.
+      \eqn{p = 1}, which for linear orders gives Spearman's footrule
+      distance.
     }
   }
 }
@@ -95,6 +99,10 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   W. D. Cook and L. M. Seiford (1978),
   Priority ranking and consensus formation.
   \emph{Management Science}, \bold{24}/16, 1721--1732.
+
+  P. Diaconis (1988),
+  \emph{Group Representations in Probability and Statistics}.
+  Institute of Mathematical Statistics: Hayward, CA.
   
   J. G. Kemeny and J. L. Snell (1962),
   \emph{Mathematical Models in the Social Sciences},

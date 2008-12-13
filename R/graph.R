@@ -99,7 +99,7 @@ function(x)
     l <- length(as.list(x)[[1L]])
     if (l < 1L) return(list())
     if (!all(sapply(x, length) == l))
-        stop("All elements need to be of same length!")
+        stop("All elements need to be of same length.")
     ## <NOTE>
     ## We could try making this more efficient by building a big
     ## list and slicing into components ...

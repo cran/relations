@@ -1,4 +1,43 @@
-Changes to 0.4:
+Changes in 0.5:
+
+  o New relation_consensus() method for Cook-Kress-Seiford (CKS)
+    dissimilarity.
+
+  o New SD fitters for consensus preorders, and family 'G' for general
+    crisp endorelations.
+
+  o Performance enhancements for finding all SD consensus solutions, and
+    SD consensus for equivalences or weak orders with a given number of
+    classes.
+
+  o relation_choice() gains a method for CKS dissimilarity, and a
+    'weights' argument.
+
+  o Performance enhancements for SD choice via employing a more compact
+    linearization of the underlying binary quadratic program (BQP).
+
+  o GLPK is now used as the default MILP solver.
+
+  o Consensus and choice fitters now use sparse constraint matrices by
+    default.
+
+  o New class for representing rankings.
+
+  o Improvements for plotting relations and relation ensembles.
+    
+  o New function relation_cover() for computing the covering relation of
+    an endorelation.
+
+  o New function relation_trace() for computing the left or right trace
+    of an endorelation.
+
+  o New simple choice function relation_elements() for determining the
+    minimal, first, last or maximal elements of an endorelation.
+
+  o New predicate relation_is_quasitransitive().
+
+
+Changes in 0.4:
 
   o SD fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
     addition to lp_solve, and optionally use sparse constraint matrices
@@ -29,7 +68,8 @@ Changes to 0.4:
 
   o all.equal() methods added for relations and ensembles
 
-Changes to 0.3:
+
+Changes in 0.3:
 
   o rank method is default for relation_scores()
 
@@ -54,7 +94,7 @@ Changes to 0.3:
     of relations between these
 
 
-Changes to 0.2:
+Changes in 0.2:
 
   o Copeland's method added to relation_consensus()
 
@@ -85,6 +125,6 @@ Changes to 0.2:
   o transform_incidences() added for transforming incidence matrices of
     endorelations from/to other codings found in literature
 
-Changes to 0.1:
+Changes in 0.1:
 
   o Initial release

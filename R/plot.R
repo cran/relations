@@ -5,33 +5,49 @@ function(x,
          attrs = list(graph = list(rankdir = "BT"),
                       edge = list(arrowsize = "0"),
                       node = list(shape = "rectangle", fixedsize = FALSE)),
-         limit = 6L, labels = NULL,
+         limit = 6L, labels = NULL, main = NULL,
          ...)
 {
     if(!relation_is_endorelation(x))
-        stop("Plot only available for endorelations.")
+        stop("Plotting only available for endorelations.")
     if(!relation_is_crisp(x))
-        stop("Plot only available for crisp relations.")
-    if(!(relation_is_transitive(x)
-         && (relation_is_antisymmetric(x) || relation_is_complete(x))))
-        stop("Plot only available for antisymmetric or complete transitive relations.")
+        stop("Plotting only available for crisp relations.")
+
     if(!require("Rgraphviz"))
-        stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
+        stop("Plotting requires package 'Rgraphviz'.")
 
-    ## if x is a preference, use dual of complement instead
-    if (!relation_is_antisymmetric(x))
-      x <- t(!x)
+    ## possibly, transform relation to obtain a poset,
+    ## and change main title if not specified.
+    if(relation_is_linear_order(x)) {
+        if (is.null(main))
+            main <- "Linear Order"
+    } else if(relation_is_partial_order(x)) {
+        if (is.null(main))
+            main <- "Partial Order"
+    } else if(relation_is_weak_order(x)) {
+        ## If x is a preference, use dual instead.
+        x <- dual(x)
+        if (is.null(main))
+            main <- "Weak Order"
+    } else { ## extract asymmetric part
+        x <- x & dual(x)
+        if (is.null(main))
+            main <- "Strict Preference Part"
+    }
 
-    ## compute transitive reduction to avoid cluttered graph,
-    ## and extract incidence
+    ## Compute transitive reduction to avoid cluttered graph, and
+    ## extract incidence.
     I <- unclass(relation_incidence(transitive_reduction(x), limit = limit))
 
-    ## transform to graphViz-compatible incidence
+    ## Perform reflexive reduction.
+    diag(I) <- 0
+
+    ## Transform to graphViz-compatible incidence.
     if (is.null(labels))
         labels <- labels(I)
     dimnames(I) <- lapply(labels, .make_unique_labels)
 
-    plot(as(I, "graphNEL"), attrs = attrs, ...)
+    plot(as(I, "graphNEL"), attrs = attrs, main = main, ...)
 }
 
 .make_unique_labels <-
@@ -50,7 +66,7 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
                               edge = list(arrowsize = "0"),
                               node = list(shape = "rectangle",
                                           fixedsize = FALSE))),
-         ..., layout = NULL)
+         ..., layout = NULL, main = NULL)
 {
     ## Why not?
     ## Of course, we maybe should only have one thing ...
@@ -58,18 +74,17 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
         stop("Wrong class.")
     if(!all(sapply(x,
                    function(e)
-                   (relation_is_crisp(e)
-                    && relation_is_endorelation(e)
-                    && relation_is_transitive(e)
-                    && (relation_is_antisymmetric(e)
-                        || relation_is_complete(e))))))
-        stop("Plotting only available for ensembles of antisymmetric or complete transitive crisp relations.")
+                   (relation_is_crisp(e) && relation_is_endorelation(e)))))
+        stop("Plotting only available for ensembles of crisp endorelations.")
+
     ## Make things a bit more efficient.
     x <- unclass(x)
     if(!require("Rgraphviz"))
-        stop("Need Rgraphviz package (obtainable from bioconductor.org))!")
+        stop("Plotting requires package 'Rgraphviz'.")
+
     ## Number of elements.
     n <- length(x)
+
     ## Layout.
     byrow <- TRUE
     if(is.null(layout)) {
@@ -91,19 +106,63 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
     on.exit(par(op))
     attrs <- rep(attrs, length.out = length(x))
     for(i in seq_along(x)) {
-        ## if x is a preference, use dual of complement instead
-        if (!relation_is_antisymmetric(x[[i]]))
-          x[[i]] <- t(!x[[i]])
+        ## possibly, transform relation to obtain a poset,
+        ## and change main title if not specified.
+        if (relation_is_linear_order(x[[i]])) {
+            if (is.null(main[i]) || is.na(main[i]))
+                main[i] <- "Linear Order"
+        } else if (relation_is_partial_order(x[[i]])) {
+            if (is.null(main[i]) || is.na(main[i]))
+                main[i] <- "Partial Order"
+        } else if(relation_is_weak_order(x[[i]])) {
+            ## If x is a preference, use dual instead.
+            x[[i]] <- dual(x[[i]])
+            if (is.null(main[i]) || is.na(main[i]))
+                main[i] <- "Weak Order"
+        } else { ## extract asymmetric part
+            x[[i]] <- x[[i]] & dual(x[[i]])
+            if (is.null(main[i]) || is.na(main[i]))
+                main[i] <- "Strict Preference Part"
+        }
 
-        ## compute transitive reduction to avoid cluttered graph
-        ## and extract incidence
+        ## Compute transitive reduction to avoid cluttered graph and
+        ## extract incidence.
         I <- unclass(relation_incidence(transitive_reduction(x[[i]])))
+
+        ## Perform reflexive reduction.
+        diag(I) <- 0
+
         dimnames(I) <- lapply(labels(I), .make_unique_labels)
-        plot(as(I, "graphNEL"), attrs = attrs[[i]], ...)
+        plot(as(I, "graphNEL"), attrs = attrs[[i]], main = main[i], ...)
     }
 }
+
+####### plot incidence matrices
+
+plot.relation_incidence <-
+function(x, oma = c(3, 3, 1, 1), ...)
+{
+    o <- rev(order(colSums(x, na.rm = TRUE)))
+    parhold <- par(no.readonly = TRUE)
+    on.exit(par(parhold))
+    par(las = 2L, oma = oma)
+    x <- x[o, o]
+    image.default(1:dim(x)[2L], 1:dim(x)[1L], t(x)[, dim(x)[1L]:1L],
+                  axes = FALSE, col = gray(c(1, 0.5)),
+                  xlab = "", ylab = "", ...)
+    axis(1L, at = 1:dim(x)[1L], labels = rev(labels(x)[[1L]]))
+    axis(2L, at = 1:dim(x)[2L], labels = rev(labels(x)[[2L]]))
+}
+
+### plot rankings
+
+plot.ranking <-
+function(x, ...)
+    plot(as.relation(x), ...)
+
 
 ### Local variables: ***
 ### mode: outline-minor ***
 ### outline-regexp: "### [*]+" ***
 ### End: ***
+

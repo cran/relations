@@ -79,11 +79,11 @@ relation_pclust(x, k, method, m = 1, weights = 1, control = list())
   S. Régnier (1965).
   Sur quelques aspects mathématiques des problèmes de classification
   automatique.
-  \emph{ICC Bulletin}, \bold{4}:175--191.
+  \emph{ICC Bulletin}, \bold{4}, 175--191.
   
   W. Gaul and M. Schader (1988).
   Clusterwise aggregation of relations.
-  \emph{Applied Stochastic Models and Data Analysis}, \bold{4}:273--282.
+  \emph{Applied Stochastic Models and Data Analysis}, \bold{4}, 273--282.
 }
 \keyword{math}
 \keyword{cluster}

@@ -20,7 +20,7 @@ data("Cetacea")
   In: J. F. Marcotorchino, J. M. Proth, and J. Janssen (eds.),
   Data analysis in real life environment: ins and outs of solving
   problems.
-  Amsterdam, The Netherlands: Elsevier Science Publishers B.V.
+  Elsevier Science Publishers B.V.: Amsterdam, The Netherlands.
 }
 \examples{
 data("Cetacea")

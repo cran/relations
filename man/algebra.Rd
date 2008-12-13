@@ -121,7 +121,7 @@ relation_antijoin(x, y, \dots)
 \references{
   E. F. Codd (1970),
   A relational model of data for large shared data banks.
-  \emph{Communications of the ACM}, \bold{13}(6), 377--387. 
+  \emph{Communications of the ACM}, \bold{13}/6, 377--387. 
 }
 \seealso{
   \code{\link{relation}}

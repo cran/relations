@@ -21,7 +21,7 @@
   \item{x}{an object inheriting from class \code{\link{relation}},
     representing an endorelation.}
   \item{method}{character string indicating the method (see
-    \sQuote{Details}).}
+    \bold{Details}).}
   \item{normalize}{logical indicating whether the score vector should be
     normalized to sum up to 1.}
   \item{weights}{Numeric vector of weights used in incidence
@@ -99,7 +99,7 @@
 \references{
   J.-P. Barthélemy and B. Monjardet (1981),
   The median procedure in cluster analysis and social choice theory.
-  \emph{Mathematical Social Sciences}, \bold{1}:235--267.
+  \emph{Mathematical Social Sciences}, \bold{1}, 235--267.
 
   J. C. Borda (1781),
   Mémoire sur les élections au scrutin.
@@ -108,15 +108,15 @@
   D. Bouyssou (1992),
   Ranking methods based on valued preference relations: A
   characterization of the net flow network.
-  \emph{European Journal of Operational Research}, \bold{60}:61--67.
+  \emph{European Journal of Operational Research}, \bold{60}, 61--67.
 	
   M. Kendall (1955),
   Further contributions to the theory of paired comparisons.
-  \emph{Biometrics}, \bold{11}:43--62.
+  \emph{Biometrics}, \bold{11}, 43--62.
 
   M. Regenwetter and E. Rykhlevskaia (2004),
   On the (numerical) ranking associated with any finite binary relation.
-  \emph{Journal of Mathematical Psychology}, \bold{48}:239--246.
+  \emph{Journal of Mathematical Psychology}, \bold{48}, 239--246.
   
   T. H. Wei (1952).
   \emph{The algebraic foundation of ranking theory}.

@@ -8,7 +8,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 
     if(!is.null(domain)) {
         ## Be nice first ...
-        if(!is.list(domain) || is.set(domain))
+        if(!is.list(domain) || is.cset(domain))
             domain <- list(X = domain)
         ## ... and then check.
         if(!.is_valid_relation_domain(domain))
@@ -47,7 +47,8 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
         ## No recycling here, as we really do not know the arity of a
         ## function (nor is this a well-defined notion).
         I <- array(do.call(mapply,
-                           c(list(charfun), sets:::.cartesian_product(domain))),
+                           c(list(charfun),
+                             sets:::.cartesian_product(lapply(domain, as.list)))),
                    dim = sapply(domain, length))
         return(.make_relation_from_domain_and_incidence(domain, I))
     }
@@ -63,7 +64,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
         arity <- length(domain)
 
         ## merge domain labels
-        domain <- unique(unlist(domain))
+        domain <- do.call(cset_union, domain)
 
         ## recycle domain for charfun-generators
         if (!is.null(charfun))
@@ -125,6 +126,10 @@ function(x)
 as.relation <-
 function(x, ...)
     UseMethod("as.relation")
+
+as.relation.default <-
+function(x, ...)
+    stop("Method not implemented.")
 
 ## Obviously.
 as.relation.relation <-
@@ -373,7 +378,7 @@ function(target, current, check.attributes = TRUE, ...)
                  gettextf("Relation sizes (%s, %s) differ.",
                           paste(s_t, collapse = "/"),
                           paste(s_c, collapse = "/"))))
-    if(!relations:::.domain_is_equal(D_t, D_c)) {
+    if(!.domain_is_equal(D_t, D_c)) {
         ## Maybe use all.equal.set eventually.
         return(c(msg,
                  gettextf("Relation domains differ in elements.")))
@@ -505,10 +510,10 @@ function(e1, e2)
         return(relation_complement(e1))
     }
 
-    ## In addition to comparisons, we support & | * + - %/% %%.
+    ## In addition to comparisons, we support & | * + - %/% %% and ^.
     if(!(as.character(.Generic)
          %in% c("<", "<=", ">", ">=", "==", "!=",
-                "&", "|", "*", "+", "-", "%/%", "%%")))
+                "&", "|", "*", "+", "-", "%/%", "%%", "^")))
         stop(gettextf("Generic '%s' not defined for \"%s\" objects.",
                       .Generic, .Class))
 
@@ -520,8 +525,26 @@ function(e1, e2)
            )
 
     D1 <- .domain(e1)
-    D2 <- .domain(e2)
     I1 <- .incidence(e1)
+
+    if(as.character(.Generic == "^")) {
+        ## Allow for nonnegative integer powers of endorelations.
+        if(!relation_is_endorelation(e1))
+            stop("Power only defined for endorelations.")
+        if((length(e2) != 1L) || (e2 < 0) || (e2 != round(e2)))
+            stop("Power only defined for nonnegativ integer exponents.")
+        if(e2 == 0) {
+            ## Return the equality relation: maybe encapsulate this, or
+            ## at least add metadata?
+            I <- diag(nrow = .size(e1)[[1L]])
+            return(.make_relation_from_domain_and_incidence(D1, I))
+        } else {
+            I <- Reduce("%*%", rep.int(I1, e2))
+            return(.make_relation_from_domain_and_incidence(D1, I))
+        }
+    }
+
+    D2 <- .domain(e2)
     I2 <- .incidence(e2)
 
     ## Composition (*) is only defined for binary relations with
@@ -567,6 +590,7 @@ function(e1, e2)
            )
 }
 
+rev.relation <-
 t.relation <-
 function(x)
 {
@@ -580,8 +604,6 @@ function(x)
 
 ### ** .make_relation_by_domain_and_incidence
 
-## (That's all for the time being ...)
-
 .make_relation_by_domain_and_incidence <-
 function(D, I)
 {
@@ -594,14 +616,15 @@ function(D, I)
             attr(D, "auto") <- TRUE
         }
     }
-    ## No dimnames in incidence.
-    dimnames(I) <- NULL
+
     size <- dim(I)
+    ## Strip incidence of all attributes but dim.
+    I <- structure(c(I), dim = size)
 
     ## Now canonicalize by turning all domain components into sets, and
     ## reordering the incidences accordingly.  Note that components
     ## which are already sets are already in the canonical order.
-    ind <- sapply(D, is.set)
+    ind <- sapply(D, is.cset)
     if(!all(ind)) {
         ## If all components are sets there is nothing we need to do.
         pos <- vector("list", length = length(D))
@@ -620,6 +643,22 @@ function(D, I)
                    .arity = length(size),
                    .size = size),
               class = "relation_by_domain_and_incidence")
+}
+
+### ** .make_relation_by_domain_and_scores
+
+.make_relation_by_domain_and_scores <-
+function(D, scores)
+{
+    ## Assume a valid domain.
+
+    n <- length(scores)
+
+    structure(list(domain = rep.int(list(D), 2L),
+                   scores = scores,
+                   .arity = 2L,
+                   .size = c(n, n)),
+              class = "relation_by_domain_and_scores")
 }
 
 ### * Relation generators
@@ -666,13 +705,15 @@ function(D, G)
         L <- length(G)
         if((L > 0) && (length(D) != L))
             stop("Relation arity mismatch between domain and graph.")
-        D <- lapply(D, as.set)
+        D <- lapply(D, as.cset)
         ## Check containment.
-        ## FIXME: do we really need/want the factor transformation?
-###         if((L > 0) && !all(mapply(set_is_subset,
-###                                   .transform_factors_into_characters(values),
-###                                   .transform_factors_into_characters(D))))
-###             stop("Invalid graph with out-of-domain elements.")
+        ## <FIXME>
+        ## Do we really need/want the factor transformation?
+        ##    if((L > 0) && !all(mapply(set_is_subset,
+        ##                              .transform_factors_into_characters(values),
+        ##                              .transform_factors_into_characters(D))))
+        ##         stop("Invalid graph with out-of-domain elements.")
+        ## </FIXME>
         if((L > 0) && !all(mapply(set_is_subset, values, D)))
             stop("Invalid graph with out-of-domain elements.")
     } else
@@ -688,6 +729,16 @@ function(D, G)
     .make_relation_from_domain_and_incidence(D, I)
 }
 
+### ** .make_relation_from_domain_and_scores
+
+.make_relation_from_domain_and_scores <-
+function(D, scores, meta = list())
+{
+    R <- .make_relation_by_domain_and_scores(D, scores)
+    meta <- c(list(is_endorelation = TRUE, is_crisp = TRUE), meta)
+    meta <- meta[!duplicated(names(meta))]
+    .make_relation_from_representation_and_meta(R, meta)
+}
 
 ### * Utilities
 

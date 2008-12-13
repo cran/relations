@@ -5,7 +5,8 @@
 relation_arity <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) &&
+       !is.ranking(x) && !is.relation_multiset(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     .arity(x)
 }
@@ -13,13 +14,21 @@ function(x)
 .arity <-
 function(x)
     UseMethod(".arity")
+.arity.ranking <-
+function(x) 2
 .arity.relation <-
 function(x)
     .get_property_from_object_or_representation(x, "arity", .arity)
 .arity.relation_ensemble <-
 function(x)
     attr(x, ".Meta")$arity
+.arity.relation_multiset <-
+function(x)
+    .arity(sets:::.set_subset2(x, 1))
 .arity.relation_by_domain_and_incidence <-
+function(x)
+    x$.arity
+.arity.relation_by_domain_and_scores <-
 function(x)
     x$.arity
 
@@ -28,10 +37,11 @@ function(x)
 relation_domain <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) &&
+       !is.ranking(x) && !is.relation_multiset(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     domain <- .domain(x)
-    ret <- as.tuple(lapply(domain, as.set))
+    ret <- as.tuple(domain)
     structure(ret,
               names = names(domain),
               class = c("relation_domain", class(ret))
@@ -41,13 +51,28 @@ function(x)
 .domain <-
 function(x)
     UseMethod(".domain")
+
+.domain.ranking <-
+function(x)
+    rep(list(x$domain), 2)
+
 .domain.relation <-
 function(x)
     .get_property_from_object_or_representation(x, "domain", .domain)
+
 .domain.relation_ensemble <-
 function(x)
     attr(x, ".Meta")$domain
+
+.domain.relation_multiset <-
+function(x)
+    .domain(sets:::.set_subset2(x, 1))
+
 .domain.relation_by_domain_and_incidence <-
+function(x)
+    x$domain
+
+.domain.relation_by_domain_and_scores <-
 function(x)
     x$domain
 
@@ -141,7 +166,8 @@ function(x, value)
 relation_size <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) &&
+       !is.ranking(x) && !is.relation_multiset(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     .size(x)
 }
@@ -149,13 +175,22 @@ function(x)
 .size <-
 function(x)
     UseMethod(".size")
+.size.ranking <-
+function(x)
+    rep(length(x$domain), 2)
 .size.relation <-
 function(x)
     .get_property_from_object_or_representation(x, "size", .size)
 .size.relation_ensemble <-
 function(x)
     attr(x, ".Meta")$size
+.size.relation_multiset <-
+function(x)
+    .size(sets:::.set_subset2(x, 1))
 .size.relation_by_domain_and_incidence <-
+function(x)
+    x$.size
+.size.relation_by_domain_and_scores <-
 function(x)
     x$.size
 

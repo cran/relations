@@ -3,18 +3,20 @@
 ### * fit_relation_symdiff
 
 ## General purpose fitter for families
-.SD_families <- c("E", "L", "O", "P", "T", "C", "A", "S", "M", "R")
+.SD_families <- c("E", "L", "O", "W", "T", "C", "A", "S", "M",
+                  "preorder", "transitive")
 ## where:
-##   E ... Equivalence relations               REF SYM TRA
-##   L ... Linear orders                   TOT REF ASY TRA
-##   O ... Partial order                       REF ASY TRA
-##   P ... complete Preorder ("ordering")  TOT REF     TRA
-##   T ... Tournament                      TOT IRR ASY
-##   C ... Complete relations              TOT
-##   A ... Antisymmetric relations                 ASY
-##   S ... Symmetric relations                     SYM
-##   M ... Matches                         TOT REF
-##   R ... tRansitive relations                        TRA
+##   E ............ Equivalence relations                 REF SYM TRA
+##   L ............ Linear orders                     TOT REF ASY TRA
+##   O ............ Partial orders                        REF ASY TRA
+##   W ............ Weak orders (complete preorders)  TOT REF     TRA
+##   T ............ Tournament                        TOT IRR ASY
+##   C ............ Complete relations                TOT
+##   A ............ Antisymmetric relations                   ASY
+##   S ............ Symmetric relations                       SYM
+##   M ............ Matches                           TOT REF
+##   preorder ..... Preorders                             REF     TRA
+##   transitive ... Transitive relations                          TRA
 ## and
 ##   TOT ... total/complete
 ##   REF ... reflexive
@@ -45,9 +47,22 @@ function(n, family)
     N <- n * (n - 1L)                   # Number of distinct pairs.
     switch(EXPR = family,
            E =, L =, S =, T = N / 2,    # upper_tri parametrization
-           A =, C =, M =, O =, P =, R = N    # offdiag parametrization
+           A =, C =, M =, O =, W =,
+           preorder =, transitive = N   # offdiag parametrization
            )
 }
+
+## Note that for families which are symmetric (x_{ij} = x_{ji}, E and S)
+## or complete and antisymmetric (x_{ij} = 1 - x_{ji}, L and T) we use
+## an upper_tri parametrization.  For the others, we use offdiag:
+.SD_families_using_offdiag_parametrization <-
+    .SD_families[!.SD_families %in% c("E", "L", "S", "T")]
+## Some of these have TOT or ASY constraints (but not both):
+.SD_families_using_tot_or_asy_constraints <-
+    c("A", "C", "M", "O", "W")
+## Note that for the families using upper_tri parametrization, TOT or
+## ASY constraints either give trivial (together with SYM: E and S)
+## results or are redundant.
 
 ## Number of transitivity constraints for the non-redundant pairs.
 ## (None for tournaments.)
@@ -57,35 +72,36 @@ function(n, family)
     family <- match.arg(family, .SD_families)
     N <- n * (n - 1L) * (n - 2L)        # Number of distinct triples.
     switch(EXPR = family,
-           E = N / 2, L = N / 3, O =, P =, R = N,
+           E = N / 2,
+           L = N / 3,
+           O =, W =, preorder =, transitive = N,
            A =, C =, M =, S =, T = 0L   # Families w/out TRA.
            )
 }
 
 ## Make function giving the position of incidence (i, j) in the vector
 ## of non-redundant incidences used for symdiff fitting (upper.tri() for
-## E/L/S/T and .offdiag() for A/C/M/O/P/R, respectively).
+## E/L/S/T and .offdiag() for the others, respectively).
 .make_pos <-
 function(n, family)
 {
     family <- match.arg(family, .SD_families)
-    if(family %in% c("E", "L", "S", "T"))
-        function(i, j) {
-            ## Position of x_{ij} in x[upper.tri(x)].
-            i + (j - 1L) * (j - 2L) / 2
-        }
-    else
+    if(family %in% .SD_families_using_offdiag_parametrization)
         function(i, j) {
             ## Position of x_{ij} in x[.offdiag(x)]
             (n - 1L) * (j - 1L) + i - (i >= j)
+        }
+    else
+        function(i, j) {
+            ## Position of x_{ij} in x[upper.tri(x)].
+            i + (j - 1L) * (j - 2L) / 2
         }
 }
 
 fit_relation_symdiff <-
 function(x, family = .SD_families, control = list())
 {
-    sparse <- control$sparse
-    if(is.null(sparse)) sparse <- FALSE
+    sparse <- !identical(control$sparse, FALSE)
 
     ## Number of objects:
     n <- nrow(x)
@@ -100,30 +116,24 @@ function(x, family = .SD_families, control = list())
     ## Need all variables in { 0 , 1 }, i.e., >= 0 and <= 1 and binary,
     ## plus maybe totality or antisymmetry, plus maybe transitivity.
     NP <- .n_of_pairs(n, family)
-    ## <NOTE>
-    ## At least for the time being, these families are exactly the
-    ## families using an off-diagonal parametrization (except "R").
-    family_is_A_or_C_or_M_or_O_or_P <-
-        family %in% c("A", "C", "M", "O", "P")
-    ## </NOTE>
     eye <-
         if(!sparse) diag(1, NP) else .simple_triplet_diag_matrix(1, NP)
     constr_mat <-
         rbind(eye,
               eye,
-              if(family_is_A_or_C_or_M_or_O_or_P)
-              .make_tot_or_asy_constraint_mat(n, sparse),
+              if(family %in% .SD_families_using_tot_or_asy_constraints)
+                  .make_tot_or_asy_constraint_mat(n, sparse),
               .make_transitivity_constraint_mat(n, family, sparse))
     constr_dir <-
         c(rep.int(">=", NP),
           rep.int("<=", NP),
-          if(family_is_A_or_C_or_M_or_O_or_P)
+          if(family %in% .SD_families_using_tot_or_asy_constraints)
               .make_tot_or_asy_constraint_dir(n, family),
           .make_transitivity_constraint_dir(n, family))
     constr_rhs <-
         c(rep.int(0, NP),
           rep.int(1, NP),
-          if(family_is_A_or_C_or_M_or_O_or_P)
+          if(family %in% .SD_families_using_tot_or_asy_constraints)
               .make_tot_or_asy_constraint_rhs(n),
           .make_transitivity_constraint_rhs(n, family))
 
@@ -140,64 +150,59 @@ function(x, family = .SD_families, control = list())
 
     labels <- dimnames(x)
 
+    all <- identical(control$all, TRUE)
+
     ## Compute diagonal:
     ## For families which are reflexive or irreflexive, set all ones or
     ## zeroes, respectively.  For all other families, a diagonal entry
     ## will be set iff it is in the (non-strict weighted) majority of
     ## the input relations.
-    ## <FIXME>
-    ## What is a reasonable thing to do when using the fitter code to
-    ## determine fuzzy euclidean consensus relations?
-    ## </FIXME>
-    diagonal <- if(family %in% c("E", "L", "M", "O", "P"))
+    diagonal <- if(family %in% c("E", "L", "M", "O", "W", "preorder"))
         rep.int(1, n)
     else if(family == "T")
         rep.int(0, n)
-    else
+    else if(!all)
         diag(x) >= 0
-
-    types <- rep.int("B", NP)
-
-    if(!is.null(all <- control$all) && identical(all, TRUE)) {
-        verbose <- control$verbose
-        if(is.null(verbose))
-            verbose <- getOption("verbose")
-        return(.find_all_relation_symdiff_optima(n, family,
-                                                 objective_in,
-                                                 constr_mat,
-                                                 constr_dir,
-                                                 constr_rhs,
-                                                 types,
-                                                 A,
-                                                 acmaker,
-                                                 labels,
-                                                 verbose,
-                                                 diagonal,
-                                                 control$solver,
-                                                 control$control))
+    else {
+        ## If all solutions are sought, mark diagonal entries with no
+        ## strict majority as NA to allow for later expansion.
+        ifelse(diag(x) != 0, diag(x) >= 0, NA)
     }
 
-    out <- solve_MILP(MILP(objective_in,
-                           list(constr_mat,
-                                constr_dir,
-                                constr_rhs),
-                           types = types,
-                           maximum = TRUE),
-                      control$solver,
-                      control$control)
+    types <- rep.int("B", NP)
+    milp <- MILP(objective_in,
+                 list(constr_mat,
+                      constr_dir,
+                      constr_rhs),
+                 types = types,
+                 maximum = TRUE)
+    verbose <- control$verbose
+    if(is.null(verbose))
+        verbose <- getOption("verbose")
+    
+    if(all) {
+        ## Do this in a separate function which also handles diagonal
+        ## expansion.
+        return(.find_all_relation_symdiff_optima(milp,
+                                                 control$solver,
+                                                 control$control,
+                                                 family, labels,
+                                                 diagonal,
+                                                 verbose))
+    }
+    out <- solve_MILP(milp, control$solver,
+                      c(list(verbose = verbose), control$control))
     .stop_if_lp_status_is_nonzero(out$status, family)
-
     ## Turn the solution back into a full incidence matrix.
-    fit <- if(family_is_A_or_C_or_M_or_O_or_P || (family == "R"))
-        .make_incidence_from_offdiag(round(out$solution),
-                                     family, labels, diagonal)
-    else
-        .make_incidence_from_upper_tri(round(out$solution),
-                                       family, labels, diagonal)
+    fit <- .make_incidence_from_symdiff_MILP_solution(out$solution,
+                                                      family, labels,
+                                                      diagonal)
     ## For the time being, tack some of the MILP results on so that we
     ## can look at them (but not everything due to size ...)
+    ## <FIXME>
+    ## Remove this eventually ...
     attr(fit, ".lp") <- out[c("solution", "objval")]
-
+    ## </FIXME>
     fit
 }
 
@@ -217,196 +222,38 @@ function(status, family)
 ### * .find_all_relation_symdiff_optima
 
 .find_all_relation_symdiff_optima <-
-function(n, family, obj, mat, dir, rhs, types, A, acmaker, labels,
-         verbose = FALSE, diagonal, solver, control)
+function(x, solver, control, family, labels, diagonal, verbose)
 {
-    ## Start by computing one optimal solution.
-    out <- solve_MILP(MILP(obj, list(mat, dir, rhs), types = types,
-                           maximum = TRUE),
-                       solver, control)
+    y <- solve_MILP(x, solver,
+                    c(list(n = NA_integer_, verbose = verbose),
+                      control))
     ## Check status:
-    .stop_if_lp_status_is_nonzero(out$status, family)
-    ## Value of the optimum:
-    Vopt <- out$objval
-
-    ## And now find all optimal additional constrains (i.e., at the end,
-    ## all optimal incidences in 3-column matrix (i, j, x_{ij}) form) by
-    ## looping over all non-redundant (i, j) pairs.
-    ##
-    ## Somewhat tricky: in case the fitting is to include additional
-    ## constraints, we need to ensure that we only try to add feasible
-    ## additional constraints.
-
-    ## Determine a 2-column matrix of (i, j) index pairs to loop over.
-    ind <- if(family %in% c("E", "L", "S", "T")) {
-        ## Loop over all pairs 1 <= i < j <= n.
-        which(upper.tri(matrix(0, n, n)), arr.ind = TRUE)
-    }
+    if(length(y) == 1L)
+        .stop_if_lp_status_is_nonzero(y[[1L]]$status, family)
+    ## Turn back into solutions, expanding diagonal entries if needed.
+    .make_incidence <- function(e, d)
+        .make_incidence_from_symdiff_MILP_solution(e$solution,
+                                                   family, labels, d)
+    if(!any(ind <- which(is.na(diagonal))))
+        lapply(y, .make_incidence, diagonal)
     else {
-        ## Loop over all pairs 1 <= i != j <= n.
-        which(.offdiag(matrix(0, n, n)), arr.ind = TRUE)
-    }
-    ## But exclude pairs already specified in additional constraints.
-    if(!is.null(A)) {
-        hpos <- if(family %in% c("E", "L", "S", "T")) {
-            function(i, j)
-                ifelse(i < j, n * (j - 1L) + i, n * (i - 1L) + j)
+        diagonals <- list(diagonal)
+        for(i in ind) {
+            diagonals <- do.call(c,
+                                 lapply(diagonals,
+                                        function(x) {
+                                            u <- v <- x
+                                            u[i] <- 0
+                                            v[i] <- 1
+                                            list(u, v)
+                                        }))
         }
-        else {
-            function(i, j)
-                n * (j - 1L) + i
-        }
-        ind <- ind[apply(outer(hpos(ind[, 1L], ind[, 2L]),
-                               hpos(A[, 1L], A[, 2L]),
-                               "!="),
-                         2L, all), ]
+        do.call(c,
+                lapply(diagonals,
+                       function(diagonal)
+                       lapply(y, .make_incidence, diagonal)))
     }
-
-    Alist <- list(matrix(0, 0L, 3L))
-    for(k in seq_len(nrow(ind))) {
-        Alist <- do.call("c",
-                         lapply(Alist,
-                                .add_constraint_for_single_pair,
-                                ind[k, 1L], ind[k, 2L],
-                                acmaker, Vopt, obj, mat, dir, rhs, types,
-                                solver, control))
-        if(verbose)
-            message(gettextf("N_of_pairs: %d *** N_of_optimal_branches: %d",
-                             k, length(Alist)))
-    }
-
-    lapply(Alist, .make_incidence_from_triples, family, labels, diagonal)
-}
-
-.add_constraint_for_single_pair <-
-function(A, i, j, acmaker, Vopt, obj, mat, dir, rhs, types,
-         solver, control)
-{
-    ## Figure out whether additional constraint x_{ij} = 0 or x_{ij} =
-    ## 1, or both, are "optimal".
-
-    optimize_with_valid_additional_constraints <-
-        function(A) {
-        ## Compute optimum for a valid matrix A of additional
-        ## constraints.
-        add <- acmaker(A)
-        out <- solve_MILP(MILP(obj,
-                               list(rbind(mat, add$mat),
-                                    c(dir, add$dir),
-                                    c(rhs, add$rhs)),
-                               types = types,
-                               maximum = TRUE),
-                          solver, control)
-        if(out$status != 0) return(-Inf)
-        out$objval
-    }
-
-    Aij0 <- rbind(A, c(i, j, 0))
-    Aij1 <- rbind(A, c(i, j, 1))
-    ## <NOTE>
-    ## At least when using the objval given by lpSolve:lp(), we cannot
-    ## reliably test v < Vopt due to numerical precision issues.  This
-    ## seems to be less of an issue when using
-    ##   sum(out$objective * out$solution)
-    ## (as done by solve_MILP()) but then we've still seen cases where
-    ## max(v0, v1) < Vopt, hence we compare with some tolerance (could
-    ## improve ...).
-    tol <- 1e-10
-    ## (Smaller than .Machine$double.eps^0.5 as e.g. used in the
-    ## all.equal() comparisons.)
-    v <- optimize_with_valid_additional_constraints(Aij0)
-    if(v < Vopt - tol) return(list(Aij1))
-    v <- optimize_with_valid_additional_constraints(Aij1)
-    if(v < Vopt - tol) return(list(Aij0))
-    ## To debug, use the following.
-    ##   v0 <- optimize_with_valid_additional_constraints(Aij0)
-    ##   v1 <- optimize_with_valid_additional_constraints(Aij1)
-    ##   cat(i, j, v0, v1, Vopt, "\n")
-    ##   if(all(c(v0, v1) < Vopt)) browser()
-    ##   if(v0 < Vopt) return(list(Aij1))
-    ##   if(v1 < Vopt) return(list(Aij0))
-    ##   cat("splitting", i, j, "\n")
-    list(Aij0, Aij1)
-}
-
-### * .find_all_relation_symdiff_optima_E_or_P_k
-
-.find_all_relation_symdiff_optima_E_or_P_k <-
-function(n, nc, family, obj, mat, dir, rhs, types, A, acmaker, labels,
-         verbose = FALSE, solver, control)
-{
-    ## <NOTE>
-    ## This still has a lot of code duplicated with
-    ##   .find_all_relation_symdiff_optima()
-    ## </NOTE>
-
-    ## Start by computing one optimal solution.
-    out <- solve_MILP(MILP(obj, list(mat, dir, rhs), types = types,
-                           maximum = TRUE),
-                       solver, control)
-    ## Check status:
-    .stop_if_lp_status_is_nonzero(out$status, family)
-    ## Value of the optimum:
-    Vopt <- out$objval
-
-    ## Need to loop over all pairs of objects i and classes k:
-    ind <- cbind(rep(seq_len(n), each = nc),
-                 rep.int(seq_len(nc), n))
-
-    ## (Note that we currently do not worry about pairs already
-    ## specified in additional constraints: this is not possible
-    ## directly anyways ...)
-
-    Alist <- list(matrix(0, 0L, 3L))
-    for(k in seq_len(nrow(ind))) {
-        Alist <- do.call("c",
-                         lapply(Alist,
-                                .add_constraint_for_single_pair,
-                                ind[k, 1L], ind[k, 2L],
-                                acmaker, Vopt, obj, mat, dir, rhs, types,
-                                solver, control))
-        if(verbose)
-            message(gettextf("N_of_pairs: %d *** N_of_optimal_branches: %d",
-                             k, length(Alist)))
-    }
-
-
-    out <- lapply(Alist, .make_incidence_from_class_membership_triples,
-                  family, labels)
-    ## Note that equivalence classes are only unique up to permutations
-    ## of the class labels.
-    if(family == "E")
-        out <- unique(out)
-
-    out
-}
-
-.make_incidence_from_class_memberships <-
-function(M, family, labels)
-{
-    family <- match.arg(family, c("E", "P"))
-    I <- if(family == "E")
-        tcrossprod(M)
-    else {
-        nc <- ncol(M)
-        E <- matrix(0, nc, nc)
-        E[row(E) <= col(E)] <- 1
-        tcrossprod(M %*% E, M)
-    }
-    dimnames(I) <- labels
-    I
-}
-
-.make_incidence_from_class_membership_triples <-
-function(x, family, labels)
-{
-    M <- matrix(0, max(x[, 1L]), max(x[, 2L]))
-    M[x[, -3L, drop = FALSE]] <- x[, 3L]
-    ## Could also (more efficiently?) do:
-    ##  ind <- which(x[, 3L] > 0)
-    ##  M[x[ind, -3L, drop = FALSE]] <- 1
-    .make_incidence_from_class_memberships(M, family, labels)
-}
+}    
 
 ### * Constraint generators: transitivity.
 
@@ -542,8 +389,8 @@ function(n, family)
 
 ## This translates into
 ##
-##    x_{ij} + x_{ji} >= 1      [completeness: P]
-##    x_{ij} + x_{ji} <= 1      [antisymmetry: O]
+##    x_{ij} + x_{ji} >= 1      [completeness: C M W]
+##    x_{ij} + x_{ji} <= 1      [antisymmetry: A O]
 ##
 ## For tournaments, we have both, and hence x_{ij} + x_{ji} = 1 as for
 ## linear orders, such that we use the non-redundant upper diagonal
@@ -565,7 +412,7 @@ function(n, sparse = FALSE)
     }
 
     ## Position of x_{ij} in x[.offdiag(x)]
-    pos <- .make_pos(n, "P")
+    pos <- .make_pos(n, "W")
 
     ## Number of non-redundant pairs.
     NP <- n * (n - 1L)
@@ -602,7 +449,7 @@ function(n, family)
     NC <- n * (n - 1L) / 2
     rep.int(switch(EXPR = family,
                    A =, O = "<=",       # ASY
-                   C =, M =, P = ">="   # TOT
+                   C =, M =, W = ">="   # TOT
                    ),
             NC)
 }
@@ -670,9 +517,9 @@ function(pos, n_of_variables, nc, sparse = FALSE)
             i <- rep.int(ind, 2L * nc) +
                 rep(seq(from = 0, by = na, length.out = nc),
                     each = 2L * na)
-            j <- sapply(seq_len(nc),
-                        function(k)
-                        c(pos(A[, 1L], k), pos(A[, 2L], k)))
+            j <- unlist(lapply(seq_len(nc),
+                               function(k)
+                               c(pos(A[, 1L], k), pos(A[, 2L], k))))
             v <- rep.int(c(rep.int(1, na),
                            ifelse(A[, 3L] == 1, -1, 1)),
                          nc)
@@ -684,15 +531,15 @@ function(pos, n_of_variables, nc, sparse = FALSE)
              rhs = rep.int(ifelse(A[, 3L] == 1, 0, 1), nc))
     }
 
-### .make_additional_constraint_maker_using_memberships_P
+### .make_additional_constraint_maker_using_memberships_W
 
-.make_additional_constraint_maker_using_memberships_P <-
+.make_additional_constraint_maker_using_memberships_W <-
 function(pos, n_of_variables, nc, sparse = FALSE)
     function(A) {
         ## (This assumes A has already been validated and
         ## canonicalized.)
         na <- nrow(A)
-        ## For preferences (P):
+        ## For weak orders (W):
         ## A constraint of the form (i, j, 1) means that i <= j,
         ## or class(i) <= class(j).
         ## I.e., can only have m_{jk} = 1 if \sum_{l <= k} m_{il} = 1,
@@ -843,14 +690,13 @@ function(A, family)
 ### ** .make_incidence_from_upper_tri
 
 .make_incidence_from_upper_tri <-
-function(x, family = c("E", "L", "S", "T"),
-         labels = NULL, diagonal)
+function(x, family, labels = NULL, diagonal)
 {
     ## Compute the indicences of a binary relation from the given family
     ## from its upper triangular part (provided this is possible, of
     ## course).
 
-    family <- match.arg(family)
+    family <- match.arg(family, c("E", "L", "S", "T"))
 
     if(family %in% c("E", "S")) {
         ## Equivalence or symmetric relation.
@@ -872,10 +718,10 @@ function(x, family = c("E", "L", "S", "T"),
 ### ** .make_incidence_from_offdiag
 
 .make_incidence_from_offdiag <-
-function(x, family = c("A", "C", "M", "O", "P", "R"),
-         labels = NULL, diagonal)
+function(x, family, labels = NULL, diagonal)
 {
-    family <- match.arg(family)
+    family <- match.arg(family,
+                        .SD_families_using_offdiag_parametrization)
 
     ## Compute the indicences of a binary relation from its off-diagonal
     ## part (provided this is possible, of course).
@@ -893,6 +739,19 @@ function(x, family = c("A", "C", "M", "O", "P", "R"),
 
     dimnames(y) <- labels
     y
+}
+
+### ** .make_incidence_from_symdiff_MILP_solution
+
+.make_incidence_from_symdiff_MILP_solution <-
+function(x, family, labels = NULL, diagonal)
+{
+    if(family %in% .SD_families_using_offdiag_parametrization)
+        .make_incidence_from_offdiag(round(x),
+                                     family, labels, diagonal)
+    else
+        .make_incidence_from_upper_tri(round(x),
+                                       family, labels, diagonal)
 }
 
 ### ** .make_incidence_from_triples
@@ -920,306 +779,170 @@ function(x, family, labels = NULL, diagonal)
     I
 }
 
+### ** .make_incidence_from_class_memberships
+
+.make_incidence_from_class_memberships <-
+function(M, family, labels)
+{
+    family <- match.arg(family, c("E", "W"))
+    I <- if(family == "E")
+        tcrossprod(M)
+    else {
+        nc <- ncol(M)
+        E <- matrix(0, nc, nc)
+        E[row(E) <= col(E)] <- 1
+        tcrossprod(M %*% E, M)
+    }
+    dimnames(I) <- labels
+    I
+}
+
+### ** .make_incidence_from_class_membership_triples
+
+.make_incidence_from_class_membership_triples <-
+function(x, family, labels)
+{
+    M <- matrix(0, max(x[, 1L]), max(x[, 2L]))
+    M[x[, -3L, drop = FALSE]] <- x[, 3L]
+    ## Could also (more efficiently?) do:
+    ##  ind <- which(x[, 3L] > 0)
+    ##  M[x[ind, -3L, drop = FALSE]] <- 1
+    .make_incidence_from_class_memberships(M, family, labels)
+}
+
 ### * fit_relation_symdiff_E_k
 
 fit_relation_symdiff_E_k <-
 function(C, nc, control = list())
 {
-    ## Fit equivalence with at most nc classes.
-
-    sparse <- control$sparse
-    if(is.null(sparse)) sparse <- FALSE
-
-    ## Using the membership matrix M = [m_{ik}] corresponding to the
-    ## equivalence relation (partition), we have to maximize
-    ##   \sum_{i,j,k} c_{ij} m_{ik} m_{jk}
-    ## over all binary stochastic matrices M.  This is done by a simple
-    ## linearization of the quadratic binary program.
-    ##
-    ## Let
-    no <- nrow(C)
-    ## be the number of objects.  Then the membership matrix M is a
-    ## binary stochastic no x nc matrix.  There are no^2 x nc products
-    ## y_{ijk} = m_{ik} m_{jk}.  For each we have the constraints
-    ##    y_{ijk} - m_{ik} - m_{jk} >= -1,
-    ##    y_{ijk} - m_{ik}          <=  0
-    ##    y_{ijk}          - m_{jk} <=  0
-    ## and each y_{ijk} gets coefficient c_{ij} in the objective
-    ## function.
-    ## Note that when i=j, the first contraint is
-    ##    y_{iik} - 2 m_{ik} >= -1
-    ## and the second and third are the same.
-
-    ## We put all decision variables into a matrix [c(Y), c(M)] (so that
-    ## the Y part has k "blocks" because k varies the slowest).
-
-    n_of_y_variables <- no ^ 2 * nc
-    n_of_m_variables <- no * nc
-    n_of_variables <- n_of_y_variables + n_of_m_variables
-
-    pos_m <- function(i, k) {
-        ## Position of variable m_{ik}.
-        n_of_y_variables + i + (k - 1L) * no
-    }
-
-    ind_o <- seq_len(no)
-    ind_c <- seq_len(nc)
-    ind_y <- seq_len(n_of_y_variables)
-    z <- as.matrix(expand.grid(ind_o, ind_o, ind_c))
-    pos_m_ik <- pos_m(z[, 1L], z[, 3L])
-    pos_m_jk <- pos_m(z[, 2L], z[, 3L])
-    dup <- pos_m_ik == pos_m_jk
-    ## Note that dup has no * nc = n_of_m_variables "true" entries.
-
-    ## Build the three constraint objects:
-    ind <- ind_y
-    n_of_y_constraints <- 3L * n_of_y_variables - n_of_m_variables    
-    if(!sparse) {
-        constraint_mat <- matrix(0, n_of_y_constraints, n_of_variables)
-        constraint_mat[cbind(ind, ind_y)] <- 1
-        constraint_mat[cbind(ind[dup], pos_m_ik[dup])] <- -2
-        constraint_mat[cbind(ind[!dup], pos_m_ik[!dup])] <- -1
-        constraint_mat[cbind(ind[!dup], pos_m_jk[!dup])] <- -1
-        ind <- ind + n_of_y_variables
-        constraint_mat[cbind(ind, ind_y)] <- 1
-        constraint_mat[cbind(ind, pos_m_ik)] <- -1
-        ind <- seq.int(from = 2L * n_of_y_variables + 1L,
-                       to = n_of_y_constraints)
-        constraint_mat[cbind(ind, ind_y[!dup])] <- 1
-        constraint_mat[cbind(ind, pos_m_jk[!dup])] <- -1
-    } else {
-        len <- length(ind)              # n_of_y_variables ...
-        constraint_mat <-
-            simple_triplet_matrix(c(ind, ind[dup],
-                                    rep.int(ind[!dup], 2L),
-                                    rep.int(ind + n_of_y_variables, 2L),
-                                    rep.int(seq.int(from = 2L *
-                                                    n_of_y_variables + 1L, 
-                                                    to =
-                                                    n_of_y_constraints),
-                                            2L)),
-                                  c(ind,
-                                    pos_m_ik[dup],
-                                    pos_m_ik[!dup],
-                                    pos_m_jk[!dup],
-                                    ind,
-                                    pos_m_ik,
-                                    ind[!dup],
-                                    pos_m_jk[!dup]),
-                                  c(rep.int(1, len),
-                                    rep.int(-2, n_of_m_variables),
-                                    rep.int(-1, 2L * (len - n_of_m_variables)),
-                                    rep.int(1, len),
-                                    rep.int(-1, len),
-                                    rep.int(1, len - n_of_m_variables),
-                                    rep.int(-1, len - n_of_m_variables)),
-                                  n_of_y_constraints, n_of_variables)
-    }
-    constraint_dir <-
-        c(rep.int(">=", n_of_y_variables),
-          rep.int("<=", 2L * n_of_y_variables - n_of_m_variables))
-    constraint_rhs <-
-        c(rep.int(-1, n_of_y_variables),
-          rep.int(0, 2L * n_of_y_variables - n_of_m_variables))
-    ## Don't forget that we need a binary stochastic matrix M.
-    constraint_mat <-
-        rbind(constraint_mat,
-              cbind(matrix(0, no, n_of_y_variables),
-                    kronecker(rbind(rep.int(1, nc)), diag(1, no))))
-    constraint_dir <- c(constraint_dir, rep.int("==", no))
-    constraint_rhs <- c(constraint_rhs, rep.int(1, no))
-    ## Ensure that that all classes are used (\sum_i m_{ik} >= 1) and
-    ## arranged so that the number of objects in the classes is
-    ## nonincreasing (this should make it more efficient to find the
-    ## unique solutions in case all solutions are sought):
-    ##   \sum_i m_{i,k} >= \sum_i m_{i,k+1}, k = 1, ..., nc - 1.
-    constraint_mat <-
-        rbind(constraint_mat,
-              cbind(matrix(0, nc, n_of_y_variables),
-                    kronecker(matrix(c(rep.int(c(1,
-                                                 rep.int(0, nc - 1L),
-                                                 -1),
-                                               nc - 1L),
-                                       1),
-                                     nrow = nc, ncol = nc),
-                              rbind(rep.int(1, no)))))
-    constraint_dir <- c(constraint_dir, rep.int(">=", nc))
-    constraint_rhs <- c(constraint_rhs, c(rep.int(0, nc - 1L), 1))
-    ## Handle possibly additional explicit constrains.
-    ## (Which specify that pairs of objects are in relation or not.)
-    acmaker <-
-        .make_additional_constraint_maker_using_memberships_E(pos_m,
-                                                              n_of_variables,
-                                                              nc, sparse)
-    if(!is.null(A <- control$constraints)) {
-        A <- .canonicalize_additional_constraints(A, "E")
-        add <- acmaker(A)
-        constraint_mat <- rbind(constraint_mat, add$mat)
-        constraint_dir <- c(constraint_dir, add$dir)
-        constraint_rhs <- c(constraint_rhs, add$rhs)
-    }
-
     labels <- dimnames(C)
 
-    ## Set up augmented target function.
-    objective_in <- c(rep.int(c(C), nc), double(n_of_m_variables))
+    ## The optimization problem we have to solve is
+    ##   \sum_{i,j,k} c_{ij} m_{ik} m_{jk} => max
+    ## over all binary stochastic matrices M.
+    ## With x = vec(M), this translates into
+    ##   x' kronecker(I, C) x => max
+    ## under the constraints that x is all binary with 
+    ##   kronecker(1', I) x = 1
+    ## Rather than simply requiring that all classes are to be used via
+    ##   kronecker(I, 1') x >= 1
+    ## we actually prefer to arrange them in non-increasing cardinality
+    ##   \sum_i m_{i,k} \ge \sum_i m_{i,k+1}, k = 1, ..., nc - 1
+    ## and require that the smallest one is non-empty as well:
+    ##   \sum_i m_{i,nc} \ge 1
 
-    binary_positions <- seq_len(n_of_m_variables) + n_of_y_variables
-    types <- .make_types(n_of_variables, B = binary_positions)
+    sparse <- !identical(control$sparse, FALSE)
 
-    if(!is.null(all <- control$all) && identical(all, TRUE)) {
-        verbose <- control$verbose
-        if(is.null(verbose))
-            verbose <- getOption("verbose")
-        ## For finding all solutions, we loop over combinations of
-        ## objects and classes:
+    no <- nrow(C)
+    Q <- kronecker(diag(1, nc, nc), C)
+    ## (No need to take halves as linear part is zero.)
+    if(sparse)
+        Q <- as.simple_triplet_matrix(Q)
+    mat <- rbind(kronecker(rbind(rep.int(1, nc)), diag(1, no, no)),
+                 ## The first matrix has 1 in the main and -1 in the
+                 ## first upper diagonal.
+                 kronecker(matrix(c(rep.int(c(1,
+                                              rep.int(0, nc - 1L),
+                                              -1),
+                                            nc - 1L),
+                                    1),
+                                  nrow = nc, ncol = nc),
+                           rbind(rep.int(1, no))))
+    ## (Of course, we can generate mat more efficiently ...)
+    if(sparse)
+        mat <- as.simple_triplet_matrix(mat)
+    dir <- rep.int(c("==", ">="), c(no, nc))
+    rhs <- rep.int(c(1, 0, 1), c(no, nc - 1L, 1L))
+
+    ## Handle possibly additional explicit constrains.
+    ## (Which specify that pairs of objects are in relation or not.)
+    if(!is.null(A <- control$constraints)) {
+        pos <- function(i, k) {
+            ## Position of variable m_{ik}.
+            i + (k - 1L) * no
+        }
         acmaker <-
-            .make_additional_constraint_maker_using_o_c_pairs(pos_m,
-                                                              n_of_variables,
-                                                              nc, sparse)
-        return(.find_all_relation_symdiff_optima_E_or_P_k(no,
-                                                          nc,
-                                                          "E",
-                                                          objective_in,
-                                                          constraint_mat,
-                                                          constraint_dir,
-                                                          constraint_rhs,
-                                                          types,
-                                                          A,
-                                                          acmaker,
-                                                          labels,
-                                                          verbose,
-                                                          control$solver,
-                                                          control$control))
+            .make_additional_constraint_maker_using_memberships_E(pos,
+                                                                  no * nc,
+                                                                  nc, sparse)
+        A <- .canonicalize_additional_constraints(A, "E")
+        add <- acmaker(A)
+        mat <- rbind(mat, add$mat)
+        dir <- c(dir, add$dir)
+        rhs <- c(rhs, add$rhs)
     }
 
-    y <- solve_MILP(MILP(objective_in,
-                         list(constraint_mat,
-                              constraint_dir,
-                              constraint_rhs),
-                         types = types,
-                         maximum = TRUE),
-                    control$solver,
-                    control$control)
-    .stop_if_lp_status_is_nonzero(y$status, "E")
+    all <- identical(control$all, TRUE)
+    nos <- if(all) NA_integer_ else 1L
+    solver <- control$solver
+    verbose <- control$verbose
+    if(is.null(verbose))
+        verbose <- getOption("verbose")
+    ## Empirical evidence suggests that explicit linearization works
+    ## faster even for cplex, so linearize by default.
+    linearize <- !identical(control$linearize, FALSE)
+    control <- c(list(n = nos, verbose = verbose, linearize = linearize),
+                 control$control)
+    if(all) {
+        ## Split row-wise (as the first 1 in a row implies all other
+        ## entries are 0).
+        order <- c(matrix(seq_len(no * nc), nrow = nc, ncol = no,
+                          byrow = TRUE))
+        control$order <- order
+    }
+    out <- solve_MIQP(MIQP(list(Q, double(nrow(Q))),
+                           list(mat = mat, dir = dir, rhs = rhs),
+                           types = "B", maximum = TRUE),
+                      solver, control)
+    finisher <- function(e) {
+        .stop_if_lp_status_is_nonzero(e$status, "E")
+        M <- matrix(e$solution, ncol = nc)
+        .make_incidence_from_class_memberships(M, "E", labels)
+    }
+    if(all) {
+        ## Note that equivalence classes are only unique up to
+        ## permutations of the class labels.
+        unique(lapply(out, finisher))
+    }
+    else finisher(out)
 
-    M <- matrix(y$solution[binary_positions], ncol = nc)
-
-    .make_incidence_from_class_memberships(M, "E", labels)
 }
 
-### * fit_relation_symdiff_P_k
+### * fit_relation_symdiff_W_k
 
-fit_relation_symdiff_P_k <-
+fit_relation_symdiff_W_k <-
 function(C, nc, control = list())
 {
-    ## Fit preference with at most nc classes.
+    labels <- dimnames(C)
 
-    sparse <- control$sparse
-    if(is.null(sparse)) sparse <- FALSE
+    ## The optimization problem we have to solve is
+    ##   \sum_{i,j,k,l} c_{ij} I(k <= l) m_{ik} m_{jl} => max
+    ## over all binary stochastic matrices M.
+    ## With x = vec(M), this translates into
+    ##   x' kronecker(J, C) x => max
+    ## (where J_{kl} is one iff k <= l) under the constraints that x is
+    ## all binary with 
+    ##   kronecker(1', I) x = 1
+    ## and if all classes are to be used,
+    ##   kronecker(I, 1') x >= 1
 
-    ## Using the membership matrix M = [m_{ik}] corresponding to the
-    ## indifference relation (partition) with columns sorted according
-    ## to increasing preference, we have to maximize
-    ##   \sum_{i,j,k,l} c_{ij} I(k <= l) m_{ik} m_{jl}
-    ## over all binary stochastic matrices M.  This is done by a simple
-    ## linearization of the quadratic binary program.
+    sparse <- !identical(control$sparse, FALSE)
 
-    ## See above, but we need y_{ijkl} = m_{ik} m_{jl} and corresponding
-    ## constraints.
-    ##    y_{ijkl} - m_{ik} - m_{jl} >= -1,
-    ##    y_{ijkl} - m_{ik}          <=  0
-    ##    y_{ijkl}          - m_{jl} <=  0
-    ## Note that when i=j and k=l, the first contraint is
-    ##    y_{iikk} - 2 m_{ik} >= -1
-    ## and the second and third are the same.
-    
+    J <- matrix(0, nc, nc)
+    J[row(J) <= col(J)] <- 1
     no <- nrow(C)
+    Q <- kronecker(J, C)
+    ## (No need to take halves as linear part is zero.)
+    if(sparse)
+        Q <- as.simple_triplet_matrix(Q)
+    mat <- rbind(kronecker(rbind(rep.int(1, nc)), diag(1, no, no)),
+                 kronecker(diag(1, nc, nc), rbind(rep.int(1, no))))
+    ## (Of course, we can generate mat more efficiently ...)
+    if(sparse)
+        mat <- as.simple_triplet_matrix(mat)
+    dir <- rep.int(c("==", ">="), c(no, nc))
+    rhs <- rep.int(1, nc + no)
 
-    n_of_y_variables <- no ^ 2 * nc ^ 2
-    n_of_m_variables <- no * nc
-    n_of_variables <- n_of_y_variables + n_of_m_variables
-
-    pos_m <- function(i, k) {
-        ## Position of variable m_{ik}.
-        n_of_y_variables + i + (k - 1L) * no
-    }
-
-    ind_o <- seq_len(no)
-    ind_c <- seq_len(nc)
-    ind_y <- seq_len(n_of_y_variables)
-    z <- as.matrix(expand.grid(ind_o, ind_o, ind_c, ind_c))
-    pos_m_ik <- pos_m(z[, 1L], z[, 3L])
-    pos_m_jl <- pos_m(z[, 2L], z[, 4L])
-    dup <- pos_m_ik == pos_m_jl
-    ## Note that dup has no * nc = n_of_m_variables "true" entries.
-
-    ## Build the three constraint objects:
-    ind <- ind_y
-    n_of_y_constraints <- 3L * n_of_y_variables - n_of_m_variables
-    if(!sparse) {
-        constraint_mat <- matrix(0, n_of_y_constraints, n_of_variables)
-        ind <- ind_y
-        constraint_mat[cbind(ind, ind_y)] <- 1
-        constraint_mat[cbind(ind[dup], pos_m_ik[dup])] <- -2
-        constraint_mat[cbind(ind[!dup], pos_m_ik[!dup])] <- -1
-        constraint_mat[cbind(ind[!dup], pos_m_jl[!dup])] <- -1
-        ind <- ind + n_of_y_variables
-        constraint_mat[cbind(ind, ind_y)] <- 1
-        constraint_mat[cbind(ind, pos_m_ik)] <- -1
-        ind <- seq.int(from = 2L * n_of_y_variables + 1L,
-                       to = n_of_y_constraints)
-        constraint_mat[cbind(ind, ind_y[!dup])] <- 1
-        constraint_mat[cbind(ind, pos_m_jl[!dup])] <- -1
-    }
-    else {
-        len <- length(ind)              # n_of_y_variables ...
-        constraint_mat <-
-            simple_triplet_matrix(c(ind, ind[dup],
-                                    rep.int(ind[!dup], 2L),
-                                    rep.int(ind + n_of_y_variables, 2L),
-                                    rep.int(seq.int(from = 2L *
-                                                    n_of_y_variables + 1L, 
-                                                    to =
-                                                    n_of_y_constraints),
-                                            2L)),
-                                  c(ind,
-                                    pos_m_ik[dup],
-                                    pos_m_ik[!dup],
-                                    pos_m_jl[!dup],
-                                    ind,
-                                    pos_m_ik,
-                                    ind[!dup],
-                                    pos_m_jl[!dup]),
-                                  c(rep.int(1, len),
-                                    rep.int(-2, n_of_m_variables),
-                                    rep.int(-1, 2L * (len - n_of_m_variables)),
-                                    rep.int(1, len),
-                                    rep.int(-1, len),
-                                    rep.int(1, len - n_of_m_variables),
-                                    rep.int(-1, len - n_of_m_variables)),
-                                  n_of_y_constraints, n_of_variables)
-    }
-    constraint_dir <-
-        c(rep.int(">=", n_of_y_variables),
-          rep.int("<=", 2L * n_of_y_variables - n_of_m_variables))
-    constraint_rhs <-
-        c(rep.int(-1, n_of_y_variables),
-          rep.int(0, 2L * n_of_y_variables - n_of_m_variables))
-    ## Don't forget that we need a binary stochastic matrix M.
-    constraint_mat <-
-        rbind(constraint_mat,
-              cbind(matrix(0, no, n_of_y_variables),
-                    kronecker(rbind(rep.int(1, nc)), diag(1, no))))
-    constraint_dir <- c(constraint_dir, rep.int("==", no))
-    constraint_rhs <- c(constraint_rhs, rep.int(1, no))
-    ## And ensure that all classes are used (\sum_i m_{ik} >= 1):
-    constraint_mat <-
-        rbind(constraint_mat,
-              cbind(matrix(0, nc, n_of_y_variables),
-                    kronecker(diag(1, nc), rbind(rep.int(1, no)))))
-    constraint_dir <- c(constraint_dir, rep.int(">=", nc))
-    constraint_rhs <- c(constraint_rhs, rep.int(1, nc))
     ## Handle constraints on the class sizes.
     if(!is.null(l <- control$l)) {
         ## Verify that l is feasible.
@@ -1231,80 +954,150 @@ function(C, nc, control = list())
         ## rounding only to 9).
         if((length(l) != nc) || (sum(l) != no))
             stop("Invalid specification of class sizes.")
-        ## And now add constraints \sum_j m_{jk} = l_k, k = 1, ..., nc.
-        constraint_mat <-
-            rbind(constraint_mat,
-                  cbind(matrix(0, nc, n_of_y_variables),
-                        kronecker(diag(1, nc), rbind(rep.int(1, no)))))
-        constraint_dir <- c(constraint_dir, rep.int("==", nc))
-        constraint_rhs <- c(constraint_rhs, l)
+        ## And now add constraints \sum_i m_{ik} = l_k, k = 1, ..., nc.
+        mat <- rbind(mat,
+                     kronecker(diag(1, nc), rbind(rep.int(1, no))))
+        dir <- c(dir, rep.int("==", nc))
+        rhs <- c(rhs, l)
     }
-    ## Handle possibly additional explicit constrains.
+    ## Handle additional explicit constrains.
     ## (Which specify that pairs of objects are in relation or not.)
-    acmaker <-
-        .make_additional_constraint_maker_using_memberships_P(pos_m,
-                                                              n_of_variables,
-                                                              nc, sparse)
     if(!is.null(A <- control$constraints)) {
-        A <- .canonicalize_additional_constraints(A, "P")
-        add <- acmaker(A)
-        constraint_mat <- rbind(constraint_mat, add$mat)
-        constraint_dir <- c(constraint_dir, add$dir)
-        constraint_rhs <- c(constraint_rhs, add$rhs)
-    }
-
-    labels <- dimnames(C)
-
-    ## Set up augmented target function, silly way.
-    C <- array(C, c(dim(C), nc, nc))
-    for(k in ind_c)
-        for(l in seq_len(k - 1L))
-            C[, , k, l] <- 0
-
-    objective_in <- c(c(C), double(n_of_m_variables))
-
-    binary_positions <- seq_len(n_of_m_variables) + n_of_y_variables
-    types <- .make_types(n_of_variables, B = binary_positions)
-
-    if(!is.null(all <- control$all) && identical(all, TRUE)) {
-        verbose <- control$verbose
-        if(is.null(verbose))
-            verbose <- getOption("verbose")
-        ## For finding all solutions, we loop over combinations of
-        ## objects and classes:
+        pos <- function(i, k) {
+            ## Position of variable m_{ik}.
+            i + (k - 1L) * no
+        }
         acmaker <-
-            .make_additional_constraint_maker_using_o_c_pairs(pos_m,
-                                                              n_of_variables,
-                                                              nc, sparse)
-        return(.find_all_relation_symdiff_optima_E_or_P_k(no,
-                                                          nc,
-                                                          "P",
-                                                          objective_in,
-                                                          constraint_mat,
-                                                          constraint_dir,
-                                                          constraint_rhs,
-                                                          types,
-                                                          A,
-                                                          acmaker,
-                                                          labels,
-                                                          verbose,
-                                                          control$solver,
-                                                          control$control))
+            .make_additional_constraint_maker_using_memberships_W(pos,
+                                                                  no * nc,
+                                                                  nc, sparse)
+        A <- .canonicalize_additional_constraints(A, "W")
+        add <- acmaker(A)
+        mat <- rbind(mat, add$mat)
+        dir <- c(dir, add$dir)
+        rhs <- c(rhs, add$rhs)
     }
 
-    y <- solve_MILP(MILP(objective_in,
-                         list(constraint_mat,
-                              constraint_dir,
-                              constraint_rhs),
-                         types = types,
-                         maximum = TRUE),
-                    control$solver,
-                    control$control)
-    .stop_if_lp_status_is_nonzero(y$status, "P")
+    all <- identical(control$all, TRUE)
+    nos <- if(all) NA_integer_ else 1L
+    solver <- control$solver
+    verbose <- control$verbose
+    if(is.null(verbose))
+        verbose <- getOption("verbose")
+    ## Empirical evidence suggests that explicit linearization works
+    ## faster even for cplex, so linearize by default.
+    linearize <- !identical(control$linearize, FALSE)
+    control <- c(list(n = nos, verbose = verbose, linearize = linearize),
+                 control$control)
+    if(all) {
+        ## Split row-wise (as the first 1 in a row implies all other
+        ## entries are 0).
+        order <- c(matrix(seq_len(no * nc), nrow = nc, ncol = no,
+                          byrow = TRUE))
+        control$order <- order
+    }
 
-    M <- matrix(y$solution[binary_positions], ncol = nc)
+    out <- solve_MIQP(MIQP(list(Q, double(nrow(Q))),
+                           list(mat = mat, dir = dir, rhs = rhs),
+                           types = "B", maximum = TRUE),
+                      solver, control)
+    finisher <- function(e) {
+        .stop_if_lp_status_is_nonzero(e$status, "W")
+        M <- matrix(e$solution, ncol = nc)
+        .make_incidence_from_class_memberships(M, "W", labels)
+    }
+    if(all) lapply(out, finisher) else finisher(out)
+}
 
-    .make_incidence_from_class_memberships(M, "P", labels)
+### * fit_relation_CKS_via_QP
+
+fit_relation_CKS_via_QP <-
+function(P, Q, family, control)
+{
+    ## Note: relevant families are those which are neither complete nor
+    ## symmetric nor antisymmetric (currently, only transitive relations
+    ## and preorders).
+
+    ## Set up coefficients of binary quadratic program.
+    A <- Q - P - t(P)
+    A[row(A) >= col(A)] <- 0
+    B <- P - Q
+    diag(B) <- - diag(Q)
+
+    ## It would be "natural" to rewrite the objective function in terms
+    ## of vec([x_{ij}]).  But we have transitivity constraint makers
+    ## only for offdiag (and upper.tri) parametrizations, so we use the
+    ## former and deal directly with the diagonal terms.
+
+    sparse <- !identical(control$sparse, FALSE)
+
+    n <- nrow(B)
+    NP <- .n_of_pairs(n, family)
+    pos <- .make_pos(n, family)
+    mat <- .make_transitivity_constraint_mat(n, family, sparse)
+    dir <- .make_transitivity_constraint_dir(n, family)
+    rhs <- .make_transitivity_constraint_rhs(n, family)
+    ## As we also allow for the families using offdiag parametrizatios
+    ## for which the consensus problem admits an LP formulation to use
+    ## the QP formulation: 
+    if(! family %in% .SD_families_using_offdiag_parametrization) {
+        ## Unfortunately, QP formulations for families using upper_tri
+        ## paramatrization are not supported.  Doable via maintaining
+        ## the offdiag parametrization and adding constraints for
+        ## symmetry or antisymmetry and generating full transitivity
+        ## constraints where needed ...
+        stop("Not implemented.")
+    } else if(family %in% .SD_families_using_tot_or_asy_constraints) {
+        mat <- rbind(mat, .make_tot_or_asy_constraint_mat(n, sparse))
+        dir <- c(dir, .make_tot_or_asy_constraint_dir(n, family))
+        rhs <- c(rhs, .make_tot_or_asy_constraint_rhs(n))
+    }
+                     
+    ## When using the QP formulation, need to figure out how to rewrite
+    ##  \sum_{i,j: i < j} \alpha_{ij} x_{ij} x_{ji}
+    ##    + \sum_{ij} \beta_{ij} x_{ij}.
+    ## in terms of vec(offdiag([x_{ij}])).  Note that using a dense QP
+    ## formulation is not very efficient as we really only have O(n^2)
+    ## quadratic terms (but a dense Q has O(n^4) elements).
+    ind <- which(row(A) < col(A), arr.ind = TRUE)
+    i <- ind[, 1L]
+    j <- ind[, 2L]
+    if(sparse) {
+        Q <- simple_triplet_matrix(pos(i, j), pos(j, i), A[ind],
+                                   nrow = NP, ncol = NP)
+    } else {
+        Q <- matrix(0, NP, NP)
+        Q[cbind(pos(i, j), pos(j, i))] <- A[ind]
+    }
+
+    all <- identical(control$all, TRUE)
+    nos <- if(all) NA_integer_ else 1L
+    solver <- control$solver
+    verbose <- control$verbose
+    if(is.null(verbose))
+        verbose <- getOption("verbose")
+    ## Empirical evidence suggests that explicit linearization works
+    ## faster even for cplex, so linearize by default.
+    linearize <- !identical(control$linearize, FALSE)
+    control <- c(list(n = nos, verbose = verbose, linearize = linearize),
+                 control$control)
+    
+    out <- solve_MIQP(MIQP(list(2 * Q, B[.offdiag(B)]),
+                           list(mat = mat, dir = dir, rhs = rhs),
+                           types = "B", maximum = TRUE),
+                      solver, control)
+    ## Simplify matters by *not* expanding all diagonal solutions.
+    diagonal <- if(family == "preorder")
+        rep.int(1, n)
+    else
+        diag(B) >= 0
+    finisher <- function(e) {
+        if(e$status != 0)
+            stop("MIQP could not be solved.")
+        .make_incidence_from_offdiag(round(e$solution),
+                                     family, dimnames(P), diagonal)
+    }
+    if(all) lapply(out, finisher) else finisher(out)
 }
 
 ### Local variables: ***

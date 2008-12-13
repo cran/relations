@@ -257,6 +257,22 @@ function(x)
     TRUE
 }
 
+relation_is_quasitransitive <-
+function(x)    
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    ## In essence, once we know that x is an endorelation, we can do
+    ##   relation_is_transitive(x & !t(x))
+    ## But to do so, we need to look at the incidences ...
+    x <- relation_incidence(x)
+    if(!.relation_is_endorelation_using_incidence(x)) return(FALSE)
+    x <- .T.(x, .N.(t(x)))
+    for(j in seq_len(ncol(x)))
+        if(any(outer(x[, j], x[j, ], .T.) > x)) return(FALSE)
+    TRUE
+}
+
 relation_is_Ferrers <-
 function(x)
 {
@@ -401,7 +417,7 @@ function(x)
 .check_all_predicates <-
 function(x)
 {
-    preds <- ls("package:relations", pattern="relation_is_.*")
+    preds <- ls("package:relations", pattern = "relation_is_.*")
     props <- sapply(preds, do.call, list(x))
     names(props) <- sub("relation_is_", "", names(props))
     props

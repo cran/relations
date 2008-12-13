@@ -84,37 +84,38 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       suitable class (\dQuote{Family}) of crisp endorelations as
       indicated by \var{F}, with values:
       \describe{
+	\item{\code{G}}{general (crisp) endorelations.}
+	\item{\code{A}}{antisymmetric relations.}
+	\item{\code{C}}{complete relations.}
 	\item{\code{E}}{equivalence relations: reflexive, symmetric, and
 	  transitive.}
 	\item{\code{L}}{linear orders: complete, reflexive,
 	  antisymmetric, and transitive.}
+	\item{\code{M}}{matches: complete and reflexive.}
 	\item{\code{O}}{partial orders: reflexive, antisymmetric and
 	  transitive.}
-	\item{\code{P}}{complete preorders (preference relations,
-	  \dQuote{orderings}): complete, reflexive and transitive.}
+	\item{\code{S}}{symmetric relations.}	
 	\item{\code{T}}{tournaments: complete, irreflexive and
 	  antisymmetric (i.e., complete and asymmetric).}
-	\item{\code{C}}{complete relations.}
-	\item{\code{A}}{antisymmetric relations.}
-	\item{\code{S}}{symmetric relations.}
-	\item{\code{M}}{matches: complete and reflexive.}
-	\item{\code{R}}{tRansitive relations.}
+	\item{\code{W}}{weak orders (complete preorders, preferences,
+	  \dQuote{orderings}): complete, reflexive and transitive.} 
+	\item{\code{preorder}}{preorders: reflexive and transitive.}
+	\item{\code{transitive}}{transitive relations.}
       }
       Consensus relations are determined by reformulating the consensus
-      problem as an integer program (for the relation incidences), see
+      problem as a binary program (for the relation incidences), see
       Hornik and Meyer (2007) for details.  The solver employed can be
       specified via the control argument \code{solver}, with currently
       possible values \code{"lpsolve"}, \code{"glpk"}, \code{"symphony"}
       or \code{"cplex"} or a unique abbreviation thereof, specifying to
       use the solvers from packages \pkg{lpSolve} (default),
       \pkg{Rglpk}, \pkg{Rsymphony}, or \pkg{Rcplex}, respectively.
-      If control option \code{sparse} is true, a sparse formulation of
-      the integer program is used, which is typically more efficient and
-      will become the default eventually.
+      Unless control option \code{sparse} is false, a sparse formulation
+      of the integer program is used, which is typically more efficient.
 
-      For fitting equivalences and preferences (cases \code{E} and
-      \code{P}) it is possible to specify the number of classes \eqn{k}
-      using the control parameter \code{k}.  For fitting preferences,
+      For fitting equivalences and weak orders (cases \code{E} and
+      \code{W}) it is possible to specify the number of classes \eqn{k}
+      using the control parameter \code{k}.  For fitting weak orders,
       one can also specify the number of elements in the classes via
       control parameter \code{l}.
 
@@ -127,8 +128,7 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
 
       One can obtain a relation ensemble with \emph{all} consensus
       relations by setting the control parameter \code{all} to
-      \code{TRUE}.
-      (See the examples.)
+      \code{TRUE}.  (See the examples.)
     }
     \item{\code{"manhattan"}}{the (unrestricted) median of the
       ensemble, minimizing \eqn{L} with \eqn{d} as Manhattan (symmetric
@@ -142,14 +142,23 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       ensemble of endorelations by minimizing the criterion function
       \eqn{L} with \eqn{d} as Euclidean difference distance and
       \eqn{p = 2} over a suitable family of crisp endorelations as
-      indicated by \var{F}, with available families control parameters
-      as for methods \code{"SD/\var{F}"}.
+      indicated by \var{F}, with available families and control
+      parameters as for methods \code{"SD/\var{F}"}.
     }
     \item{\code{"majority"}}{a generalized majority method for which the
       consensus relation contains of all tuples occurring with a
-      relative frequency of more than \eqn{100 p} percent (100 percent
-      if \eqn{p = 1}).  The fraction \eqn{p} can be specified via the
-      control parameter \code{p}.  By default, \eqn{p = 1/2} is used.
+      relative frequency of more than \eqn{100 p} percent (of 100
+      percent if \eqn{p = 1}).  The fraction \eqn{p} can be specified
+      via the control parameter \code{p}.  By default, \eqn{p = 1/2} is
+      used.
+    }
+    \item{\code{"CKS/\var{F}"}}{an exact solver for determining the
+      consensus relation of an ensemble of crisp endorelations by
+      minimizing the criterion function \eqn{L} with \eqn{d} as
+      Cook-Kress-Seiford distance (\dQuote{CKS}) and \eqn{p = 1} over a
+      suitable class (\dQuote{Family}) of crisp endorelations as
+      indicated by \var{F}, with available families and control
+      parameters as for methods \code{"SD/\var{F}"}.
     }
   }
 }
@@ -186,13 +195,13 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
   
   F. Marcotorchino and P. Michaud (1982).
   Agrégation de similarités en classification automatique.
-  \emph{Revue de Statistique Appliquée}, \bold{30}(2):21--44.
+  \emph{Revue de Statistique Appliquée}, \bold{30}/2, 21--44.
   \url{http://www.numdam.org/item?id=RSA_1982__30_2_21_0}.
   
   S. Régnier (1965),
   Sur quelques aspects mathématiques des problèmes de classification
   automatique.
-  \emph{ICC Bulletin}, \bold{4}:175--191.
+  \emph{ICC Bulletin}, \bold{4}, 175--191.
 }
 \examples{
 ## Consensus equivalence.
@@ -222,8 +231,10 @@ pm <- matrix(c(0, 1, 0, 1, 1,
              nrow = 5,
              byrow = TRUE,
              dimnames = list(letters[1:5], letters[1:5]))
-## Note that this is a Cook and Kress "preference" matrix.
-R <- as.relation(1 - pm)
+## Note that this is a Cook and Kress "preference matrix" where entry
+## (i,j) is one iff object i is preferred to object j (i > j).
+## Set up the corresponding '<' relation:
+R <- as.relation(t(pm))
 relation_incidence(R)
 relation_is_tournament(R)
 ## Closest linear order:
@@ -235,9 +246,9 @@ if(require("Rgraphviz")) plot(L)
 L <- relation_consensus(R, "SD/L", control = list(all = TRUE))
 print(L)
 if(require("Rgraphviz")) plot(L)
-## (Oh no.)
-## Closest preference relation with at most 3 indifference classes:
-P3 <- relation_consensus(R, "SD/P", control = list(k = 3))
-relation_incidence(P3)
+## (Oh no: c is once first and once last.)
+## Closest weak order relation with at most 3 indifference classes:
+W3 <- relation_consensus(R, "SD/W", control = list(k = 3))
+relation_incidence(W3)
 }
 \keyword{math}

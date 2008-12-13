@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.3.0\n"
 "Report-Msgid-Bugs-To: bugs@r-project.org\n"
-"POT-Creation-Date: 2007-12-15 11:15\n"
+"POT-Creation-Date: 2008-08-27 08:56\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,13 +38,19 @@ msgstr ""
 msgid "Wrong number of arguments."
 msgstr ""
 
+msgid "Out-of-domain elements."
+msgstr ""
+
+msgid "The characteristic function of a relation with arity %d."
+msgstr ""
+
 msgid "Cannot compute choice from empty ensemble."
 msgstr ""
 
 msgid "Method '%s' is not a valid choice method."
 msgstr ""
 
-msgid "Invalid argument 'method'."
+msgid "Invalid 'method' argument."
 msgstr ""
 
 msgid "Need an ensemble of endorelations."
@@ -62,16 +68,19 @@ msgstr ""
 msgid "Argument 'weights' has no positive elements."
 msgstr ""
 
-msgid "Invalid 'method' argument."
-msgstr ""
-
 msgid "Method '%s' is not a valid consensus method."
 msgstr ""
 
-msgid "Need an ensemble of crip relations."
+msgid "Invalid consensus method '%s'."
 msgstr ""
 
-msgid "Invalid consensus method '%s'."
+msgid "All arguments must be named."
+msgstr ""
+
+msgid "All arguments must have the same length."
+msgstr ""
+
+msgid "An empty data table."
 msgstr ""
 
 msgid "Method '%s' is not a valid dissimilarity method."
@@ -98,19 +107,19 @@ msgstr ""
 msgid "Relation size mismatch between 'x' and 'value'."
 msgstr ""
 
-msgid "Argument 'x' must be an endorelation."
+msgid "Argument 'x' must be a binary relation."
 msgstr ""
 
 msgid "Empty relation ensembles cannot be created."
-msgstr ""
-
-msgid "An empty relation ensemble."
 msgstr ""
 
 msgid "Unary '%s' not defined for \"%s\" objects."
 msgstr ""
 
 msgid "Generic '%s' not defined for \"%s\" objects."
+msgstr ""
+
+msgid "An empty relation ensemble."
 msgstr ""
 
 msgid "Argument 'x' must be a relation ensemble."
@@ -134,10 +143,22 @@ msgstr ""
 msgid "Can only determine class ids for equivalences and weak orders."
 msgstr ""
 
+msgid "Argument 'x' must be an endorelation."
+msgstr ""
+
+msgid "Elements of 'e' must be contained in the domain components."
+msgstr ""
+
 msgid "Not implemented."
 msgstr ""
 
-msgid "All elements need to be of same length!"
+msgid "All elements need to be of same length."
+msgstr ""
+
+msgid "Solver currently does not support variable bounds."
+msgstr ""
+
+msgid "Invalid MILP variable types."
 msgstr ""
 
 msgid "Argument 'x' must be a crisp relation."
@@ -152,16 +173,16 @@ msgstr ""
 msgid "A soft partition (degree m = %f) of a relation ensemble with %d elements into %d classes."
 msgstr ""
 
-msgid "Plot only available for endorelations."
+msgid "Plotting only available for endorelations."
 msgstr ""
 
-msgid "Plot only available for crisp relations."
+msgid "Plotting only available for crisp relations."
 msgstr ""
 
-msgid "Plot only available for antisymmetric or complete transitive relations."
+msgid "Plotting only available for antisymmetric or complete transitive relations."
 msgstr ""
 
-msgid "Need Rgraphviz package (obtainable from bioconductor.org))!"
+msgid "Plotting requires package 'Rgraphviz'."
 msgstr ""
 
 msgid "Wrong class."
@@ -183,6 +204,21 @@ msgid "Only crisp or fuzzy sets allowed."
 msgstr ""
 
 msgid "Need domain along with characteristic function."
+msgstr ""
+
+msgid "Relation is not binary."
+msgstr ""
+
+msgid "target is %s, current is %s"
+msgstr ""
+
+msgid "Relation arities (%d, %d) differ."
+msgstr ""
+
+msgid "Relation sizes (%s, %s) differ."
+msgstr ""
+
+msgid "Relation domains differ in elements."
 msgstr ""
 
 msgid "A unary relation of size %s."
@@ -221,7 +257,13 @@ msgstr ""
 msgid "Incorrect length of given 'row.names'."
 msgstr ""
 
+msgid "Relation scores are only available for (ensembles of) endorelations."
+msgstr ""
+
 msgid "Relation scores are only available for endorelations."
+msgstr ""
+
+msgid "Invalid dimnames."
 msgstr ""
 
 msgid "Logical subscripting currently not implemented."
@@ -242,13 +284,19 @@ msgstr ""
 msgid "Repeated indices currently not allowed."
 msgstr ""
 
-msgid "Only numeric 2-index subscripting is implemented."
-msgstr ""
-
 msgid "Numbers of columns of matrices must match."
 msgstr ""
 
 msgid "Numbers of rows of matrices must match."
+msgstr ""
+
+msgid "Invalid margin."
+msgstr ""
+
+msgid "Incorrect number of dimensions."
+msgstr ""
+
+msgid "Only numeric multi-index subscripting is implemented."
 msgstr ""
 
 msgid "Transformations only available for endorelations."

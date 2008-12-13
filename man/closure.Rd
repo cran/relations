@@ -25,14 +25,15 @@ reflexive_closure(x)
   relation on \eqn{X} that contains \eqn{R}.  The code implements
   Warshall's Algorithm which is of complexity \eqn{O(n^3)}.
 
-  The \emph{reflexive closure}
-  of \eqn{R} is computed by setting the
+  The \emph{reflexive closure} of \eqn{R} is computed by setting the
   diagonal of the incidence matrix to 1.
 
 }
 \seealso{
-  \code{\link{relation}}, \code{\link{reflexive_reduction},
-    \code{\link{transitive_reduction}}, \code{\link[sets]{closure}}}.
+  \code{\link{relation}},
+  \code{\link{reflexive_reduction}},
+  \code{\link{transitive_reduction}},
+  \code{\link[sets]{closure}}.
 }
 \examples{
 R <- as.relation(1 : 5)
@@ -57,6 +58,6 @@ R == closure(reduction(R, "reflexive"), "reflexive")
 \references{
   S. Warshall (1962),
   A theorem on Boolean matrices.
-  \emph{Journal of the ACM}, \bold{9(1)}, 11--12.
+  \emph{Journal of the ACM}, \bold{9}/1, 11--12.
 }
 \keyword{math}

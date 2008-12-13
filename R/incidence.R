@@ -8,7 +8,13 @@ function(x, ...)
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
     I <- as.array(.incidence(.get_representation(x)))
-    structure(I,
+    ## <NOTE>
+    ## Not sure about as.array() here.
+    ## The idea is that if sparse matrices are used for representing
+    ## incidences, .incidence() might give these ...
+    ## </NOTE>
+    structure(c(I),
+              dim = dim(I),
               dimnames = lapply(.domain(x), LABELS, ..., quote = FALSE),
               class = c("relation_incidence",
                         if(length(dim(I)) == 2L) "matrix" else "array"))
@@ -27,6 +33,12 @@ function(x)
 .incidence.relation_by_domain_and_incidence <-
 function(x)
     x$incidence
+.incidence.relation_by_domain_and_scores <-
+function(x)
+{
+    scores <- x$scores
+    outer(scores, scores, `<=`) + 0
+}
 
 print.relation_incidence <-
 function(x, ...)

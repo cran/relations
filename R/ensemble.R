@@ -40,7 +40,7 @@ function(..., list = NULL)
 {
     relations <- lapply(c(list(...), list), as.relation)
     if(!(len <- length(relations)))
-        stop("Empty relation ensembles cannot be created.")
+        stop("Cannot create empty relation ensembles.")
     domains <- lapply(relations, .domain)
     if(len > 1L) {
         ## Check whether all domains are the same.
@@ -244,6 +244,7 @@ function(x, times, ...)
     .make_relation_ensemble_from_list_and_meta(NextMethod("rep"),
                                                attr(x, ".Meta"))
 
+rev.relation_ensemble <-
 t.relation_ensemble <-
 function(x)
     .make_relation_ensemble_from_list_and_meta(lapply(x, t),

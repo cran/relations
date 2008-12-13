@@ -7,9 +7,6 @@
 \alias{relation_is_bijective}
 \alias{relation_is_binary}
 \alias{relation_is_complete}
-\alias{relation_is_endorelation}
-\alias{relation_is_strongly_complete}
-\alias{relation_is_match}
 \alias{relation_is_coreflexive}
 \alias{relation_is_crisp}
 \alias{relation_is_endorelation}
@@ -21,23 +18,26 @@
 \alias{relation_is_irreflexive}
 \alias{relation_is_left_total}
 \alias{relation_is_linear_order}
+\alias{relation_is_match}
 \alias{relation_is_negatively_transitive}
 \alias{relation_is_partial_order}
+\alias{relation_is_preference}
+\alias{relation_is_preorder}
+\alias{relation_is_quasiorder}
+\alias{relation_is_quasitransitive}
 \alias{relation_is_reflexive}
 \alias{relation_is_right_total}
 \alias{relation_is_semiorder}
 \alias{relation_is_semitransitive}
 \alias{relation_is_strict_linear_order}
 \alias{relation_is_strict_partial_order}
+\alias{relation_is_strongly_complete}
 \alias{relation_is_surjective}
 \alias{relation_is_symmetric}
 \alias{relation_is_tournament}
 \alias{relation_is_transitive}
 \alias{relation_is_trichotomous}
 \alias{relation_is_weak_order}
-\alias{relation_is_preference}
-\alias{relation_is_preorder}
-\alias{relation_is_quasiorder}
 \title{Relation Predicates}
 \description{
   Predicate functions for testing for binary relations and
@@ -62,12 +62,13 @@ relation_is_interval_order(x)
 relation_is_irreflexive(x)
 relation_is_left_total(x)
 relation_is_linear_order(x)
-relation_is_match
-relation_is_negatively_transitive
+relation_is_match(x)
+relation_is_negatively_transitive(x)
 relation_is_partial_order(x)
 relation_is_preference(x)
 relation_is_preorder(x)
 relation_is_quasiorder(x)
+relation_is_quasitransitive(x)
 relation_is_reflexive(x)
 relation_is_right_total(x)
 relation_is_semiorder(x)
@@ -132,6 +133,11 @@ relation_is_weak_order(x)
       \eqn{y R z}.}
     \item{semitransitive}{\eqn{x R y} and \eqn{y R z} imply \eqn{x R w}
       or \eqn{w R z}.}
+    \item{quasitransitive}{
+      \eqn{x R y} and not \eqn{y R x} and
+      \eqn{y R z} and not \eqn{z R y} imply
+      \eqn{x R z} and not \eqn{z R x}
+      (i.e., the asymmetric part of \eqn{R} is transitive).}
     \item{trichotomous}{exactly one of \eqn{x R y}, \eqn{y R x}, or
       \eqn{x = y} holds.}
     \item{Euclidean}{\eqn{x R y} and \eqn{x R z} imply \eqn{y R z}.}
@@ -152,8 +158,8 @@ relation_is_weak_order(x)
     \item{strict partial order:}{irreflexive, antisymmetric, and
       transitive, or equivalently: asymmetric and transitive).}
     \item{linear order:}{a complete partial order.}
-    \item{match:}{strongly complete.}
     \item{strict linear order:}{a complete strict partial order.}
+    \item{match:}{strongly complete.}
     \item{tournament:}{complete and asymmetric.}
     \item{interval order:}{complete and Ferrers.}
     \item{semiorder:}{a semitransitive interval order.}
