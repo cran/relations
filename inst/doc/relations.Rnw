@@ -217,7 +217,7 @@ the functions provided (see Table~\ref{tab:combinations}).
       $x R z$. \\
     Ferrers & $x R y$ and $z R w$ imply $x R w$ or $y R z$. \\
     semitransitive & $x R y$ and $y R z$ imply $x R w$ or $w R z$. \\
-    quasitransitive & $x R y$ and not $y R x$ and $y R z$ and not 
+    quasitransitive & $x R y$ and not $y R x$ and $y R z$ and not
       $z R y$ imply that $x R z$ and not $z R x$ (i.e., the asymmetric
       part of $R$ is transitive). \\
     trichotomous & exactly one of $x R y$, $y R x$, or $x = y$ holds. \\
@@ -324,7 +324,7 @@ Figure~\ref{fig:plot}).
 <<plot,fig=FALSE>>=
 ps <- 2 ^ set("a", "b", "c")
 inc <- set_outer(ps, "<=")
-plot(relation(incidence = inc))
+if (require("Rgraphviz")) plot(relation(incidence = inc))
 @
 
 
@@ -723,7 +723,7 @@ split(rownames(Felines), ids)
 Next, we demonstrate the computation of consensus preferences, using an
 example from \citet[pp.~48ff]{ranking:Cook+Kress:1992}.  The input data
 is a \dQuote{preference matrix} of paired comparisons where entry
-$(i,j)$ is one iff object~$i$ is preferred to object~$j$ ($i \succ j$).  
+$(i,j)$ is one iff object~$i$ is preferred to object~$j$ ($i \succ j$).
 We set up the corresponding `$\prec$' relation.
 <<consensus2a,fig=FALSE>>=
 pm <- matrix(c(0, 1, 0, 1, 1,

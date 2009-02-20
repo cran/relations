@@ -89,7 +89,7 @@ relation_is_weak_order(x)
 \details{
   A binary relation is a relation with arity 2.
 
-  A relation \eqn(R) on a set \eqn{X} is called
+  A relation \eqn{R} on a set \eqn{X} is called
   \emph{homogeneous} iff \eqn{D(R) = (X, \dots, X)}
 
   An \emph{endorelation} is a binary homogeneous relation.

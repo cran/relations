@@ -1,6 +1,6 @@
 Package: relations
-Version: 0.5
-Date: 2008-12-13
+Version: 0.5-1
+Date: 2009-02-20
 Title: Data Structures and Algorithms for Relations
 Description: Data structures and algorithms for k-ary relations with
   arbitrary domains, featuring relational algebra, predicate functions,
@@ -15,4 +15,4 @@ Suggests: Rgraphviz, clue (>= 0.3-26), lpSolve (>= 5.6.3), Rglpk (>= 0.2-6),
   Rsymphony (>= 0.1-6)
 Enhances: seriation, Rcplex
 License: GPL-2
-Packaged: Sat Dec 13 12:29:04 2008; hornik
+Packaged: Fri Feb 20 11:29:31 2009; hornik
