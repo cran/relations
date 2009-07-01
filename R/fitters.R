@@ -117,7 +117,7 @@ function(x, family = .SD_families, control = list())
     ## plus maybe totality or antisymmetry, plus maybe transitivity.
     NP <- .n_of_pairs(n, family)
     eye <-
-        if(!sparse) diag(1, NP) else .simple_triplet_diag_matrix(1, NP)
+        if(!sparse) diag(1, NP) else simple_triplet_diag_matrix(1, NP)
     constr_mat <-
         rbind(eye,
               eye,
@@ -269,7 +269,7 @@ function(n, family, sparse = FALSE)
         if(!sparse)
             return(matrix(0, 0, NP))
         else
-            return(.simple_triplet_zero_matrix(0, NP))
+            return(simple_triplet_zero_matrix(0, NP))
     }
 
     NC <- .n_of_transitivity_constraints(n, family)
@@ -408,7 +408,7 @@ function(n, sparse = FALSE)
         if(!sparse)
             return(matrix(0, 0L, 0L))   # :-)
         else
-            return(.simple_triplet_zero_matrix(0L, 0L))
+            return(simple_triplet_zero_matrix(0L, 0L))
     }
 
     ## Position of x_{ij} in x[.offdiag(x)]

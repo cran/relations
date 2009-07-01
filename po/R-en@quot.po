@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: relations\n"
 "Report-Msgid-Bugs-To: bugs@r-project.org\n"
-"POT-Creation-Date: 2008-08-27 08:56\n"
-"PO-Revision-Date: 2008-08-27 09:07+0200\n"
+"POT-Creation-Date: 2009-02-24 12:25\n"
+"PO-Revision-Date: 2009-02-24 12:04+0100\n"
 "Last-Translator: Kurt Hornik <Kurt.Hornik@R-project.org>\n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -47,20 +47,8 @@ msgstr "The characteristic function of a relation with arity %d."
 msgid "Cannot compute choice from empty ensemble."
 msgstr "Cannot compute choice from empty ensemble."
 
-msgid "Method '%s' is not a valid choice method."
-msgstr "Method ‘%s’ is not a valid choice method."
-
-msgid "Invalid 'method' argument."
-msgstr "Invalid ‘method’ argument."
-
 msgid "Need an ensemble of endorelations."
 msgstr "Need an ensemble of endorelations."
-
-msgid "Need an ensemble of crisp relations."
-msgstr "Need an ensemble of crisp relations."
-
-msgid "Cannot compute consensus of empty ensemble."
-msgstr "Cannot compute consensus of empty ensemble."
 
 msgid "Argument 'weights' has negative elements."
 msgstr "Argument ‘weights’ has negative elements."
@@ -68,11 +56,26 @@ msgstr "Argument ‘weights’ has negative elements."
 msgid "Argument 'weights' has no positive elements."
 msgstr "Argument ‘weights’ has no positive elements."
 
+msgid "Method '%s' is not a valid choice method."
+msgstr "Method ‘%s’ is not a valid choice method."
+
+msgid "Invalid 'method' argument."
+msgstr "Invalid ‘method’ argument."
+
+msgid "Need an ensemble of crisp relations."
+msgstr "Need an ensemble of crisp relations."
+
+msgid "Cannot compute consensus of empty ensemble."
+msgstr "Cannot compute consensus of empty ensemble."
+
 msgid "Method '%s' is not a valid consensus method."
 msgstr "Method ‘%s’ is not a valid consensus method."
 
 msgid "Invalid consensus method '%s'."
 msgstr "Invalid consensus method ‘%s’."
+
+msgid "Not implemented."
+msgstr "Not implemented."
 
 msgid "All arguments must be named."
 msgstr "All arguments must be named."
@@ -110,8 +113,8 @@ msgstr "Relation size mismatch between ‘x’ and ‘value’."
 msgid "Argument 'x' must be a binary relation."
 msgstr "Argument ‘x’ must be a binary relation."
 
-msgid "Empty relation ensembles cannot be created."
-msgstr "Empty relation ensembles cannot be created."
+msgid "Cannot create empty relation ensembles."
+msgstr "Cannot create empty relation ensembles."
 
 msgid "Unary '%s' not defined for \"%s\" objects."
 msgstr "Unary ‘%s’ not defined for “%s” objects."
@@ -128,9 +131,6 @@ msgstr "Argument ‘x’ must be a relation ensemble."
 msgid "Given constraints are incompatible with family '%s'."
 msgstr "Given constraints are incompatible with family ‘%s’."
 
-msgid "N_of_pairs: %d *** N_of_optimal_branches: %d"
-msgstr "N_of_pairs: %d *** N_of_optimal_branches: %d"
-
 msgid "Invalid additional incidence constraints."
 msgstr "Invalid additional incidence constraints."
 
@@ -139,6 +139,9 @@ msgstr "Incompatible constraints."
 
 msgid "Invalid specification of class sizes."
 msgstr "Invalid specification of class sizes."
+
+msgid "MIQP could not be solved."
+msgstr "MIQP could not be solved."
 
 msgid "Can only determine class ids for equivalences and weak orders."
 msgstr "Can only determine class ids for equivalences and weak orders."
@@ -149,17 +152,32 @@ msgstr "Argument ‘x’ must be an endorelation."
 msgid "Elements of 'e' must be contained in the domain components."
 msgstr "Elements of ‘e’ must be contained in the domain components."
 
-msgid "Not implemented."
-msgstr "Not implemented."
-
 msgid "All elements need to be of same length."
 msgstr "All elements need to be of same length."
+
+msgid "Solver '%s' can only handle all-binary quadratic programs."
+msgstr "Solver ‘%s’ can only handle all-binary quadratic programs."
 
 msgid "Solver currently does not support variable bounds."
 msgstr "Solver currently does not support variable bounds."
 
-msgid "Invalid MILP variable types."
-msgstr "Invalid MILP variable types."
+msgid "Invalid MIP variable types."
+msgstr "Invalid MIP variable types."
+
+msgid "N_of_binary_variables: %d *** N_of_optimal_branches: %d"
+msgstr "N_of_binary_variables: %d *** N_of_optimal_branches: %d"
+
+msgid "Can only linearize all-binary quadratic programs."
+msgstr "Can only linearize all-binary quadratic programs."
+
+msgid "Can only relax mixed integer linear or quadratic programs."
+msgstr "Can only relax mixed integer linear or quadratic programs."
+
+msgid "Cannot create empty multisets."
+msgstr "Cannot create empty multisets."
+
+msgid "An empty relation multiset."
+msgstr "An empty relation multiset."
 
 msgid "Argument 'x' must be a crisp relation."
 msgstr "Argument ‘x’ must be a crisp relation."
@@ -185,23 +203,23 @@ msgstr "Plotring only available for endorelations."
 msgid "Plotting only available for crisp relations."
 msgstr "Plotting only available for crisp relations."
 
-msgid ""
-"Plotting only available for antisymmetric or complete transitive relations."
-msgstr ""
-"Plotting only available for antisymmetric or complete transitive relations."
-
 msgid "Plotting requires package 'Rgraphviz'."
 msgstr "Plotting requires package ‘Rgraphviz’."
 
 msgid "Wrong class."
 msgstr "Wrong class."
 
-msgid ""
-"Plotting only available for ensembles of antisymmetric or complete "
-"transitive crisp relations."
-msgstr ""
-"Plotting only available for ensembles of antisymmetric or complete "
-"transitive crisp relations."
+msgid "Plotting only available for ensembles of crisp endorelations."
+msgstr "Plotting only available for ensembles of crisp endorelations."
+
+msgid "Elements must be unique."
+msgstr "Elements must be unique."
+
+msgid "Need unique element labels for domain."
+msgstr "Need unique element labels for domain."
+
+msgid "All domain elements need to be named."
+msgstr "All domain elements need to be named."
 
 msgid "Need exactly one of 'incidence', 'graph', and 'charfun'."
 msgstr "Need exactly one of ‘incidence’, ‘graph’, and ‘charfun’."
@@ -221,14 +239,14 @@ msgstr "Need domain along with characteristic function."
 msgid "Relation is not binary."
 msgstr "Relation is not binary."
 
+msgid "Method not implemented."
+msgstr "Method not implemented."
+
 msgid "target is %s, current is %s"
 msgstr "target is %s, current is %s"
 
 msgid "Relation arities (%d, %d) differ."
 msgstr "Relation arities (%d, %d) differ."
-
-msgid "Relation sizes (%s, %s) differ."
-msgstr "Relation sizes (%s, %s) differ."
 
 msgid "Relation domains differ in elements."
 msgstr "Relation domains differ in elements."
@@ -250,6 +268,12 @@ msgstr "A binary fuzzy relation of size %s."
 
 msgid "A %d-ary fuzzy relation of size %s."
 msgstr "A %d-ary fuzzy relation of size %s."
+
+msgid "Power only defined for endorelations."
+msgstr "Power only defined for endorelations."
+
+msgid "Power only defined for nonnegative integer exponents."
+msgstr "Power only defined for nonnegative integer exponents."
 
 msgid "Composition of given relations not defined."
 msgstr "Composition of given relations not defined."
@@ -274,6 +298,9 @@ msgstr "Relation scores are only available for (ensembles of) endorelations."
 
 msgid "Relation scores are only available for endorelations."
 msgstr "Relation scores are only available for endorelations."
+
+msgid "Incompatible dimensions."
+msgstr "Incompatible dimensions."
 
 msgid "Invalid dimnames."
 msgstr "Invalid dimnames."
@@ -321,3 +348,11 @@ msgid "An ensemble of %d relation of size %s."
 msgid_plural "An ensemble of %d relations of size %s."
 msgstr[0] "An ensemble of %d relation of size %s."
 msgstr[1] "An ensemble of %d relations of size %s."
+
+msgid "A multiset of %d relation of size %s."
+msgid_plural "A multiset of %d relations of size %s."
+msgstr[0] "A multiset of %d relation of size %s."
+msgstr[1] "A multiset of %d relations of size %s."
+
+#~ msgid "Relation sizes (%s, %s) differ."
+#~ msgstr "Relation sizes (%s, %s) differ."

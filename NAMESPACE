@@ -1,6 +1,7 @@
 importFrom("cluster", "silhouette")
 importFrom("stats", "median")
 import("sets")
+import("slam")
 
 export("as.ranking",
        "as.relation",
@@ -232,25 +233,3 @@ S3method("as.gset", "relation_graph")
 S3method("as.relation", "gset")
 S3method("as.tuple", "relation")
 S3method("as.tuple", "relation_domain")
-
-S3method("[", "simple_triplet_matrix")
-S3method("as.matrix", "simple_triplet_matrix")
-S3method("as.simple_triplet_matrix", "matrix")
-S3method("as.simple_triplet_matrix", "simple_triplet_matrix")
-S3method("Ops", "simple_triplet_matrix")
-S3method("c", "simple_triplet_matrix")
-S3method("cbind", "simple_triplet_matrix")
-S3method("dim", "simple_triplet_matrix")
-S3method("dimnames", "simple_triplet_matrix")
-S3method("duplicated", "simple_triplet_matrix")
-S3method("rbind", "simple_triplet_matrix")
-S3method("t", "simple_triplet_matrix")
-S3method("unique", "simple_triplet_matrix")
-
-S3method("[", "simple_sparse_array")
-if(getRversion() >= "2.8.0")
-    S3method("as.array", "simple_sparse_array")
-S3method("as.simple_sparse_array", "array")
-S3method("as.simple_sparse_array", "simple_sparse_array")
-S3method("dim", "simple_sparse_array")
-S3method("dimnames", "simple_sparse_array")

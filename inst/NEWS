@@ -1,3 +1,7 @@
+Changes in 0.5-2:
+
+  o Sparse lightweight array and matrix code moved to package 'slam'.
+
 Changes in 0.5-1:
 
   o Rd fixes.

@@ -377,7 +377,8 @@ function(target, current, check.attributes = TRUE, ...)
         return(c(msg,
                  gettextf("Relation sizes (%s, %s) differ.",
                           paste(s_t, collapse = "/"),
-                          paste(s_c, collapse = "/"))))
+                          paste(s_c, collapse = "/"),
+                          domain = NA)))
     if(!.domain_is_equal(D_t, D_c)) {
         ## Maybe use all.equal.set eventually.
         return(c(msg,
@@ -532,7 +533,7 @@ function(e1, e2)
         if(!relation_is_endorelation(e1))
             stop("Power only defined for endorelations.")
         if((length(e2) != 1L) || (e2 < 0) || (e2 != round(e2)))
-            stop("Power only defined for nonnegativ integer exponents.")
+            stop("Power only defined for nonnegative integer exponents.")
         if(e2 == 0) {
             ## Return the equality relation: maybe encapsulate this, or
             ## at least add metadata?

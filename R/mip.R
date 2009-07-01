@@ -34,7 +34,7 @@ solve_MILP <-
 function(x, solver = NULL, control = list())
 {
     ## <NOTE>
-    ## Ideally, we would use some registration mechanism for solvers.    
+    ## Ideally, we would use some registration mechanism for solvers.
     ## Currently, there is only little support for control arguments.
     ## In particular, one cannot directly pass arguments to the solver.
     ## </NOTE>
@@ -47,7 +47,7 @@ function(x, solver = NULL, control = list())
             y <- list(y)
         return(y)
     }
-    
+
     solver <- match.arg(solver, .MILP_solvers)
 
     ## If more than one (binary) solution is sought and the solver does
@@ -55,7 +55,7 @@ function(x, solver = NULL, control = list())
     if(!is.null(nos <- control$n) && (solver != "cplex")) {
         control$n <- NULL
         ## Mimic the mechanism currently employed by Rcplex(): return a
-        ## list of solutions only if nos > 1 (or NA).  
+        ## list of solutions only if nos > 1 (or NA).
         if(!identical(as.integer(nos), 1L)) {
             add <- identical(control$add, TRUE)
             control$add <- NULL
@@ -82,7 +82,7 @@ function(objective, constraints, bounds = NULL, types = NULL,
     ## See MILP() for the comments on constraint objects.
     ## We also add names to the list of objective coefficients.
     names(objective) <- c("Q", "L")
-    names(constraints) <- c("mat", "dir", "rhs")    
+    names(constraints) <- c("mat", "dir", "rhs")
     structure(list(objective = objective, constraints = constraints,
                    bounds = bounds, types = types, maximum = maximum),
               class = "MIQP")
@@ -101,7 +101,7 @@ function(x, solver = NULL, control = list())
     ## Actually, linearization only requires that the quadratic part is
     ## all-binary.  Maybe support the mixed linear part case eventually.
     ## </NOTE>
-    
+
     ## Handle the boundary case of no variables.
     if(!length(x$objective)) {
         y <- .solve_empty_MIP(x)
@@ -209,7 +209,7 @@ function(x, control)
     types <- .expand_types(x$types, length(x$objective$L))
 
     mat <- x$constraints$mat
-    if(inherits(mat, "simple_triplet_matrix")) {
+    if(is.simple_triplet_matrix(mat)) {
         ## Reorder indices as CPLEX needs a column major order
         ## representation i.e., column indices j have to be in ascending
         ## order.
@@ -224,7 +224,7 @@ function(x, control)
     if(is.null(nos <- control$n)) nos <- 1L
     value_is_list_of_solutions <- !identical(as.integer(nos), 1L)
 
-    out <-            
+    out <-
         tryCatch(Rcplex::Rcplex(Qmat = x$objective$Q,
                                 cvec = x$objective$L,
                                 Amat = mat,
@@ -324,12 +324,12 @@ function(x)
         stop("Solver currently does not support variable bounds.")
     ## </FIXME>
 
-    types <- .expand_types(x$types, length(x$objective))    
-    
+    types <- .expand_types(x$types, length(x$objective))
+
     ## Version 5.6.1 of lpSolve has added sparse matrix support via
     ## formal 'dense.const' as well as binary variable types.
     mat <- x$constraints$mat
-    out <- if(inherits(mat, "simple_triplet_matrix")) {
+    out <- if(is.simple_triplet_matrix(mat)) {
         ## In the sparse case, lpSolve currently (2008-11-22) checks
         ## that every constraint is used in the sense that each row has
         ## at least one entry.  So if for some reason this is not the
@@ -604,7 +604,7 @@ function(x, nos = 1L, solver = NULL, control = NULL, y,
     ## Alternatively, one could allow choosing between either approach.
     ## Note also that we need to keep new constraints and corresponding
     ## solutions to avoid recomputing solutions when enough were found.
-    
+
     n_of_variables <- length(x$objective)
     types <- .expand_types(x$types, n_of_variables)
     binary_positions <- which(types == "B")
@@ -613,9 +613,9 @@ function(x, nos = 1L, solver = NULL, control = NULL, y,
     verbose <- identical(control$verbose, TRUE)
 
     mat <- x$constraints$mat
-    
+
     .make_additional_constraint_matrix <-
-        if(inherits(mat, "simple_triplet_matrix"))
+        if(is.simple_triplet_matrix(mat))
             function(bpos) {
                 len <- length(bpos)
                 simple_triplet_matrix(seq_len(len), bpos,
@@ -654,7 +654,7 @@ function(x, nos = 1L, solver = NULL, control = NULL, y,
             list(y)
         else
             list(y, yf)
-    }            
+    }
 
     ylist <- list(y)
     ## We allow callers to specify the order in which binary splits
@@ -695,7 +695,7 @@ function(x)
     ##   y_{ij} <= x_i, y_{ij} <= x_j              (A)
     ##   y_{ij} >= 0, y_{ij} >= x_i + x_j - 1      (B)
     ## where for a minimization problem (A) is redundant if r_{ij} > 0
-    ## and (B) if \gamma_{ij} < 0, and vice versa for a maximization 
+    ## and (B) if \gamma_{ij} < 0, and vice versa for a maximization
     ## problem.
 
     if(!inherits(x, "MIQP") && !identical(unique(x$types), "B"))
@@ -706,7 +706,7 @@ function(x)
     c <- x$objective$L
     n <- length(c)
     R <- (Q + t(Q)) / 2
-    if(inherits(Q, "simple_triplet_matrix")) {
+    if(is.simple_triplet_matrix(Q)) {
         ## Transform coefficients.
         ## Cannot easily have a diag() method for simple triplet
         ## matrices.
@@ -741,7 +741,7 @@ function(x)
     npn <- length(pn)
     npp <- length(pp)
     if(x$maximum) {
-        if(inherits(mat, "simple_triplet_matrix")) {
+        if(is.simple_triplet_matrix(mat)) {
             add_i <- c(rep.int(seq_len(npp), 2L),
                        rep.int(seq_len(npp) + npp, 2L),
                        rep.int(seq_len(npn) + 2L * npp, 3L))
@@ -751,7 +751,7 @@ function(x)
             add_v <- rep.int(c(-1, 1, -1, 1, -1, 1),
                              c(npp, npp, npp, npp, 2L * npn, npn))
             mat <- rbind(cbind(mat,
-                               .simple_triplet_zero_matrix(nrow(mat), nr)),
+                               simple_triplet_zero_matrix(nrow(mat), nr)),
                          simple_triplet_matrix(add_i, add_j, add_v,
                                                npn + 2L * npp, n + nr))
         } else {
@@ -781,7 +781,7 @@ function(x)
                  rep.int(0, 2L * npp),
                  rep.int(-1, npn))
     } else {
-        if(inherits(mat, "simple_triplet_matrix")) {
+        if(is.simple_triplet_matrix(mat)) {
             add_i <- c(rep.int(seq_len(npn), 2L),
                        rep.int(seq_len(npn) + npn, 2L),
                        rep.int(seq_len(npp) + 2L * npn, 3L))
@@ -791,7 +791,7 @@ function(x)
             add_v <- rep.int(c(-1, 1, -1, 1, -1, 1),
                              c(npn, npn, npn, npn, 2L * npp, npp))
             mat <- rbind(cbind(mat,
-                               .simple_triplet_zero_matrix(nrow(mat), nr)),
+                               simple_triplet_zero_matrix(nrow(mat), nr)),
                          simple_triplet_matrix(add_i, add_j, add_v,
                                                npp + 2L * npn, n + nr))
         } else {
@@ -862,7 +862,7 @@ function(x)
     if(n_of_binary_variables <- length(binary_positions)) {
         ## For binary variables x_i, we need to add the constraint
         ## x_i <= 1.
-        if(inherits(mat, "simple_triplet_matrix"))
+        if(is.simple_triplet_matrix(mat))
             add <-
                 simple_triplet_matrix(seq_len(n_of_binary_variables),
                                       binary_positions,
@@ -903,7 +903,7 @@ function(Q, x)
     ## Value of quadratic form t(x) %*% Q %*% x.
     ## As we implement simple triplet matrices in S3, we could only have
     ## %*% and crossprod methods if we created S3 generics for these ...
-    if(inherits(Q, "simple_triplet_matrix"))
+    if(is.simple_triplet_matrix(Q))
         sum(Q$v * x[Q$i] * x[Q$j])
     else
         c(crossprod(x, Q %*% x))
