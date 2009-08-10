@@ -587,10 +587,10 @@ function(pos, n_of_variables, nc, sparse = FALSE)
                                     ))
                 j0 <- unlist(lapply(seq_len(nc),
                                     function(k)
-                                    c(pos(A[i0, 1L], k),
+                                    c(pos(A[ind, 1L], k),
                                       unlist(lapply(seq_len(k - 1L),
                                                     function(l)
-                                                    pos(A[i0, 2L], l))))
+                                                    pos(A[ind, 2L], l))))
                                     ))
                 v0 <- unlist(lapply(seq_len(nc),
                                     function(k)

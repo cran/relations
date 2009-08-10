@@ -38,7 +38,7 @@ relation_pclust(x, k, method, m = 1, weights = 1, control = list())
   \eqn{k}-means algorithm is used, which iterates between reclassifying
   objects to their closest prototypes, and computing new prototypes as
   consensus relations (generalized \dQuote{central relations}, Régnier
-  (1965)) for the classes.  This procedure was proposed in Gaul und
+  (1965)) for the classes.  This procedure was proposed in Gaul and
   Schader (1988) as the \dQuote{Clusterwise Aggregation of Relations}
   (CAR).
 

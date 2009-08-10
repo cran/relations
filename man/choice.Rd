@@ -30,7 +30,7 @@ relation_choice(x, method = "symdiff", weights = 1, control = list(), ...)
   voters).
 
   Choice methods \code{"symdiff"} and \code{"CKS"} (currently the only
-  one available) chooses a given number \eqn{k} of objects
+  ones available) choose a given number \eqn{k} of objects
   (\dQuote{winners}) by determining a relation \eqn{R} minimizing
   \eqn{\sum_b w_b d(R_b, R)} over all relations for which winners are
   always strictly preferred to losers, without any further constraints

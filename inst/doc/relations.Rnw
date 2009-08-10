@@ -92,11 +92,10 @@ array of size~$s$ whose elements indicate whether the corresponding
 $k$-tuples are contained in $R$ or not.
 
 Package \pkg{relations} implements finite relations as an S3 class which
-allows for a variety of representations (even though currently, only
-dense array representations of the incidences are employed).  Other than
-by the generator \codefunind{relation},
-relations can be obtained by coercion via the generic function
-\codefunind{as.relation},
+allows for a variety of representations (even though currently,
+typically dense array representations of the incidences are employed).
+Other than by the generator \codefunind{relation}, relations can be
+obtained by coercion via the generic function \codefunind{as.relation},
 which has methods for at least logical and numeric vectors, unordered
 and ordered factors, arrays including matrices, and data frames.
 Unordered factors are coerced to equivalence relations; ordered factors
@@ -667,20 +666,20 @@ applicable to ensembles of endorelations only.
   consensus problem as an integer program (for the relation incidences),
   see \cite{ranking:Hornik+Meyer:2007} for details.  The solver employed
   can be specified via the control argument \code{solver}, with
-  currently possible values \code{"lpsolve"}, \code{"glpk"},
+  currently possible values \code{"glpk"}, \code{"lpsolve"},
   \code{"symphony"}, or \code{"cplex"} or a unique abbreviation thereof,
-  specifying to use the solvers from packages \pkg{lpSolve}
-  \citep[default]{ranking:Buttrey:2005},
-  \pkg{Rglpk}~\citep{relations:Theussl+Hornik:2008},
-  \pkg{Rsymphony}~\citep{relations:Harter+Hornik+Theussl:2008}, or
-  \pkg{Rcplex}~\citep{relations:Bravo:2008}, respectively.  If control
-  option \code{sparse} is true, a sparse formulation of the integer
-  program is used, which is typically more efficient and will become the
-  default eventually.
+  specifying to use the solvers from packages
+  \pkg{Rglpk} \citep[default]{relations:Theussl+Hornik:2008},
+  \pkg{lpSolve} \citep{ranking:Buttrey:2005},
+  \pkg{Rsymphony} \citep{relations:Harter+Hornik+Theussl:2008}, or
+  \pkg{Rcplex} \citep{relations:Bravo:2008}, respectively.  Unless
+  control option \code{sparse} is false, a sparse formulation of the
+  binary program is used, which is typically more efficient.
 
   For fitting equivalences and weak orders (cases \code{E} and \code{W})
   it is possible to specify the number of classes $k$ using the control
-  parameter \code{k}.
+  parameter \code{k}.  For fitting weak orders, one can also specify the
+  number of elements in the classes via control parameter \code{l}.
  \item[\code{"CKS/$F$"}] an exact solver for determining the
   consensus relation by minimizing the criterion function $L$ with $d$
   as Cook-Kress-Seiford distance (\dQuote{CKS}) and $p = 1$ over a

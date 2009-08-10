@@ -1,3 +1,7 @@
+Changes in 0.5-3:
+ 
+  o Adjust for recent changes in package 'clue'.
+
 Changes in 0.5-2:
 
   o Sparse lightweight array and matrix code moved to package 'slam'.

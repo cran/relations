@@ -9,12 +9,12 @@ relation_incidence(x, \dots)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}}.}
-  \item{\dots}{Further arguments passed to the labeling functon used for
-    creating the dimnames of the incidence matrix.}
+  \item{\dots}{Further arguments passed to the labeling function used
+    for creating the dimnames of the incidence matrix.}
 }
 \value{
   For a \eqn{k}-ary relation, a \eqn{k}-dimensional numeric array with
-  values in the unit interval inherting from class
+  values in the unit interval inheriting from class
   \code{relation_incidence} whose elements give the memberships of the
   corresponding \eqn{k}-tuples are contained in the relation (for a
   crisp relation, a binary (0/1) array with elements indicating whether

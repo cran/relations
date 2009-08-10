@@ -5,7 +5,7 @@
 \alias{relation_scores.relation_ensemble}
 \title{Relation Scores}
 \description{
-  Compute scores for the tuples of (ensemles of) endorelations.
+  Compute scores for the tuples of (ensembles of) endorelations.
 }
 \usage{
 \method{relation_scores}{relation}(x,
@@ -36,7 +36,7 @@
     I(a) - O(a)} be the \emph{differential} of \eqn{a} (see Regenwetter
   and Rykhlevskaia (2004)).  Note that \eqn{I} and \eqn{O} are given by
   the column sums and row sums of the incidence matrix of \eqn{R}.  If
-  \eqn{R} is a preference relation with a \eqn{\le} intepretation,
+  \eqn{R} is a preference relation with a \eqn{\le} interpretation,
   \eqn{D(a)} is the difference between the numbers of objects dominated
   by \eqn{a} (i.e., \eqn{< a}) and dominating \eqn{a} (i.e., \eqn{> a}),
   as \dQuote{ties} cancel out.

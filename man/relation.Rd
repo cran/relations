@@ -35,7 +35,8 @@ is.relation(x)
     the arity of the relation.}
   \item{x}{an \R object.}
   \item{\dots}{Further arguments passed to \code{as.relation}
-    methods (currently not used for those defined in the relations package).}
+    methods (currently not used for those defined in the relations
+    package).}
 }
 \details{
   Given \eqn{k} sets of objects \eqn{X_1}, \ldots, \eqn{X_k}, a
@@ -114,7 +115,7 @@ is.relation(x)
   
   Package \pkg{relations} implements finite relations as an S3 class
   which allows for a variety of representations (even though currently,
-  only dense array representations of the incidences are employed).
+  typically dense array representations of the incidences are employed).
   Other than by the generator,
   relations can be obtained by coercion via the generic function
   \code{as.relation}, which has methods for at least logical and numeric

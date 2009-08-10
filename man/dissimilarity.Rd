@@ -36,7 +36,7 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       \emph{Kemeny-Snell} metric (Kemeny and Snell, 1962).  For linear
       orders, it gives Kendall's \eqn{\tau} metric (Diaconis, 1988).
       
-      Can also be referred to as \code{"manhattan"}.
+      Can also be referred to as \code{"SD"} or \code{"manhattan"}.
     }
 
     \item{\code{"euclidean"}}{the Euclidean distance between the

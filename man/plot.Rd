@@ -9,9 +9,9 @@
 \usage{
 \method{plot}{relation}(x,
      attrs = list(graph = list(rankdir = "BT"),
-                               edge = list(arrowsize = "0"),
-                               node = list(shape = "rectangle",
-                                           fixedsize = FALSE)),
+                  edge = list(arrowsize = "0"),
+                  node = list(shape = "rectangle",
+                              fixedsize = FALSE)),
      limit = 6L,
      labels = NULL,
      main = NULL,
@@ -19,9 +19,9 @@
 
 \method{plot}{relation_ensemble}(x,
      attrs = list(list(graph = list(rankdir = "BT"),
-                                    edge = list(arrowsize = "0"),
-                                    node = list(shape = "rectangle",
-                                                fixedsize = FALSE))),
+                       edge = list(arrowsize = "0"),
+                        node = list(shape = "rectangle",
+                                    fixedsize = FALSE))),
      ..., layout = NULL, main = NULL)
 }
 \arguments{
@@ -35,7 +35,8 @@
   \item{labels}{Optional list of character vectors defining unique
     labels for the nodes.}
   \item{layout}{integer vector of length 2 specifying the number of rows
-     and columns of the screen layout. If \code{NULL}, the layout is sqare.}
+     and columns of the screen layout.  If \code{NULL}, the layout is
+     square.}
   \item{\dots}{Other arguments passed to the
     \code{\link[graph:graphNEL-class]{graphNEL}} plot method.}
   \item{main}{character vector used for the main title(s). If \code{NULL},

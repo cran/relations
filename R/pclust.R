@@ -13,10 +13,10 @@ function(x, k, method, m = 1, weights = 1, control = list())
            || is.null(me <- method$exponent))
             stop("Consensus method does not compute central relations.")
         family <-
-            clue:::pclust_family(D = function(x, y = NULL)
-                                 relation_dissimilarity(x, y, md),
-                                 C = method$definition,
-                                 e = me)
+            clue::pclust_family(D = function(x, y = NULL)
+                                relation_dissimilarity(x, y, md),
+                                C = method$definition,
+                                e = me)
     }
     else if(inherits(method, "pclust_family")) {
         ## User-defined, maybe.
@@ -29,7 +29,7 @@ function(x, k, method, m = 1, weights = 1, control = list())
     else
         stop("Invalid 'method' argument.")
 
-    out <- clue:::pclust(x, k, family, m, weights, control)
+    out <- clue::pclust(x, k, family, m, weights, control)
 
     ## Massage the results a bit.
     dissimilarities <- as.matrix(family$D(x) ^ family$e)

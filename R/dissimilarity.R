@@ -19,7 +19,10 @@ function(x, y = NULL, method = "symdiff", ...)
     }
 
     known_methods <-
-        list("symdiff" =
+        list(symdiff =
+             c(".relation_dissimilarity_symdiff",
+               "symmetric difference distance"),
+             SD =
              c(".relation_dissimilarity_symdiff",
                "symmetric difference distance"),
              CKS =

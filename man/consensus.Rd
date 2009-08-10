@@ -2,7 +2,9 @@
 \encoding{UTF-8}
 \alias{relation_consensus}
 \title{Consensus Relations}
-\description{Compute the consensus relation of a relation ensemble.}
+\description{
+  Compute consensus relations of a relation ensemble.
+}
 \usage{
 relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
 }
@@ -106,12 +108,12 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       problem as a binary program (for the relation incidences), see
       Hornik and Meyer (2007) for details.  The solver employed can be
       specified via the control argument \code{solver}, with currently
-      possible values \code{"lpsolve"}, \code{"glpk"}, \code{"symphony"}
+      possible values \code{"glpk"}, \code{"lpsolve"}, \code{"symphony"}
       or \code{"cplex"} or a unique abbreviation thereof, specifying to
-      use the solvers from packages \pkg{lpSolve} (default),
-      \pkg{Rglpk}, \pkg{Rsymphony}, or \pkg{Rcplex}, respectively.
+      use the solvers from packages \pkg{Rglpk} (default),
+      \pkg{lpSolve}, \pkg{Rsymphony}, or \pkg{Rcplex}, respectively.
       Unless control option \code{sparse} is false, a sparse formulation
-      of the integer program is used, which is typically more efficient.
+      of the binary program is used, which is typically more efficient.
 
       For fitting equivalences and weak orders (cases \code{E} and
       \code{W}) it is possible to specify the number of classes \eqn{k}

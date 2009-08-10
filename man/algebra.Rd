@@ -44,9 +44,9 @@ relation_antijoin(x, y, \dots)
     vector of domain indices.}
   \item{subset}{Expression resulting in a logical vector of length equal
     to the number of tuples in the graph.}
-  \item{\dots}{For \code{relation_cartesian} and \code{relation_union}:
-    relation objects; otherwise, parameters passed to
-    \code{\link[base]{merge}}.}
+  \item{\dots}{For \code{relation_cartesian}, \code{relation_union} and
+    \code{relation_intersection}: relation objects; otherwise,
+    parameters passed to \code{\link[base]{merge}}.}
 }
 \details{
   These functions provide functionality similar to the corresponding
@@ -68,7 +68,7 @@ relation_antijoin(x, y, \dots)
   a subset of the relation graph, defined by some logical expression.
 
   The \emph{cartesian product} of two relations is obtained by basically
-  buiding the cartesian product of all graph elements, but combining the
+  building the cartesian product of all graph elements, but combining the
   resulting pairs into single tuples.
 
   The \emph{union} of two relations simply combines the graph elements
@@ -97,7 +97,7 @@ relation_antijoin(x, y, \dots)
   left/right/full outer joins are obtained by setting
   \code{all.x}/\code{all.y}/\code{all} to \code{TRUE} in
   \code{relation_join}.
-  The domains to be matched are specifyied using \code{by}.
+  The domains to be matched are specified using \code{by}.
 
   The left (right) \emph{semijoin} of two relations \eqn{X} and \eqn{Y}
   is the join of these, projected to the attributes of \eqn{X}
