@@ -31,7 +31,7 @@
     \code{relation_ensemble} method, it is a \emph{list} of such objects,
     recycled as needed.}
   \item{limit}{Argument passed to the labeling function creating default
-    labels for the nodes (see \code{\link[sets]{LABELS}}).}
+    labels for the nodes (see \code{\link[sets:labels]{LABELS}}).}
   \item{labels}{Optional list of character vectors defining unique
     labels for the nodes.}
   \item{layout}{integer vector of length 2 specifying the number of rows

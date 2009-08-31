@@ -31,7 +31,7 @@ relation_pclust(x, k, method, m = 1, weights = 1, control = list())
   \item{control}{a list of control parameters.  See \bold{Details}.}
 }
 \value{
-  An object of class \code{\link[clue:cl_partition]{cl_partition}}.
+  An object of class \code{\link[clue:partition]{cl_partition}}.
 }
 \details{
   For \eqn{m = 1}, a generalization of the Lloyd-Forgy variant of the

@@ -68,7 +68,7 @@ is.relation(x)
   homogeneous domain, i.e. \eqn{(X, X, \dots, X)}.
   An \emph{endorelation} on \eqn{X} (or binary relation
   \emph{over} \eqn{X}) is a binary homorelation.
-  See \link[relation_is_endorelation]{predicates} for the most important
+  See \link[=relation_is_endorelation]{predicates} for the most important
   types of endorelations.
   
   Relations with the same domain can naturally be ordered according to
@@ -134,14 +134,14 @@ is.relation(x)
   
   Basic relation operations are available as group methods: \code{min}
   and \code{max} give the meet and join, and \code{range} a
-  \link[relation_ensemble]{relation ensemble} with these two.
+  \link[=relation_ensemble]{relation ensemble} with these two.
   Comparison operators implement the natural ordering in the relation
   lattice.  Where applicable, \code{!} gives the complement, \code{&}
   and \code{|} intersection and union, and \code{*} composition,
   respectively.  Finally, \code{t} gives the inverse and
   \code{dual} the complement of the inverse.
 
-  There is a \code{\link[plot.relation]{plot}} method for certain crisp
+  There is a \code{\link[=plot.relation]{plot}} method for certain crisp
   endorelations provided that package \pkg{Rgraphviz} is available.
 
   The \code{summary} method applies all \link{predicates} available

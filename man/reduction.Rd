@@ -32,8 +32,10 @@ reflexive_reduction(x)
 
 }
 \seealso{
-  \code{\link{relation}}, \code{\link{reflexive_reduction}},
-  \code{\link{transitive_reduction}}, \code{\link[sets]{reduction}}.
+  \code{\link{relation}},
+  \code{\link{reflexive_reduction}},
+  \code{\link{transitive_reduction}},
+  \code{\link[sets:closure]{reduction}}.
 }
 \examples{
 R <- as.relation(1 : 5)
