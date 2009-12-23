@@ -217,13 +217,12 @@ function(x, ...)
     I <- outer(x, x, "==")
     meta <- if(any(is.na(x)))
         list(is_endorelation = TRUE,
-             is_complete = NA,
              is_reflexive = NA,
              is_symmetric = NA,
              is_transitive = NA)
     else
         list(is_endorelation = TRUE,
-             is_complete = all(is.finite(x)),
+             is_complete = isTRUE(all(x == x[1])),
              is_reflexive = TRUE,
              is_symmetric = TRUE,
              is_transitive = TRUE)
@@ -406,8 +405,8 @@ function(x, row.names = NULL, ...)
     out <- lapply(out, unlist, recursive = FALSE)
 
     ## And put into "some kind of" data frame.
-    structure(.make_data_frame_from_list(out, row.names),
-              memberships = M)
+    .structure(.make_data_frame_from_list(out, row.names),
+               memberships = M)
 }
 
 ### ** as.tuple.relation
@@ -441,20 +440,20 @@ function(x, ...)
 {
     a <- .arity(x)
     s <- paste(.size(x), collapse = " x ")
-    if(relation_is_crisp(x)) {
-        if(a == 1L)
-            writeLines(gettextf("A unary relation of size %s.", s))
-        else if(a == 2L)
-            writeLines(gettextf("A binary relation of size %s.", s))
-        else
-            writeLines(gettextf("A %d-ary relation of size %s.", a, s))
-    } else {
+    if(identical(relation_is_crisp(x), FALSE)) {
         if(a == 1L)
             writeLines(gettextf("A unary fuzzy relation of size %s.", s))
         else if(a == 2L)
             writeLines(gettextf("A binary fuzzy relation of size %s.", s))
         else
             writeLines(gettextf("A %d-ary fuzzy relation of size %s.", a, s))
+    } else {
+        if(a == 1L)
+            writeLines(gettextf("A unary relation of size %s.", s))
+        else if(a == 2L)
+            writeLines(gettextf("A binary relation of size %s.", s))
+        else
+            writeLines(gettextf("A %d-ary relation of size %s.", a, s))
     }
     invisible(x)
 }
@@ -462,8 +461,8 @@ function(x, ...)
 summary.relation <-
 function(object, ...)
 {
-    structure(.check_all_predicates(object),
-              class = "summary.relation")
+    .structure(.check_all_predicates(object, ...),
+               class = "summary.relation")
 }
 
 print.summary.relation <-
@@ -500,6 +499,7 @@ function(..., na.rm = FALSE)
                                  max = .relation_join(x))
            })
 }
+
 
 Ops.relation <-
 function(e1, e2)
@@ -557,7 +557,7 @@ function(e1, e2)
             stop("Composition of given relations not defined.")
         ## When composing indicidences, need the same *internal* order
         ## for D2[[1L]] as for D1[[2L]].
-        if(relation_is_crisp(e1) && relation_is_crisp(e2))
+        if(isTRUE(relation_is_crisp(e1)) && isTRUE(relation_is_crisp(e2)))
             I <- ((I1 %*% I2) > 0)
         else {
             n <- ncol(I1)               # Same as nrow(I2).
@@ -620,7 +620,7 @@ function(D, I)
 
     size <- dim(I)
     ## Strip incidence of all attributes but dim.
-    I <- structure(c(I), dim = size)
+    I <- .structure(c(I), dim = size)
 
     ## Now canonicalize by turning all domain components into sets, and
     ## reordering the incidences accordingly.  Note that components
@@ -639,11 +639,11 @@ function(D, I)
         I <- do.call(`[`, c(list(I), pos, list(drop = FALSE)))
     }
 
-    structure(list(domain = D,
-                   incidence = I,
-                   .arity = length(size),
-                   .size = size),
-              class = "relation_by_domain_and_incidence")
+    .structure(list(domain = D,
+                    incidence = I,
+                    .arity = length(size),
+                    .size = size),
+               class = "relation_by_domain_and_incidence")
 }
 
 ### ** .make_relation_by_domain_and_scores
@@ -655,11 +655,11 @@ function(D, scores)
 
     n <- length(scores)
 
-    structure(list(domain = rep.int(list(D), 2L),
-                   scores = scores,
-                   .arity = 2L,
-                   .size = c(n, n)),
-              class = "relation_by_domain_and_scores")
+    .structure(list(domain = rep.int(list(D), 2L),
+                    scores = scores,
+                    .arity = 2L,
+                    .size = c(n, n)),
+               class = "relation_by_domain_and_scores")
 }
 
 ### * Relation generators
@@ -783,7 +783,7 @@ function(x, row.names = NULL)
         else
             .set_row_names(len)
     }
-    structure(x, class = "data.frame", row.names = row.names)
+    .structure(x, class = "data.frame", row.names = row.names)
 }
 
 ### * .make_domain_names_from_relation_graph_components

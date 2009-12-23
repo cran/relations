@@ -21,7 +21,7 @@ function(x, margin = NULL)
     ## Generally, incidences are aggregated using the T-conorm.
     ## However, for crisp relations, we use 'any' for performance reasons.
     I <- relation_incidence(x)
-    S.FUN <- if(relation_is_crisp(x)) {
+    S.FUN <- if(isTRUE(relation_is_crisp(x))) {
         mode(I) <- "logical"
         any
     } else
@@ -61,7 +61,8 @@ function(x, y, ...)
     l <- list(...)
     if(length(l))
         return(Recall(x, Recall(y, ...)))
-    T.FUN <- if(relation_is_crisp(x) && relation_is_crisp(y))
+    T.FUN <- if(relation_is_crisp(x, na.rm = TRUE) &&
+                relation_is_crisp(y, na.rm = TRUE))
         "*"
     else
         .T.
@@ -235,7 +236,7 @@ function(x, y, ...)
     X <- as.data.frame(x)
     Y <- as.data.frame(y)
     nms <- unique(c(names(X), names(Y)))
-    fuzzy <- !relation_is_crisp(x) || !relation_is_crisp(y)
+    fuzzy <- !isTRUE(relation_is_crisp(x)) || !isTRUE(relation_is_crisp(y))
     if (fuzzy) {
         Mx <- attr(X, "memberships")
         if (is.null(Mx)) Mx <- 1
@@ -264,9 +265,7 @@ function(x, y, ...)
         NULL
 
     ## rearrange columns & return relation
-    as.relation(structure(tmp[,nms],
-                          memberships = M)
-                )
+    as.relation(.structure(tmp[, nms], memberships = M))
 }
 
 "%><=%" <-

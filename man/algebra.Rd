@@ -67,8 +67,8 @@ relation_antijoin(x, y, \dots)
   The \emph{selection} of a relation is the relation obtained by taking
   a subset of the relation graph, defined by some logical expression.
 
-  The \emph{cartesian product} of two relations is obtained by basically
-  building the cartesian product of all graph elements, but combining the
+  The \emph{Cartesian product} of two relations is obtained by basically
+  building the Cartesian product of all graph elements, but combining the
   resulting pairs into single tuples.
 
   The \emph{union} of two relations simply combines the graph elements
@@ -80,14 +80,14 @@ relation_antijoin(x, y, \dots)
   in common.
 
   The \emph{division} of relation \eqn{X} by relation \eqn{Y} is the
-  reversed cartesian product. The result is a relation with the domain
+  reversed Cartesian product. The result is a relation with the domain
   unique to \eqn{X} and containing the maximum number of tuples which,
   multiplied by \eqn{Y}, are contained in \eqn{X}. The \emph{remainder}
   of this operation is the complement of \eqn{X} and the division of
   \eqn{X} by \eqn{Y}. Note that for both operations, the domain of
   \eqn{Y} must be contained in the domain of \eqn{X}.
 
-  The (natural) \emph{join} of two relations is their cartesian product,
+  The (natural) \emph{join} of two relations is their Cartesian product,
   restricted to the subset where the elements of the common attributes
   do match. The left/right/full outer join of two relations
   \eqn{X} and \eqn{Y} is
@@ -113,7 +113,7 @@ relation_antijoin(x, y, \dots)
   The operators \code{\%><\%}, \code{\%=><\%}, \code{\%><=\%},
   \code{\%=><=\%}, \code{\%|><\%}, \code{\%><|\%}, \code{\%|><|\%},
   \code{\%|>\%}, \code{\%<|\%}, and \code{\%U\%} can be used for the
-  cartesian product, left outer join, right outer join, full outer join,
+  Cartesian product, left outer join, right outer join, full outer join,
   left semi-join, right semi-join, join, left antijoin, right antijoin,
   and union, respectively.
   
@@ -160,7 +160,7 @@ relation_table(R2 & R3)
 ## symmetric difference
 relation_table(relation_symdiff(R2, R3))
 
-## cartesian product
+## Cartesian product
 Employee <-
     data.frame(Name = c("Harry", "Sally", "George", "Harriet", "John"),
                EmpId = c(3415, 2241, 3401, 2202, 3999),

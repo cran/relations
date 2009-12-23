@@ -36,10 +36,10 @@ function(x, domain = NULL, decreasing = TRUE, complete = FALSE)
         ret[nas] <- if (!decreasing) max(ret, na.rm = TRUE) + 1 else 0
 
     ## return ranking object
-    structure(list(domain = domain,
-                   scores = ret[LABELS(domain, quote = FALSE)],
-                   decreasing = decreasing),
-              class = "ranking")
+    .structure(list(domain = domain,
+                    scores = ret[LABELS(domain, quote = FALSE)],
+                    decreasing = decreasing),
+               class = "ranking")
 }
 
 print.ranking <-
@@ -111,8 +111,9 @@ function(x, decreasing)
 .as.ranking.relation.relation_by_domain_and_incidence <-
 function(x, decreasing)
 {
-    ret <- colSums(.incidence(x), na.rm = TRUE)
-    ret[ret == 0L] <- NA
+    I <- .incidence(x)
+    ret <- colSums(I, na.rm = TRUE)
+    ret[.missing_objects(I)] <- NA
     storage.mode(ret) <- "integer"
     labs <- .domain(x)[[1L]]
     names(ret) <- LABELS(labs)
@@ -125,10 +126,10 @@ function(x, decreasing)
 
 .make_ranking_by_domain_and_scores <-
 function(domain, scores, decreasing = TRUE)
-    structure(list(domain = domain,
-                   scores = scores,
-                   decreasing = decreasing),
-              class = "ranking")
+    .structure(list(domain = domain,
+                    scores = scores,
+                    decreasing = decreasing),
+               class = "ranking")
 
 is.ranking <-
 function(x)

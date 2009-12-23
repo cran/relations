@@ -10,10 +10,10 @@ function(x,
 {
     if(!relation_is_endorelation(x))
         stop("Plotting only available for endorelations.")
-    if(!relation_is_crisp(x))
-        stop("Plotting only available for crisp relations.")
+    if(!isTRUE(relation_is_crisp(x)))
+        stop("Plotting only available for crisp endorelations without missings.")
 
-    if(!require("Rgraphviz"))
+    if (!require("Rgraphviz"))
         stop("Plotting requires package 'Rgraphviz'.")
 
     ## possibly, transform relation to obtain a poset,
@@ -74,12 +74,13 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
         stop("Wrong class.")
     if(!all(sapply(x,
                    function(e)
-                   (relation_is_crisp(e) && relation_is_endorelation(e)))))
-        stop("Plotting only available for ensembles of crisp endorelations.")
+                   (isTRUE(relation_is_crisp(e)) &&
+                    relation_is_endorelation(e)))))
+        stop("Plotting only available for ensembles of crisp endorelations without missings.")
 
     ## Make things a bit more efficient.
     x <- unclass(x)
-    if(!require("Rgraphviz"))
+    if (!require("Rgraphviz"))
         stop("Plotting requires package 'Rgraphviz'.")
 
     ## Number of elements.

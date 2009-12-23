@@ -22,9 +22,9 @@ function(objective, constraints, bounds = NULL, types = NULL,
     ## creator for linear constraint objects.
 
     names(constraints) <- c("mat", "dir", "rhs")
-    structure(list(objective = objective, constraints = constraints,
-                   bounds = bounds, types = types, maximum = maximum),
-              class = "MILP")
+    .structure(list(objective = objective, constraints = constraints,
+                    bounds = bounds, types = types, maximum = maximum),
+               class = "MILP")
 }
 
 .MILP_solvers <-
@@ -83,9 +83,9 @@ function(objective, constraints, bounds = NULL, types = NULL,
     ## We also add names to the list of objective coefficients.
     names(objective) <- c("Q", "L")
     names(constraints) <- c("mat", "dir", "rhs")
-    structure(list(objective = objective, constraints = constraints,
-                   bounds = bounds, types = types, maximum = maximum),
-              class = "MIQP")
+    .structure(list(objective = objective, constraints = constraints,
+                    bounds = bounds, types = types, maximum = maximum),
+               class = "MIQP")
 }
 
 .MIQP_solvers <-
@@ -831,10 +831,10 @@ function(x)
 
 .make_MIP_solution <-
 function(solution, objval, status, ...)
-    structure(list(solution = solution,
-                   objval = objval,
-                   status = status, ...),
-              class = "MIP_solution")
+    .structure(list(solution = solution,
+                    objval = objval,
+                    status = status, ...),
+               class = "MIP_solution")
 
 .make_types <-
 function(n, I = NULL, B = NULL)

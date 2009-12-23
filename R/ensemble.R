@@ -58,7 +58,7 @@ function(x, meta = NULL)
 {
     if(is.null(meta))
         meta <- .make_ensemble_meta_from_element(x[[1L]])
-    structure(x, .Meta = meta, class = c("relation_ensemble", "tuple"))
+    .structure(x, .Meta = meta, class = c("relation_ensemble", "tuple"))
 }
 
 .make_ensemble_meta_from_element <-
@@ -191,6 +191,14 @@ function(..., na.rm = FALSE)
            })
 }
 
+mean.relation_ensemble <-
+function(x, ...)
+{
+    relation(domain = relation_domain(x),
+             incidence = .weighted_sum_of_arrays(lapply(x,
+             relation_incidence), 1 / length(x)))
+}
+
 all.equal.relation_ensemble <-
 function(target, current, check.attributes = TRUE, ...)
 {
@@ -259,6 +267,20 @@ function(x, incomparables = FALSE, ...)
 ### * Utilities
 
 ### ** Meet and Join.
+
+## <NOTE>
+## One might think that one should more generally order relations by
+## using the fuzzy intersection and union for the meet and join,
+## respectively.  However, to obtain an order this requires (see e.g.
+## http://en.wikipedia.org/wiki/Lattice_(order)) that the absorption
+## laws are satisfied, implying
+##   S(x, T(x, y)) = x
+##   T(x, S(x, y)) = x
+## for all x and y.  Using that T <= min and S >= max one can show
+## (e.g., Fodor and Roubens, Section 1.5.2) that the above implies T =
+## min and S = max, i.e., the standard Zadeh logic, corresponding to the
+## natural point-wise order of the indicences.
+## </NOTE>
 
 .relation_meet <-
 function(x)

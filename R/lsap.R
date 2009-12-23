@@ -47,7 +47,7 @@ function(x, maximum = FALSE)
             z <- z[-i[k]]
         }
         ## As there is no explicit creator ...
-        structure(j, class = "solve_LSAP")
+        `class<-`(j, "solve_LSAP")
     }
     
     ## Main loop.

@@ -5,8 +5,7 @@
 relation_arity <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x) &&
-       !is.ranking(x) && !is.relation_multiset(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) && !is.ranking(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     .arity(x)
 }
@@ -22,9 +21,6 @@ function(x)
 .arity.relation_ensemble <-
 function(x)
     attr(x, ".Meta")$arity
-.arity.relation_multiset <-
-function(x)
-    .arity(sets:::.set_subset2(x, 1))
 .arity.relation_by_domain_and_incidence <-
 function(x)
     x$.arity
@@ -37,15 +33,14 @@ function(x)
 relation_domain <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x) &&
-       !is.ranking(x) && !is.relation_multiset(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) && !is.ranking(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     domain <- .domain(x)
     ret <- as.tuple(domain)
-    structure(ret,
-              names = names(domain),
-              class = c("relation_domain", class(ret))
-              )
+    .structure(ret,
+               names = names(domain),
+               class = c("relation_domain", class(ret))
+               )
 }
 
 .domain <-
@@ -64,10 +59,6 @@ function(x)
 function(x)
     attr(x, ".Meta")$domain
 
-.domain.relation_multiset <-
-function(x)
-    .domain(sets:::.set_subset2(x, 1))
-
 .domain.relation_by_domain_and_incidence <-
 function(x)
     x$domain
@@ -78,7 +69,7 @@ function(x)
 
 as.tuple.relation_domain <-
 function(x)
-    structure(x, class = "tuple")
+    `class<-`(x, "tuple")
 
 print.relation_domain <-
 function(x, ...)
@@ -166,8 +157,7 @@ function(x, value)
 relation_size <-
 function(x)
 {
-    if(!is.relation(x) && !is.relation_ensemble(x) &&
-       !is.ranking(x) && !is.relation_multiset(x))
+    if(!is.relation(x) && !is.relation_ensemble(x) && !is.ranking(x))
         stop("Argument 'x' must be a relation or relation ensemble.")
     .size(x)
 }
@@ -184,9 +174,6 @@ function(x)
 .size.relation_ensemble <-
 function(x)
     attr(x, ".Meta")$size
-.size.relation_multiset <-
-function(x)
-    .size(sets:::.set_subset2(x, 1))
 .size.relation_by_domain_and_incidence <-
 function(x)
     x$.size

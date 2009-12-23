@@ -10,9 +10,9 @@ data("Felines")
 }
 \format{
   A data frame with 30 observations on 14 categorical variables (the
-  first 10 morphological, the last 4 behavioral), with names in french
-  and numeric levels as in the reference.  Names, descriptions in french
-  and english and the numbers of levels are as follows.
+  first 10 morphological, the last 4 behavioral), with names in French
+  and numeric levels as in the reference.  Names, descriptions in French
+  and English and the numbers of levels are as follows.
   \describe{
     \item{\code{TYPPEL}:}{Aspect du pelage; coat; 4.}
     \item{\code{LONGPOIL}:}{Fourrure; fur; 2.}

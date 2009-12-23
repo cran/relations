@@ -5,6 +5,8 @@ function(x)
 {
     if(!is.relation(x))
         stop("Argument 'x' must be a relation.")
+    if(!identical(relation_is_crisp(x), TRUE))
+        stop("Argument 'x' must be a crisp relation with no missings.")
     if(relation_is_weak_order(x)) {
         ## Get the class ids of the corresponding indifference relation.
         ## One possibility:
@@ -88,13 +90,17 @@ function(x, which, ...)
     ## necessarily binary) homorelations ...
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
+    I <- .incidence(x)
+    if(any((I %% 1) != 0, na.rm = TRUE))
+        stop("Argument 'x' must be a non-fuzzy relation.")
+    
     which <- match.arg(which,
                        c("first", "minimal", "maximal", "last"))
     ## Allowing for user-defined 'which' functions is somewhat moot,
     ## because all we can do then is call which(x, ...), which users
     ## could have called directly in the first place.
     ind <- do.call(sprintf(".find_elements_being_%s", which),
-                   list(.incidence(x), ...))
+                   list(I, ...))
     as.set(.get_elements_in_homorelation(x)[ind])
 }
 
@@ -159,6 +165,8 @@ function(x, e = NULL)
 {
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
+    if(!identical(relation_is_crisp(x), TRUE))
+        stop("Argument 'x' must be a crisp relation with no missings.")
 
     X <- .get_elements_in_homorelation(x)
     ## Need to find the positions of e in X.
@@ -182,7 +190,9 @@ function(x, e = NULL)
     out
 }
 
-## Should similarly have something for finding precursors.
+relation_precursors <-
+function(x, e = NULL)
+    relation_successors(t(x), e)
 
 ### * relation_cover
 
@@ -191,6 +201,8 @@ function(x)
 {
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
+    if(!identical(relation_is_crisp(x), TRUE))
+        stop("Argument 'x' must be a crisp relation with no missings.")
 
     D <- .domain(x)
     I <- .relation_cover_incidences(.incidence(x), seq_along(D[[1L]]))

@@ -25,7 +25,10 @@ function(x, method = "symdiff", weights = 1, control = list(), ...)
 
     known_methods <-
         list("symdiff" = ".relation_choice_symdiff",
-             "CKS" = ".relation_choice_CKS")
+             "euclidean" = ".relation_choice_euclidean",
+             "CKS" = ".relation_choice_CKS",
+             "Schulze" = ".relation_choice_Schulze"
+             )
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
@@ -43,9 +46,9 @@ function(x, method = "symdiff", weights = 1, control = list(), ...)
 ## </FIXME>
 
 .relation_choice_symdiff <-
-function(relations, weights, control)
+function(relations, weights, control, euclidean = FALSE)
 {
-    if(!.is_ensemble_of_crisp_relations(relations))
+    if(!euclidean && !.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
     ## Argument handling.
@@ -70,6 +73,10 @@ function(relations, weights, control)
 
     .find_SD_or_CKS_choice(M, k, D, control)
 }
+
+.relation_choice_euclidean <-
+function(relations, weights, control)
+    .relation_choice_symdiff(relations, weights, control, TRUE)
 
 .relation_choice_CKS <-
 function(relations, weights, control)    
@@ -222,4 +229,50 @@ function(M, k, D, control)
     out <- if(all) lapply(out, finisher) else finisher(out)
     if(MIP) attr(out, "MIP") <- miqp
     out
+}
+
+.relation_choice_Schulze <-
+function(relations, weights, control)
+{
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    ## Need the numbers of voters who strictly prefer candidate i to
+    ## candidate j (i > j, i.e. not(i <= j)): we compute B - d
+
+    d <- .weighted_sum_of_arrays(lapply(relations, .incidence), weights)
+
+    ## From which we compute
+    ##   p[i,j] = d[i,j] - d[j,i]
+    p <- t(d) - d
+
+    N <- NROW(p)
+
+    ## The reference has
+    ## for(i in seq_len(N)) {
+    ##     for(j in seq_len(N)) {
+    ##         if(i != j) {
+    ##             for(k in seq_len(N)) {
+    ##                 if((i != k) && (j != k)) {
+    ##                     s <- min(p[j, i], p[i, k])
+    ##                     if(p[j, k] < s)
+    ##                         p[j, k] <- s
+    ##                 }
+    ##             }
+    ##         }
+    ##     }
+    ## }
+    ## but it seems we can simply ignore the inequalities ...
+
+    for(i in seq_len(N))
+        p <- pmax(p, outer(p[, i], p[i, ], pmin))
+
+    ## Determine potential winners.
+
+    D <- .get_elements_in_homorelation(relations)
+    
+    as.set(D[apply(p >= t(p), 1L, all)])
+
+    ## Or equivalently:
+    ##   ! apply(t(p) > p, 1L, any)
 }

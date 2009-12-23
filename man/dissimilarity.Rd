@@ -25,8 +25,7 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   elements of \code{x} and the elements of \code{y}.
 }
 \details{
-  Available built-in methods are as follows.  Apart from the symmetric
-  difference distance, these are applicable to endorelations only.
+  Available built-in methods are as follows.
 
   \describe{
     \item{\code{"symdiff"}}{symmetric difference distance.
@@ -36,7 +35,13 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       \emph{Kemeny-Snell} metric (Kemeny and Snell, 1962).  For linear
       orders, it gives Kendall's \eqn{\tau} metric (Diaconis, 1988).
       
-      Can also be referred to as \code{"SD"} or \code{"manhattan"}.
+      Can also be referred to as \code{"SD"}.
+
+      Only applicable to crisp relations.
+    }
+
+    \item{\code{"manhattan"}}{the Manhattan distance between the
+      incidences.
     }
 
     \item{\code{"euclidean"}}{the Euclidean distance between the
@@ -55,13 +60,15 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       generalized Cook-Seiford distance is defined as the \eqn{l_1}
       distance between the generalized ranks.  For linear orders, this
       gives Spearman's footrule metric (Diaconis, 1988).
+
+      Only applicable to crisp endorelations.
     }
 
     \item{\code{"CKS"}}{Cook-Kress-Seiford distance, a generalization of
       the distance function of Cook, Kress and Seiford (1986).  For each
       pair of objects \eqn{a} and \eqn{b} in an endorelation \eqn{R}, we
       can have \eqn{a R b} and not \eqn{b R a} or vice versa (cases of
-      \dQuote{strict preference}, \eqn{a R b} and \eqn{b R a} (the case
+      \dQuote{strict preference}), \eqn{a R b} and \eqn{b R a} (the case
       of \dQuote{indifference}), or neither \eqn{a R b} nor \eqn{b R a}
       (the case of \dQuote{incomparability}).  (Only the last two are
       possible if \eqn{a = b}.)  The distance by Cook, Kress and Seiford
@@ -73,6 +80,8 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       distances between the four paired comparison cases.  (Formula 3 in
       the reference must be slightly modified for the generalization
       from partial rankings to arbitrary endorelations.)
+
+      Only applicable to crisp endorelations.
     }
 
     \item{\code{"score"}}{score-based distance.  This computes
@@ -87,8 +96,19 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       The defaults correspond to using the default relation scores and
       \eqn{p = 1}, which for linear orders gives Spearman's footrule
       distance.
+
+      Only applicable to endorelations.
+    }
+
+    \item{\code{"Jaccard"}}{Jaccard distance: 1 minus the ratio of the
+      cardinalities of the intersection and the union of the relations.
     }
   }
+    
+  Methods \code{"symdiff"}, \code{"manhattan"}, \code{"euclidean"} and
+  \code{"Jaccard"} take an additional logical argument \code{na.rm}: if
+  true (default: false), tuples with missing memberships are excluded in
+  the dissimilarity computations.
 }
 \references{
   W. D. Cook, M. Kress and L. M. Seiford (1986),

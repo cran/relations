@@ -52,14 +52,25 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       Borda/Kendall scores, i.e., the number of objects \eqn{y} such
       that \eqn{y R_b x}.  These are then aggregated across relations
       by weighted averaging.  Finally, objects are ordered according to
-      their aggregated scores.}
+      their aggregated scores. Note that this may result in a weak order
+      (i.e., with objects being tied). One can enforce a linear order by
+      setting the control parameter \code{force_linear_order} to
+      \code{TRUE}, and obtain a relation ensemble
+      with \emph{all} such solutions by additionally setting the control
+      parameter \code{all} to \code{TRUE}.}
     \item{\code{"Copeland"}}{the consensus method proposed by Copeland
       (1951).  For each relation \eqn{R_b} and object \eqn{x}, one
       determines the Copeland scores, i.e., the number of objects
       \eqn{y} such that \eqn{y R_b x}, minus the number of objects
       \eqn{y} such that \eqn{x R_b y}.  Like the Borda method, these are
       then aggregated across relations by weighted averaging.  Finally,
-      objects are ordered according to their aggregated scores.}
+      objects are ordered according to their aggregated scores.
+      Note that this may result in a weak order
+      (i.e., with objects being tied). One can enforce a linear order by
+      setting the control parameter \code{force_linear_order} to
+      \code{TRUE}, and obtain a relation ensemble
+      with \emph{all} such solutions by additionally setting the control
+      parameter \code{all} to \code{TRUE}.}
     \item{\code{"Condorcet"}}{the consensus method proposed by Condorcet
       (1785).  For a given ensemble of crisp relations, this minimizes
       the criterion function \eqn{L} with \eqn{d} as symmetric

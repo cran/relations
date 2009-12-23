@@ -29,17 +29,19 @@ relation_choice(x, method = "symdiff", weights = 1, control = list(), ...)
   functions, which typically aggregate individual preferences (e.g., of
   voters).
 
-  Choice methods \code{"symdiff"} and \code{"CKS"} (currently the only
-  ones available) choose a given number \eqn{k} of objects
-  (\dQuote{winners}) by determining a relation \eqn{R} minimizing
-  \eqn{\sum_b w_b d(R_b, R)} over all relations for which winners are
-  always strictly preferred to losers, without any further constraints
-  on the relations between pairs of winners or pairs of losers, where
-  \eqn{d} is symmetric difference (symdiff, \dQuote{Kemeny-Snell}) or
-  Cook-Kress-Seiford (CKS) dissimilarity, respectively, the \eqn{R_b}
-  are crisp endorelations, and \eqn{w_b} is the case weight given to
-  \eqn{R_b}.  (Note that this is different from computing consensus
-  preference relations.)
+  Choice methods \code{"symdiff"}, \code{"CKS"} and \code{"euclidean"}
+  choose a given number \eqn{k} of objects (\dQuote{winners}) by
+  determining a relation \eqn{R} minimizing \eqn{\sum_b w_b d(R_b, R)^p}
+  over all relations for which winners are always strictly preferred to
+  losers, without any further constraints on the relations between pairs
+  of winners or pairs of losers, where \eqn{d} is symmetric difference
+  (symdiff, \dQuote{Kemeny-Snell}), Cook-Kress-Seiford (CKS), or
+  Euclidean dissimilarity, respectively, and \eqn{w_b} is the case
+  weight given to \eqn{R_b}.  For symdiff and CKS choice, the \eqn{R_b}
+  must be crisp endorelations, and \eqn{p = 1}; for Euclidean choice,
+  the \eqn{R_b} can be crisp or fuzzy endorelations, and \eqn{p = 2}.
+  (Note that solving such a choice problem is different from computing
+  consensus preference relations.)
 
   Available control options include:
   \describe{
@@ -49,6 +51,12 @@ relation_choice(x, method = "symdiff", weights = 1, control = list(), ...)
       should be obtained.  By default, or if \code{all} is false, only a
       single optimal choice is computed.}
   }
+
+  Choice method \code{"Schulze"} implements the Schulze method for
+  selecting winners from (votes expressing) preferences.  See e.g.
+  \url{http://en.wikipedia.org/wiki/Schulze_method} for details.
+  Currently, the Schulze heuristic is used, and the set of all possible
+  winners is returned.
 }
 \examples{
 data("SVM_Benchmarking_Classification")

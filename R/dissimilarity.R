@@ -35,11 +35,14 @@ function(x, y = NULL, method = "symdiff", ...)
              c(".relation_dissimilarity_score",
                "score-based distance"),
              manhattan =
-             c(".relation_dissimilarity_symdiff",
+             c(".relation_dissimilarity_manhattan",
                "Manhattan distance"),
              euclidean =
              c(".relation_dissimilarity_euclidean",
-               "Euclidean distance")
+               "Euclidean distance"),
+             Jaccard =
+             c(".relation_dissimilarity_Jaccard",
+               "Jaccard distance")
              )
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
@@ -65,7 +68,7 @@ function(x, y = NULL, method = "symdiff", ...)
         ## is a matrix ...
         d <- matrix(0, length(x), length(y))
         for(j in seq_along(y))
-            d[, j] <- sapply(x, method, y[[j]])
+            d[, j] <- sapply(x, method, y[[j]], ...)
         dimnames(d) <- list(names(x), names(y))
         attr(x, "description") <- method_name
         return(d)
@@ -82,22 +85,28 @@ function(x, y = NULL, method = "symdiff", ...)
     while(length(ind) > 1L) {
         j <- ind[1L]
         ind <- ind[-1L]
-        d[[j]] <- sapply(x[ind], method, x[[j]])
+        d[[j]] <- sapply(x[ind], method, x[[j]], ...)
     }
     ## </FIXME>
     ## Grr ... see clue:::.dist_from_vector().
-    structure(unlist(d), Size = n, Labels = names(x),
-              class = "dist", description = method_name)
+    .structure(unlist(d), Size = n, Labels = names(x),
+               class = "dist", description = method_name)
 }
 
 .relation_dissimilarity_symdiff <-
-function(x, y)
+function(x, y, na.rm = FALSE)
+{
+    if(!identical(relation_is_crisp(x), TRUE) ||
+       !identical(relation_is_crisp(y), TRUE))
+        stop("Not implemented.")        # David said so ...
     .incidence_dissimilarity_symdiff(relation_incidence(x),
-                                     relation_incidence(y))
+                                     relation_incidence(y),
+                                     na.rm = na.rm)
+}
 
 .incidence_dissimilarity_symdiff <-
-function(x, y)    
-    sum(abs(x - y))
+function(x, y, na.rm = FALSE)
+    sum(abs(x - y), na.rm = na.rm)
 
 .relation_dissimilarity_CKS <-
 function(x, y)
@@ -180,11 +189,40 @@ function(x, y, score = NULL, Delta = 1)
     Delta(s_x, s_y)
 }
 
+.relation_dissimilarity_manhattan <-
+function(x, y, na.rm = FALSE)
+    .incidence_dissimilarity_manhattan(relation_incidence(x),
+                                       relation_incidence(y),
+                                       na.rm = na.rm)
+
+.incidence_dissimilarity_manhattan <-
+function(x, y, na.rm = FALSE)    
+    sum(abs(x - y), na.rm = na.rm)
+
 .relation_dissimilarity_euclidean <-
-function(x, y)
+function(x, y, na.rm = FALSE)
     .incidence_dissimilarity_euclidean(relation_incidence(x),
-                                       relation_incidence(y))
+                                       relation_incidence(y),
+                                       na.rm = na.rm)
 
 .incidence_dissimilarity_euclidean <-
-function(x, y)
-    sqrt(sum((x - y) ^ 2))
+function(x, y, na.rm = FALSE)
+    sqrt(sum((x - y) ^ 2, na.rm = na.rm))
+
+.relation_dissimilarity_Jaccard <-
+function(x, y, na.rm = FALSE)
+    .incidence_dissimilarity_Jaccard(relation_incidence(x),
+                                     relation_incidence(y),
+                                     na.rm = na.rm)
+## One could also use
+##   1 - gset_similarity(relation_graph(x), relation_graph(y))
+## but proceeding directly should be more efficient.
+
+.incidence_dissimilarity_Jaccard <-
+function(x, y, na.rm = FALSE)
+{
+    if(identical(all(x == 0, na.rm = na.rm), TRUE) &&
+       identical(all(y == 0, na.rm = na.rm), TRUE))
+        return(0)
+    1 - sum(.T.(x, y), na.rm = na.rm) / sum(.S.(x, y), na.rm = na.rm)
+}

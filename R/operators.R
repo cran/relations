@@ -27,23 +27,19 @@ function(x)
 {
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
-    if(!relation_is_crisp(x))
+    if(!relation_is_crisp(x, na.rm = TRUE))
         stop("Argument 'x' must be a crisp relation.")
     I <- relation_incidence(x)
     diag_hold <- diag(I)
     diag(I) <- 0
-    has_children <- rowSums(I) > 0
-    for (i in which(has_children)) {
-        visited <- rep.int(FALSE, ncol(I))
-        for (j in which(has_children & (I[i,] > 0)))
-            for (k in which(I[j,] > 0))
-                if(I[i,k] && !visited[k]) {
-                    I[i,k] <- 0
-                    visited[k] <- TRUE
-                }
+    is_transitive <- FALSE
+    for (i in seq_len(ncol(I))) {
+        tmp <- outer(I[,i], I[i,], .T.)
+        if (any(is.na(tmp))) is_transitive <- NA
+        I <- .T.(.S.(I, is.na(I)), .N.(tmp))
     }
     meta <- list(is_endorelation = TRUE,
-                 is_transitive = TRUE)
+                 is_transitive = is_transitive)
     diag(I) <- diag_hold
     .make_relation_from_domain_and_incidence(.domain(x), I, meta)
 }
@@ -59,10 +55,14 @@ function(x)
     I <- relation_incidence(x)
     diag_hold <- diag(I)
     diag(I) <- 1
-    for (i in seq_len(ncol(I)))
-        I <- .S.(I, outer(I[,i], I[i,], .T.))
+    is_transitive <- TRUE
+    for (i in seq_len(ncol(I))) {
+        tmp <- outer(I[,i], I[i,], .T.)
+        if(any(is.na(tmp))) is_transitive <- NA
+        I <- .S.(I, tmp)
+    }
     meta <- list(is_endorelation = TRUE,
-                 is_transitive = TRUE)
+                 is_transitive = is_transitive)
     diag(I) <- diag_hold
     .make_relation_from_domain_and_incidence(.domain(x), I, meta)
 }
@@ -75,8 +75,7 @@ function(x)
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
     I <- relation_incidence(x)
-    if(identical(all(diag(I) == 1), TRUE))
-        return(x)
+    if (isTRUE(all(diag(I) == 1))) return(x)
     diag(I) <- 1
     meta <- list(is_endorelation = TRUE,
                  is_reflexive = TRUE)
@@ -91,8 +90,7 @@ function(x)
     if(!(is.relation(x) && relation_is_endorelation(x)))
         stop("Argument 'x' must be an endorelation.")
     I <- relation_incidence(x)
-    if(identical(all(diag(I) == 0), TRUE))
-        return(x)
+    if (isTRUE(all(diag(I) == 0))) return(x)
     diag(I) <- 0
     meta <- list(is_endorelation = TRUE,
                  is_irreflexive = TRUE)

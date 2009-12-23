@@ -38,53 +38,57 @@
 \alias{relation_is_transitive}
 \alias{relation_is_trichotomous}
 \alias{relation_is_weak_order}
+\alias{relation_has_missings}
 \title{Relation Predicates}
 \description{
   Predicate functions for testing for binary relations and
   endorelations, and special kinds thereof.
 }
 \usage{
-relation_is_Euclidean(x)
-relation_is_Ferrers(x)
-relation_is_antisymmetric(x)
-relation_is_asymmetric(x)
+relation_is_Euclidean(x, na.rm = FALSE)
+relation_is_Ferrers(x, na.rm = FALSE)
+relation_is_antisymmetric(x, na.rm = FALSE)
+relation_is_asymmetric(x, na.rm = FALSE)
 relation_is_bijective(x)
 relation_is_binary(x)
-relation_is_complete(x)
-relation_is_coreflexive(x)
-relation_is_crisp(x)
+relation_is_complete(x, na.rm = FALSE)
+relation_is_coreflexive(x, na.rm = FALSE)
+relation_is_crisp(x, na.rm = FALSE)
 relation_is_endorelation(x)
-relation_is_equivalence(x)
+relation_is_equivalence(x, na.rm = FALSE)
 relation_is_functional(x)
 relation_is_homogeneous(x)
 relation_is_injective(x)
-relation_is_interval_order(x)
-relation_is_irreflexive(x)
+relation_is_interval_order(x, na.rm = FALSE)
+relation_is_irreflexive(x, na.rm = FALSE)
 relation_is_left_total(x)
-relation_is_linear_order(x)
-relation_is_match(x)
-relation_is_negatively_transitive(x)
-relation_is_partial_order(x)
-relation_is_preference(x)
-relation_is_preorder(x)
-relation_is_quasiorder(x)
-relation_is_quasitransitive(x)
-relation_is_reflexive(x)
+relation_is_linear_order(x, na.rm = FALSE)
+relation_is_match(x, na.rm = FALSE)
+relation_is_negatively_transitive(x, na.rm = FALSE)
+relation_is_partial_order(x, na.rm = FALSE)
+relation_is_preference(x, na.rm = FALSE)
+relation_is_preorder(x, na.rm = FALSE)
+relation_is_quasiorder(x, na.rm = FALSE)
+relation_is_quasitransitive(x, na.rm = FALSE)
+relation_is_reflexive(x, na.rm = FALSE)
 relation_is_right_total(x)
-relation_is_semiorder(x)
-relation_is_semitransitive(x)
-relation_is_strict_linear_order(x)
-relation_is_strict_partial_order(x)
-relation_is_strongly_complete(x)
+relation_is_semiorder(x, na.rm = FALSE)
+relation_is_semitransitive(x, na.rm = FALSE)
+relation_is_strict_linear_order(x, na.rm = FALSE)
+relation_is_strict_partial_order(x, na.rm = FALSE)
+relation_is_strongly_complete(x, na.rm = FALSE)
 relation_is_surjective(x)
-relation_is_symmetric(x)
-relation_is_tournament(x)
-relation_is_transitive(x)
-relation_is_trichotomous(x)
-relation_is_weak_order(x)
+relation_is_symmetric(x, na.rm = FALSE)
+relation_is_tournament(x, na.rm = FALSE)
+relation_is_transitive(x, na.rm = FALSE)
+relation_is_trichotomous(x, na.rm = FALSE)
+relation_is_weak_order(x, na.rm = FALSE)
+relation_has_missings(x)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}}.}
+  \item{na.rm}{a logical indicating whether tuples with missing
+    memberships are excluded in the predicate computations.}
 }
 \details{
   A binary relation is a relation with arity 2.
@@ -183,7 +187,8 @@ relation_is_weak_order(x)
     \item{reflexive:}{\eqn{R(x, x) = 1} for all \eqn{x}.}
     \item{irreflexive:}{\eqn{R(x, x) = 0} for all \eqn{x}.}
     \item{coreflexive:}{\eqn{R(x, y) > 0} implies \eqn{x = y}.}
-    \item{symmetric:}{\eqn{R(x, y) = R(y, x)} for all \eqn{x, y}.}
+    \item{symmetric:}{
+      \eqn{R(x, y) = R(y, x)} for all \eqn{x \ne y}{x != y}.}
     \item{asymmetric:}{
       \eqn{T(R(x, y), R(y, x)) = 0} for all \eqn{x, y}.} 
     \item{antisymmetric:}{
@@ -205,6 +210,9 @@ relation_is_weak_order(x)
   }
   The combined predicates are obtained by combining the basic predicates
   as for crisp endorelations (see above).
+
+  A relation has missings iff at least one cell in the incidence matrix
+  is \code{NA}.
 }
 \references{
   P. C. Fishburn (1972),

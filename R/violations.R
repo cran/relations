@@ -8,7 +8,8 @@ function(x,
            "semitransitive",
            "trichotomous",
            "Euclidean"),
-         tuples = FALSE)
+         tuples = FALSE,
+         na.rm = FALSE)
 {
     if (!relation_is_endorelation(x))
         stop("Relation violations only defined for endorelations.")
@@ -18,12 +19,12 @@ function(x,
 
     if(!tuples) {
         do.call(sprintf(".amount_by_which_relation_is_not_%s", property),
-                list(I))
+                list(I, na.rm = na.rm))
     } else {
         ## First get a matrix of indices of violating tuples.
         ind <- do.call(sprintf(".tuples_for_which_relation_is_not_%s",
                                property),
-                       list(I))
+                       list(I, na.rm = na.rm))
         if(!nrow(ind)) return(set())
         ## And construct a set of violating tuples from this.
         D <- rep.int(list(.get_elements_in_homorelation(x)), ncol(ind))
@@ -32,163 +33,171 @@ function(x,
 }
 
 .amount_by_which_relation_is_not_complete <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    I <- .N.(I)
-    diag(I) <- 0
-    sum(.T.(I, t(I))) / 2
+    diag(I) <- 1
+    sum(1 - .S.(I, t(I)), na.rm = na.rm) / 2
 }
 
 .tuples_for_which_relation_is_not_complete <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    I <- .N.(I)
-    diag(I) <- 0
-    ind <- which(.T.(I, t(I)) > 0, arr.ind = TRUE)
+    diag(I) <- 1
+    ind <- .which(.S.(I, t(I)) < 1, arr.ind = TRUE, na.rm = na.rm)
     ind[ind[, 1L] <= ind[, 2L], , drop = FALSE]
 }
 
 .amount_by_which_relation_is_not_match <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    I <- .N.(I)
+    I <- 1 - .S.(I, t(I))
     D <- diag(I)
     diag(I) <- 0
-    sum(.T.(I, t(I))) / 2 + sum(D)
+    sum(I, na.rm = na.rm) / 2 + sum(D, na.rm = na.rm)
 }
 
 .tuples_for_which_relation_is_not_match <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    I <- .N.(I)
-    ind <- which(diag(I) > 0)
-    diag(I) <- 0
+    I <- .S.(I, t(I))
+    ind <- .which(diag(I) < 1, na.rm = na.rm)
+    diag(I) <- 1
     ind <- rbind(cbind(ind, ind),
-                 which(.T.(I, t(I)) > 0, arr.ind = TRUE))
+                 .which(I < 1, arr.ind = TRUE, na.rm = na.rm))
     ind[ind[, 1L] <= ind[, 2L], , drop = FALSE]
 }
 
 .amount_by_which_relation_is_not_reflexive <-
-function(I)
-    sum(1 - diag(I))
+function(I, na.rm = FALSE)
+    sum(1 - diag(I), na.rm = na.rm)
 
 .tuples_for_which_relation_is_not_reflexive <-
-function(I)
-    matrix(which(diag(I) < 1), ncol = 1L)
+function(I, na.rm = FALSE)
+    matrix(.which(diag(I) < 1, na.rm = na.rm), ncol = 1L)
 
 .amount_by_which_relation_is_not_irreflexive <-
-function(I)
-    sum(diag(I))
+function(I, na.rm = FALSE)
+    sum(diag(I), na.rm = na.rm)
 
 .tuples_for_which_relation_is_not_irreflexive <-
-function(I)
-    matrix(which(diag(I) > 0), ncol = 1L)
+function(I, na.rm = FALSE)
+    matrix(.which(diag(I) > 0, na.rm = na.rm), ncol = 1L)
     
 .amount_by_which_relation_is_not_coreflexive <-
-function(I)
-    sum(I[row(I) != col(I)])
+function(I, na.rm = FALSE)
+{
+    diag(I) <- 0
+    sum(I, na.rm = na.rm)
+}
 
 .tuples_for_which_relation_is_not_coreflexive <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    ind <- which(I > 0, arr.ind = TRUE)
-    ind[ind[, 1L] != ind[, 2L], , drop = FALSE]
+    diag(I) <- 0
+    .which(I > 0, arr.ind = TRUE, na.rm = na.rm)
 }
 
 .amount_by_which_relation_is_not_symmetric <-
-function(I)
-    sum(abs(I - t(I))) / 2
+function(I, na.rm = FALSE)
+{
+    diag(I) <- 1
+    sum(abs(I - t(I)), na.rm = na.rm) / 2
+}
 
 .tuples_for_which_relation_is_not_symmetric <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    ind <- which(I != t(I), arr.ind = TRUE)
-    ind[ind[, 1L] <= ind[, 2L], , drop = FALSE]
+    diag(I) <- 1
+    .which(I != t(I), arr.ind = TRUE, na.rm = na.rm)
 }
 
 .amount_by_which_relation_is_not_asymmetric <-
-function(I)
+function(I, na.rm = FALSE)
 {
+    I <- .T.(I, t(I))
     D <- diag(I)
     diag(I) <- 0
-    sum(.T.(I, t(I))) / 2 + sum(D)
+    sum(I, na.rm = na.rm) / 2 + sum(D, na.rm = na.rm)
 }
 
 .tuples_for_which_relation_is_not_asymmetric <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    ind <- which(.T.(I, t(I)) > 0, arr.ind = TRUE)
+    ind <- .which(.T.(I, t(I)) > 0, arr.ind = TRUE, na.rm = na.rm)
     ind[ind[, 1L] <= ind[, 2L], , drop = FALSE]
 }
 
 .amount_by_which_relation_is_not_antisymmetric <-
-function(I)
+function(I, na.rm = FALSE)
 {
     diag(I) <- 0
-    sum(.T.(I, t(I))) / 2
+    sum(.T.(I, t(I)), na.rm = na.rm) / 2
 }
 
 .tuples_for_which_relation_is_not_antisymmetric <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    ind <- which(.T.(I, t(I)) > 0, arr.ind = TRUE)
+    ind <- .which(.T.(I, t(I)) > 0, arr.ind = TRUE, na.rm = na.rm)
     ind[ind[, 1L] < ind[, 2L], , drop = FALSE]
 }    
 
 .amount_by_which_relation_is_not_transitive <-
-function(I)
+function(I, na.rm = FALSE)
     sum(sapply(seq_len(nrow(I)),
-               function(j) pmax(outer(I[, j], I[j, ], .T.) - I, 0)))
+               function(j) pmax(outer(I[, j], I[j, ], .T.) - I, 0,
+                                na.rm = na.rm)))
 
 .tuples_for_which_relation_is_not_transitive <-
-function(I)
+function(I, na.rm = FALSE)
 {
     ind <- lapply(seq_len(nrow(I)),
                   function(j) {
-                      pos <- which(outer(I[, j], I[j, ], .T.) > I,
-                                   arr.ind = TRUE)
+                      pos <- .which(outer(I[, j], I[j, ], .T.) > I,
+                                    arr.ind = TRUE, na.rm = na.rm)
                       cbind(pos, rep.int(j, nrow(pos)))
                   })
     do.call(rbind, ind)[, c(1L, 3L, 2L), drop = FALSE]
 }
 
 .amount_by_which_relation_is_not_negatively_transitive <-
-function(I)
+function(I, na.rm = FALSE)
     sum(sapply(seq_len(nrow(I)),
-               function(j) pmax(I - outer(I[, j], I[j, ], .S.), 0)))
+               function(j) pmax(I - outer(I[, j], I[j, ], .S.), 0,
+                                na.rm = na.rm)))
 
 .tuples_for_which_relation_is_not_negatively_transitive <-
-function(I)
+function(I, na.rm = FALSE)
 {
     ind <- lapply(seq_len(nrow(I)),
                   function(j) {
-                      pos <- which(outer(I[, j], I[j, ], .S.) < I,
-                                   arr.ind = TRUE)
+                      pos <- .which(outer(I[, j], I[j, ], .S.) < I,
+                                    arr.ind = TRUE, na.rm = na.rm)
                       cbind(pos, rep.int(j, nrow(pos)))
                   })
     do.call(rbind, ind)[, c(1L, 3L, 2L), drop = FALSE]
 }
 
 .amount_by_which_relation_is_not_Ferrers <-
-function(I)
+function(I, na.rm = FALSE)
 {
     out <- 0
     for(j in seq_len(nrow(I)))
         for(l in seq_len(nrow(I)))
             out <- out + sum(pmax(outer(I[, j], I[, l], .T.) -
                                   outer(I[, l], I[, j], .S.),
-                                  0))
+                                  0,
+                                  na.rm = na.rm))
     out
 }
 
 .tuples_for_which_relation_is_not_Ferrers <-
-function(I)
+function(I, na.rm = FALSE)
 {
     n <- nrow(I)
     ind <- Map(function(j, l) {
-                   pos <- which(outer(I[, j], I[, l], .T.) >
-                                outer(I[, l], I[, j], .S.),
-                                arr.ind = TRUE)
+                   pos <- .which(outer(I[, j], I[, l], .T.) >
+                                 outer(I[, l], I[, j], .S.),
+                                 arr.ind = TRUE, na.rm = na.rm)
                    cbind(pos,
                          rep.int(j, nrow(pos)),
                          rep.int(l, nrow(pos)))
@@ -199,25 +208,26 @@ function(I)
 }
 
 .amount_by_which_relation_is_not_semitransitive <-
-function(I)
+function(I, na.rm = FALSE)
 {
     out <- 0
     for(k in seq_len(nrow(I)))
         for(l in seq_len(nrow(I)))
             out <- out + sum(pmax(outer(I[, k], I[k, ], .T.) -
                                   outer(I[, l], I[l, ], .S.),
-                                  0))
+                                  0,
+                                  na.rm = na.rm))
     out
 }
 
 .tuples_for_which_relation_is_not_semitransitive <-
-function(I)
+function(I, na.rm = FALSE)
 {
     n <- nrow(I)
     ind <- Map(function(k, l) {
-                   pos <- which(outer(I[, k], I[k, ], .T.) >
-                                outer(I[, l], I[l, ], .S.),
-                                arr.ind = TRUE)
+                   pos <- .which(outer(I[, k], I[k, ], .T.) >
+                                 outer(I[, l], I[l, ], .S.),
+                                 arr.ind = TRUE, na.rm = na.rm)
                    cbind(pos,
                          rep.int(k, nrow(pos)),
                          rep.int(l, nrow(pos)))
@@ -228,31 +238,40 @@ function(I)
 }   
 
 .amount_by_which_relation_is_not_trichotomous <-
-function(I)
-    sum(diag(I)) + sum(1 - abs(I - t(I))[row(I) != col(I)]) / 2
+function(I, na.rm = FALSE)
+    (sum(diag(I), na.rm = na.rm) +
+     sum(1 - abs(I - t(I))[row(I) != col(I)], na.rm = na.rm) / 2)
 
 .tuples_for_which_relation_is_not_trichotomous <-
-function(I)
+function(I, na.rm = FALSE)
 {
-    ind <- which(abs(I - t(I)) < 1, arr.ind = TRUE)
+    ind <- .which(abs(I - t(I)) < 1, arr.ind = TRUE, na.rm = na.rm)
     ind <- ind[ind[, 1L] < ind[, 2L], , drop = FALSE]
-    pos <- which(diag(I) > 0)
+    pos <- .which(diag(I) > 0, na.rm = na.rm)
     rbind(ind, cbind(pos, pos))
 }
 
 .amount_by_which_relation_is_not_Euclidean <-
-function(I)
+function(I, na.rm = FALSE)
     sum(sapply(seq_len(nrow(I)),
-               function(i) pmax(outer(I[i, ], I[i, ], .T.) - I, 0)))
+               function(i) pmax(outer(I[i, ], I[i, ], .T.) - I, 0,
+                                na.rm = na.rm)))
 
 .tuples_for_which_relation_is_not_Euclidean <-
-function(I)
+function(I, na.rm = FALSE)
 {
     ind <- lapply(seq_len(nrow(I)),
                   function(i) {
-                      pos <- which(outer(I[i, ], I[i, ], .T.) > I,
-                                   arr.ind = TRUE)
+                      pos <- .which(outer(I[i, ], I[i, ], .T.) > I,
+                                    arr.ind = TRUE, na.rm = na.rm)
                       cbind(rep.int(i, nrow(pos)), pos)
                   })
     do.call(rbind, ind)
+}
+
+.which <-
+function(x, arr.ind = FALSE, na.rm = TRUE)
+{
+    if(!na.rm) x <- x | is.na(x)
+    which(x, arr.ind = arr.ind)
 }

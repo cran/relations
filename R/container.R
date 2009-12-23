@@ -4,8 +4,11 @@
 
 .make_container <-
 function(x, classes, properties = NULL)
-    structure(list(.Data = x, .Meta = properties),
-              class = unique(classes))
+{
+    out <- list(.Data = x, .Meta = properties)
+    class(out) <- unique(classes)
+    out
+}
 
 ### * Getters.
 

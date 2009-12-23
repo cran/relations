@@ -12,7 +12,7 @@ function(D1, D2)
 ### * .get_elements_in_homorelation
 
 .get_elements_in_homorelation <-
-function(x)    
+function(x)
     as.list(relation_domain(x)[[1L]])
 
 ### * .is_valid_relation_domain
@@ -90,7 +90,7 @@ function(x)
               is_complete = TRUE,
               is_irreflexive = TRUE,
               is_antisymmetric = TRUE,
-              is_asymmetric = TRUE), 
+              is_asymmetric = TRUE),
          W =
          list(is_endorelation = TRUE,
               is_complete = TRUE,
@@ -128,6 +128,12 @@ function(x)
         x
 }
 
+### * .structure
+
+.structure <-
+function(x, ...)
+    `attributes<-`(x, c(attributes(x), list(...)))
+
 ### * .transform_factors_into_characters
 
 ## <FIXME>
@@ -151,6 +157,17 @@ function(x, w = NULL, na.rm = FALSE)
           dim = dim(x[[1L]]), dimnames = dimnames(x[[1L]]))
 }
 
+### * all permutations for a given vector x
+.permute <-
+function(x, start = c())
+{
+    if (length(x) < 1)
+        list(start)
+    else
+        unlist(lapply(seq_along(x),
+                      function(i) .permute(x[-i], c(start, x[i]))),
+               recursive = FALSE)
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

@@ -14,7 +14,8 @@ relation_violations(x,
                       "semitransitive",
                       "trichotomous",
                       "Euclidean"),
-                    tuples = FALSE)
+                    tuples = FALSE,
+                    na.rm = FALSE)
 }
 \arguments{
   \item{x}{an endorelation.}
@@ -23,6 +24,9 @@ relation_violations(x,
   \item{tuples}{a logical indicating whether to return the amount of
     violations (default), or the tuples for which the property is
     violated.}
+  \item{na.rm}{a logical indicating whether to remove tuples for which
+    the property information is not available (due to missing
+    memberships).}
 }
 \value{
   If \code{tuples} is false (default), the amount of violations for the

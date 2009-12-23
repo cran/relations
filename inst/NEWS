@@ -1,3 +1,19 @@
+Changes in 0.5-5:
+
+  o mean method added for relation ensembles.
+
+  o Jaccard dissimilarity added.
+
+  o relation_precursors() added.
+
+  o support for missings added.
+
+  o relation_choice() gains a method for computing Euclidean choices and
+    Schulze Winners.
+ 
+  o relation_impute() added with methods for linear, weak, and
+    partial orders.
+
 Changes in 0.5-4:
 
   o Rd fixes.

@@ -39,15 +39,15 @@ function(x, k, method, m = 1, weights = 1, control = list())
     ##   out$prototypes <- relation_ensemble(list = out$prototypes)
     ## </FIXME>
     out$call <- match.call()
-    out <- structure(c(out,
-                       list(silhouette =
-                            silhouette(out$cluster,
-                                       dmatrix = dissimilarities),
-                            validity =
-                            clue::cl_validity(out$membership,
-                                        dissimilarities))),
-                     class =
-                     unique(c("relation_pclust", class(out))))
+    out <- .structure(c(out,
+                        list(silhouette =
+                             silhouette(out$cluster,
+                                        dmatrix = dissimilarities),
+                             validity =
+                             clue::cl_validity(out$membership,
+                                               dissimilarities))),
+                      class =
+                      unique(c("relation_pclust", class(out))))
 
     clue::as.cl_partition(out)
 }

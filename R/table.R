@@ -7,8 +7,7 @@ function(x, memberships = TRUE)
     M <- attr(DF, "memberships")
     if (memberships && !is.null(M))
         DF <- cbind(DF, " " = paste("[", M, "]", sep = ""))
-    structure(DF,
-              class = c("relation_table", "data.frame"))
+    .structure(DF, class = c("relation_table", "data.frame"))
 }
 
 print.relation_table <-

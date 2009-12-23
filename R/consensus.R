@@ -14,7 +14,7 @@ function(x, method = NULL, weights = 1, control = list(), ...)
     } else {
         relations <- as.relation_ensemble(x)
     }
-    
+
     if(!length(relations))
         stop("Cannot compute consensus of empty ensemble.")
 
@@ -71,23 +71,37 @@ function(relations, weights, control, FUN, ...)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
 
+    ## extract options.
+    all <- isTRUE(control$all)
+    f_l_o <- isTRUE(control$force_linear_order)
+
     ## Get the scores.
     scores <- lapply(relations, FUN, ...)
+
     ## Multiply by the weights and compute the total scores.
     scores <- rowSums(mapply("*", scores, weights))
 
-    ind <- seq_along(scores)
-    out <- integer(length = length(ind))
-    out[order(scores)] <- ind
+    ## break ties directly if a single linear order is enforced.
+    out <-
+        rank(scores,
+             ties.method = if (f_l_o && !all) "first" else "average")
 
-    I <- outer(out, out, "<=")
+    INC <- function(S) outer(S, S, "<=")
+    I <- if (f_l_o && all) {
+        ## find all groupwise permutations & combine
+        l <- expand.grid(lapply(split(seq_along(out), out), .permute))
+
+        ## create incidences
+        unlist(apply(l, 1, function(i) list(INC(unlist(i)))), recursive = FALSE)
+     } else INC(out)
+
     meta <- list(is_endorelation = TRUE,
                  is_complete = TRUE,
                  is_reflexive = TRUE,
-                 is_antisymmetric = !any(duplicated(out)),
+                 is_antisymmetric = all || !any(duplicated(out)),
                  is_transitive = TRUE,
                  scores = scores)
-    .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
+    .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
 ### ** .relation_consensus_majority
@@ -161,13 +175,18 @@ function(relations, weights, control)
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
-## Consensus methods for central relations using symdiff/Manhattan or
+## Consensus methods for central relations using symdiff, Manhattan or
 ## Euclidean distance.  Note that
 ##
-## * We have restricted symdiff fitters only for crisp ensembles.
-##   Fitters for fuzzy ensembles could be added by the usual means of
-##   turning an l_1 problem with linear/integer constraints into a
-##   MILP (see e.g. CLUE).
+## * Symdiff dissimilarity only applies to crisp relation, and agrees
+##   with Manhattan dissimilarity for these.
+##
+## * The restricted symdiff fitters are thus only for crisp ensembles.
+##
+## * We have restricted Manhattan fitters only for crisp ensembles (the
+##   symdiff case).  Fitters for fuzzy ensembles could be added by the
+##   usual means of turning an l_1 problem with linear/integer
+##   constraints into a MILP (see e.g. CLUE).
 ##
 ## * The restricted symdiff fitters can also be used for determining
 ##   restricted *Euclidean* consensus relations for arbitrary (fuzzy)
@@ -304,8 +323,8 @@ function(relations, weights, control)
 
 ### ** .relation_consensus_manhattan
 
-## Symdiff/Manhattan valued consensus relation for an ensemble of
-## valued relations.
+## Manhattan valued consensus relation for an ensemble of valued
+## relations.
 
 .relation_consensus_manhattan <-
 function(relations, weights, control)
@@ -318,7 +337,7 @@ function(relations, weights, control)
                dim = .size(relations))
     meta <-
         list(objval =
-             .relation_consensus_symdiff_objval(I, incidences, weights))
+             .relation_consensus_manhattan_objval(I, incidences, weights))
     .make_relation_from_domain_and_incidence(.domain(relations), I, meta)
 }
 
@@ -452,7 +471,7 @@ function(relations, weights, control)
 function(relations, weights, control)
 {
     ## Generalized (Cook-Kress-Seiford) majority.
-    
+
     incidences <- lapply(relations, relation_incidence)
 
     M <- .make_fit_relation_symdiff_M(incidences, weights)
@@ -477,7 +496,7 @@ function(relations, weights, control)
                                 },
                                 i))
         }
-        
+
         ## Splitting non-diagonal terms is somewhat tricky as we cannot
         ## independently split x_{ij}/x_{ji} for split positions.
         ## Theory shows that the optimum is characterized via
@@ -634,8 +653,8 @@ function(name, definition, ...)
     ## Note that consensus methods are not necessarily optimization
     ## based (and hence do not necessarily have associated dissimilarity
     ## and exponent).
-    value <- structure(c(list(definition = definition), list(...)),
-                       class = "relation_consensus_method")
+    value <- c(list(definition = definition), list(...))
+    class(value) <- "relation_consensus_method"
     relation_consensus_methods_db[[name]] <- value
 }
 
@@ -761,7 +780,7 @@ set_relation_consensus_method("SD/transitive",
                               exponent = 1)
 set_relation_consensus_method("manhattan",
                               .relation_consensus_manhattan,
-                              dissimilarity = "symdiff",
+                              dissimilarity = "manhattan",
                               exponent = 1)
 set_relation_consensus_method("euclidean",
                               .relation_consensus_euclidean,
@@ -831,7 +850,10 @@ function(relations, family, weights, control, euclidean = FALSE)
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff(M, family, control)
-    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    objval <- if(euclidean)
+        .relation_consensus_euclidean_objval(I, incidences, weights)
+    else
+        .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- c(.relation_meta_db[[family]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
@@ -850,7 +872,10 @@ function(relations, weights, k, control, euclidean = FALSE)
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff_E_k(M, k, control)
-    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    objval <- if(euclidean)
+        .relation_consensus_euclidean_objval(I, incidences, weights)
+    else
+        .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- c(.relation_meta_db[["E"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
@@ -869,7 +894,10 @@ function(relations, weights, k, control, euclidean = FALSE)
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
     I <- fit_relation_symdiff_W_k(M, k, control)
-    objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
+    objval <- if(euclidean)
+        .relation_consensus_euclidean_objval(I, incidences, weights)
+    else
+        .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- c(.relation_meta_db[["W"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
@@ -939,7 +967,7 @@ function(relations, family, weights, control)
 
 ## ** .relation_consensus_CKS_W_k
 
-.relation_consensus_CKS_W_k <- 
+.relation_consensus_CKS_W_k <-
 function(relations, weights, k, control)
 {
     if(!.is_ensemble_of_endorelations(relations))
@@ -981,7 +1009,7 @@ function(relations, family, weights, control)
     meta <- c(.relation_meta_db[[family]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
-}    
+}
 
 ### * Utilities
 
@@ -1048,15 +1076,29 @@ function(I, incidences, weights)
     if(is.relation_ensemble(incidences))
         incidences <- lapply(incidences, relation_incidence)
     if(is.list(I)) I <- I[[1L]]
-    
+
     sum(weights *
         sapply(incidences, .incidence_dissimilarity_symdiff, I))
 }
 
+### ** .relation_consensus_manhattan_objval
+
+.relation_consensus_manhattan_objval <-
+function(I, incidences, weights)
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+
+    sum(weights *
+        sapply(incidences, .incidence_dissimilarity_manhattan, I))
+}
+
 ### ** .relation_consensus_euclidean_objval
 
-.relation_consensus_euclidean_objval <-    
-function(I, incidences, weights)    
+.relation_consensus_euclidean_objval <-
+function(I, incidences, weights)
 {
     ## Be nice.
     if(is.relation_ensemble(incidences))
@@ -1091,7 +1133,7 @@ function(I, incidences, weights)
     if(is.list(I)) I <- I[[1L]]
 
     sum(weights * sapply(incidences, .incidence_dissimilarity_CKS, I))
-}    
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

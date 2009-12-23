@@ -40,13 +40,13 @@ function(...)
     args <- list(...)
     classes <- c("data_table", "data.frame")
     if(!length(args))
-        return(structure(data.frame(), class = classes))
+        return(`class<-`(data.frame(), classes))
     if(is.null(nms <- names(args)) || !all(nzchar(nms)))
         stop("All arguments must be named.")
     ## Check lengths.
     if(length(table(sapply(args, length))) > 1L)
         stop("All arguments must have the same length.")
-    structure(.make_data_frame_from_list(args), class = classes)
+    `class<-`(.make_data_frame_from_list(args), classes)
 }
 
 print.data_table <-

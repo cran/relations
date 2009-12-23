@@ -34,7 +34,8 @@ function(x, components = FALSE)
                        stop("Out-of-domain elements.")
                    as.logical(I[ind])
                }
-           structure(f, class = "relation_charfun")
+           class(f) <- "relation_charfun"
+           f
        })
 }
 

@@ -13,11 +13,12 @@ function(x, ...)
     ## The idea is that if sparse matrices are used for representing
     ## incidences, .incidence() might give these ...
     ## </NOTE>
-    structure(c(I),
-              dim = dim(I),
-              dimnames = lapply(.domain(x), LABELS, ..., quote = FALSE),
-              class = c("relation_incidence",
-                        if(length(dim(I)) == 2L) "matrix" else "array"))
+
+    .structure(c(I),
+               dim = dim(I),
+               dimnames = lapply(.domain(x), LABELS, ..., quote = FALSE),
+               class = c("relation_incidence",
+                         if(length(dim(I)) == 2L) "matrix" else "array"))
     ## We used to have class = "relation_incidence", but then there is
     ## no dispatch to matrix methods.  As older versions might have set
     ## class to "relation_incidence" for the internal representation, we
@@ -85,3 +86,4 @@ function(x)
 ### mode: outline-minor ***
 ### outline-regexp: "### [*]+" ***
 ### End: ***
+

@@ -6,14 +6,12 @@ import("slam")
 export("as.ranking",
        "as.relation",
        "as.relation_ensemble",
-#       "as.relation_multiset",
        "dual",
        "endorelation",
        "homorelation",
        "is.ranking",
        "is.relation",
        "is.relation_ensemble",
-#       "is.relation_multiset",
        "ranking",
        "reflexive_reduction",
        "reflexive_closure",
@@ -34,6 +32,8 @@ export("as.ranking",
        "relation_ensemble",
        "relation_graph",
        "relation_graph<-",
+       "relation_has_missings",
+       "relation_impute",
        "relation_incidence",
        "relation_incidence<-",
        "relation_is_Euclidean",
@@ -74,7 +74,6 @@ export("as.ranking",
        "relation_is_weak_order",
        "relation_is_preorder",
        "relation_is_quasiorder",
-#       "relation_multiset",
        "relation_size",
        "relation_pclust",
        "relation_properties",
@@ -99,14 +98,13 @@ S3method("relation_scores", "relation")
 S3method("relation_scores", "relation_ensemble")
 S3method("Summary", "relation")
 S3method("Summary", "relation_ensemble")
-S3method("Summary", "relation_multiset")
 S3method("all.equal", "relation")
 S3method("all.equal", "relation_ensemble")
 S3method("as.list", "relation_ensemble")
 S3method("c", "relation_ensemble")
-S3method("c", "relation_multiset")
 S3method("cut", "relation")
 S3method("dim", "relation")
+S3method("mean", "relation_ensemble")
 S3method("plot", "relation")
 S3method("plot", "relation_ensemble")
 S3method("plot", "relation_incidence")
@@ -119,7 +117,6 @@ S3method("print", "relation_domain")
 S3method("print", "relation_graph")
 S3method("print", "relation_ensemble")
 S3method("print", "relation_incidence")
-S3method("print", "relation_multiset")
 S3method("print", "relation_pclust")
 S3method("print", "relation_table")
 S3method("print", "summary.relation")
@@ -161,11 +158,6 @@ S3method("as.data.frame", "relation")
 S3method("as.relation_ensemble", "data.frame")
 S3method("as.relation_ensemble", "default")
 S3method("as.relation_ensemble", "relation_ensemble")
-S3method("as.relation_ensemble", "relation_multiset")
-
-S3method("as.relation_multiset", "default")
-S3method("as.relation_multiset", "relation_ensemble")
-S3method("as.relation_multiset", "relation_multiset")
 
 ## Relational algebra.
 export("%><%",
