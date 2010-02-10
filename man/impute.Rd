@@ -49,7 +49,7 @@ relation_impute(x, method = NULL, control = list(), \dots)
     \item{\code{"average/\var{F}"}}{Computes the relation with average
       incidences, based on all possible completions as indicated for the
       \code{any/\var{F}} methods. Note that these completions are not
-      explicitely generated to compute the averages, and that the
+      explicitly generated to compute the averages, and that the
       resulting relation will typically be fuzzy.}
     }
 }

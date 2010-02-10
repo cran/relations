@@ -72,7 +72,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
     } else {
         if(!is.null(graph)) {
             ## merge domain labels
-            domain <- unique(unlist(graph))
+            domain <- sort(unique(unlist(graph)))
 
             ## for data frame graphs, fix domain names
             if(!is.null(graph) && is.data.frame(graph))
@@ -814,7 +814,12 @@ function(D, G, size = NULL)
     if(is.null(size)) size <- sapply(D, length)
     I <- array(0, size)
     if(length(G) > 0)
-        I[rbind(mapply(sets:::.exact_match, G, D))] <- 1
+        I[rbind(mapply(sets:::.exact_match,
+                       G,
+                       lapply(D, as.list)
+                       )
+                )
+          ] <- 1
     I
 }
 
