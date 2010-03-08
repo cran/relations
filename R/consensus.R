@@ -72,8 +72,8 @@ function(relations, weights, control, FUN, ...)
         stop("Need an ensemble of endorelations.")
 
     ## extract options.
-    all <- isTRUE(control$all)
-    f_l_o <- isTRUE(control$force_linear_order)
+    n <- .n_from_control_list(control)
+    f_l_o <- isTRUE(control$L) ## force linear order?
 
     ## Get the scores.
     scores <- lapply(relations, FUN, ...)
@@ -84,21 +84,24 @@ function(relations, weights, control, FUN, ...)
     ## break ties directly if a single linear order is enforced.
     out <-
         rank(scores,
-             ties.method = if (f_l_o && !all) "first" else "average")
+             ties.method = if (f_l_o && n == 1L) "first" else "average")
 
     INC <- function(S) outer(S, S, "<=")
-    I <- if (f_l_o && all) {
+    I <- if (f_l_o && n > 1L) {
         ## find all groupwise permutations & combine
         l <- expand.grid(lapply(split(seq_along(out), out), .permute))
 
+        ## Only use up to n combinations
+        l <- l[seq_len(min(n, nrow(l))),,drop = FALSE]
+
         ## create incidences
         unlist(apply(l, 1, function(i) list(INC(unlist(i)))), recursive = FALSE)
-     } else INC(out)
+    } else INC(out)
 
     meta <- list(is_endorelation = TRUE,
                  is_complete = TRUE,
                  is_reflexive = TRUE,
-                 is_antisymmetric = all || !any(duplicated(out)),
+                 is_antisymmetric = f_l_o || !any(duplicated(out)),
                  is_transitive = TRUE,
                  scores = scores)
     .make_consensus_from_incidences(.domain(relations), I, meta)
@@ -153,7 +156,7 @@ function(relations, weights, control)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
 
-    all <- identical(control$all, TRUE)
+    nos <- .n_from_control_list(control)
 
     n <- relation_size(relations)[1L]
     C <- matrix(0, n, n)
@@ -165,8 +168,8 @@ function(relations, weights, control)
     for(k in seq_len(n))
         C[, k] <- rowSums(sweep(abs(scores - k), 2L, weights, "*"))
     .compare <- function(u) outer(u, u, ">=")
-    I <- if(all)
-        lapply(.find_all_LSAP_solutions(C), .compare)
+    I <- if(nos > 1L)
+        lapply(.find_up_to_n_LSAP_solutions(C, nos), .compare)
     else
         .compare(clue::solve_LSAP(C))
     objval <- .relation_consensus_CS_objval(I, incidences, weights)
@@ -210,7 +213,7 @@ function(relations, weights, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
-    all <- identical(control$all, TRUE)
+    nos <- .n_from_control_list(control)
 
     incidences <- lapply(relations, relation_incidence)
     M <- .make_fit_relation_symdiff_M(incidences, weights)
@@ -219,7 +222,7 @@ function(relations, weights, control)
     meta <- list(is_endorelation = TRUE,
                  is_complete = TRUE,
                  objval = objval)
-    if(!all) {
+    if(nos == 1L) {
         meta <- c(meta,
                   list(is_reflexive = all(diag(M) >= 0),
                        is_antisymmetric = all(M != 0)))
@@ -228,16 +231,23 @@ function(relations, weights, control)
     } else {
         I <- list(I)
         ind <- which(M == 0, arr.ind = TRUE)
-        ## Recursively generate all solutions by using 0 or 1 for the
-        ## zero entries of M.
+        ## Recursively generate up to nos solutions by using 0 or 1 for
+        ## the zero entries of M.
         splitter <- function(x, i, j) {
             y <- x
             ## By default we use 1 for the zero entries of M.
             y[i, j] <- 0
             list(x, y)
         }
-        for(k in seq_len(nrow(ind)))
-            I <- do.call("c", lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
+        k <- 1L
+        nr <- nrow(ind)
+        while((length(I) < nos) && (k <= nr)) {
+            I <- do.call("c",
+                         lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
+            k <- k + 1L
+        }
+        if(length(I) > nos)
+            I <- I[seq_len(nos)]
     }
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
@@ -482,7 +492,9 @@ function(relations, weights, control)
     objval <- .relation_consensus_CKS_objval(I, incidences, weights)
     meta <- list(is_endorelation = TRUE, objval = objval)
 
-    if(identical(control$all, TRUE)) {
+    nos <- .n_from_control_list(control)
+
+    if(nos > 1L) {
         I <- list(I)
 
         ## Split diagonal terms when m_{ii} = 0.
@@ -495,69 +507,83 @@ function(relations, weights, control)
                                     list(x, y)
                                 },
                                 i))
+            if(length(I) >= nos) break
         }
-
-        ## Splitting non-diagonal terms is somewhat tricky as we cannot
-        ## independently split x_{ij}/x_{ji} for split positions.
-        ## Theory shows that the optimum is characterized via
-        ##   \max(q_{ij}, p_{ij}, p_{ji}, 0)
-        ## corresponding to 0/0, 1/0, 0/1 and 1/1 for x_{ij}/x_{ji}.
-        ## Splits are characterized by \max(q_{ij}, p_{ij}, p_{ji}) = 0.
-        ## <FIXME>
-        ## Check whether the above generalized majority rule always
-        ## takes indicidence as one when possible.
-        ## </CHECK>
-        P <- .make_fit_relation_CKS_P(incidences, weights)
-        ## Only need to know where P and Q are zero.
-        P <- (P == 0)
-        Q <- (Q == 0)
-        ## And maybe whether i < j.
-        U <- row(P) < col(P)
-        ## Helper.
-        do_split <- function(I, fun, ind) {
-            for(k in seq_len(nrow(ind)))
-                I <- do.call("c",
-                             lapply(I, fun, ind[k, 1L], ind[k, 2L]))
-            I
+        len <- length(I)
+        if(len > nos)
+            I <- I[seq_len(nos)]
+        else if(len < nos) {
+            ## Splitting non-diagonal terms is somewhat tricky as we
+            ## cannot independently split x_{ij}/x_{ji} for split
+            ## positions.
+            ## Theory shows that the optimum is characterized via
+            ##   \max(q_{ij}, p_{ij}, p_{ji}, 0)
+            ## corresponding to 0/0, 1/0, 0/1 and 1/1 for x_{ij}/x_{ji}.
+            ## Splits are characterized by
+            ##   \max(q_{ij}, p_{ij}, p_{ji}) = 0.
+            ## <FIXME>
+            ## Check whether the above generalized majority rule always
+            ## takes indicidence as one when possible.
+            ## </CHECK>
+            P <- .make_fit_relation_CKS_P(incidences, weights)
+            ## Only need to know where P and Q are zero.
+            P <- (P == 0)
+            Q <- (Q == 0)
+            ## And maybe whether i < j.
+            U <- row(P) < col(P)
+            ## Helper.
+            do_split <- function(I, fun, ind) {
+                k <- 1L
+                nr <- nrow(ind)
+                while((length(I) < nos) && (k <= nr)) {
+                    I <- do.call("c",
+                                 lapply(I, fun, ind[k, 1L], ind[k, 2L]))
+                    k <- k + 1L
+                }
+                I
+            }
+            ## If q_{ij} = p_{ij} = 0, can take 0/0 1/0 1/1.
+            I <- do_split(I,
+                          function(x, i, j) {
+                              z <- y <- x
+                              x[i, j] <- x[j, i] <- 1
+                              y[i, j] <- 1; y[j, i] <- 0
+                              z[i, j] <- z[j, i] <- 0
+                              list(x, y, z)
+                          },
+                          which(P & Q, arr.ind = TRUE))
+            ## If p_{ij} = p_{ji} = 0, can take 1/0 0/1 1/1.
+            I <- do_split(I,
+                          function(x, i, j) {
+                              z <- y <- x
+                              x[i, j] <- x[j, i] <- 1
+                              y[i, j] <- 1; y[j, i] <- 0
+                              z[i, j] <- 0; z[j, i] <- 1
+                              list(x, y, z)
+                          },
+                          which((P & t(P)) & U, arr.ind = TRUE))
+            ## If only q_{ij} = 0, can take 0/1 1/1.
+            I <- do_split(I,
+                          function(x, i, j) {
+                              y <- x
+                              x[i, j] <- x[j, i] <- 1
+                              y[i, j] <- y[j, i] <- 0
+                              list(x, y)
+                          },
+                          which((Q & !P) & !t(P), arr.ind = TRUE))
+            ## If only p_{ij} = 0, can take 1/0 1/1.
+            I <- do_split(I,
+                          function(x, i, j) {
+                              y <- x
+                              x[i, j] <- x[j, i] <- 1
+                              y[i, j] <- 1; y[j, i] <- 0
+                              list(x, y)
+                          },
+                          which((P & Q) & !t(P), arr.ind = TRUE))
+            ## Do this only once and not inside do_split.
+            if(length(I) > nos)
+                I <- I[seq_len(nos)]
         }
-        ## If q_{ij} = p_{ij} = 0, can take 0/0 1/0 1/1.
-        I <- do_split(I,
-                      function(x, i, j) {
-                          z <- y <- x
-                          x[i, j] <- x[j, i] <- 1
-                          y[i, j] <- 1; y[j, i] <- 0
-                          z[i, j] <- z[j, i] <- 0
-                          list(x, y, z)
-                      },
-                      which(P & Q, arr.ind = TRUE))
-        ## If p_{ij} = p_{ji} = 0, can take 1/0 0/1 1/1.
-        I <- do_split(I,
-                      function(x, i, j) {
-                          z <- y <- x
-                          x[i, j] <- x[j, i] <- 1
-                          y[i, j] <- 1; y[j, i] <- 0
-                          z[i, j] <- 0; z[j, i] <- 1
-                          list(x, y, z)
-                      },
-                      which((P & t(P)) & U, arr.ind = TRUE))
-        ## If only q_{ij} = 0, can take 0/1 1/1.
-        I <- do_split(I,
-                      function(x, i, j) {
-                          y <- x
-                          x[i, j] <- x[j, i] <- 1
-                          y[i, j] <- y[j, i] <- 0
-                          list(x, y)
-                      },
-                      which((Q & !P) & !t(P), arr.ind = TRUE))
-        ## If only p_{ij} = 0, can take 1/0 1/1.
-        I <- do_split(I,
-                      function(x, i, j) {
-                          y <- x
-                          x[i, j] <- x[j, i] <- 1
-                          y[i, j] <- 1; y[j, i] <- 0
-                          list(x, y)
-                      },
-                      which((P & Q) & !t(P), arr.ind = TRUE))
     }
 
     .make_consensus_from_incidences(.domain(relations), I, meta)

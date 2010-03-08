@@ -157,7 +157,7 @@ function(M, k, D, control)
     ## We use c(u, z) for the decision variables.
 
     ## Argument handling.
-    all <- identical(control$all, TRUE)
+    nos <- .n_from_control_list(control)
     MIP <- identical(control$MIP, TRUE)
     sparse <- !identical(control$sparse, FALSE)
     solver <- control$solver
@@ -189,12 +189,11 @@ function(M, k, D, control)
                       c(double(n_z), k)),
                  types = rep.int(c("B", "C"), c(n_u, n_z)),
                  maximum = FALSE)
-    nos <- if(all) NA_integer_ else 1L
     out <- solve_MILP(milp, solver, c(list(n = nos), control))
     
     pos <- seq_len(n_u)  
     finisher <- function(e) as.set(D[e$solution[pos] == 1])
-    out <- if(all) lapply(out, finisher) else finisher(out)
+    out <- if(nos > 1L) lapply(out, finisher) else finisher(out)
     if(MIP) attr(out, "MIP") <- milp
     out
 }
@@ -205,7 +204,7 @@ function(M, k, D, control)
 function(M, k, D, control)
 {
     ## Argument handling.
-    all <- identical(control$all, TRUE)
+    nos <- .n_from_control_list(control)
     MIP <- identical(control$MIP, TRUE)
     sparse <- !identical(control$sparse, FALSE)
     solver <- control$solver
@@ -222,11 +221,10 @@ function(M, k, D, control)
                  list(mat, "==", k),
                  types = "B",
                  maximum = TRUE)
-    nos <- if(all) NA_integer_ else 1L
     out <- solve_MIQP(miqp, solver, c(list(n = nos), control))
     
     finisher <- function(e) as.set(D[e$solution == 1])
-    out <- if(all) lapply(out, finisher) else finisher(out)
+    out <- if(nos > 1L) lapply(out, finisher) else finisher(out)
     if(MIP) attr(out, "MIP") <- miqp
     out
 }

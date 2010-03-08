@@ -47,9 +47,10 @@ relation_choice(x, method = "symdiff", weights = 1, control = list(), ...)
   \describe{
     \item{\code{k}}{an integer giving the number of objects/winners to
       be chosen.}
-    \item{\code{all}}{a logical indicating whether all optimal choices
-      should be obtained.  By default, or if \code{all} is false, only a
-      single optimal choice is computed.}
+    \item{\code{n}}{the maximal number of optimal choices to be
+      obtained, with \code{NA} constants or \code{"all"} indicating to
+      obtain all optimal choices.  By default, only a single optimal
+      choice is computed.}
   }
 
   Choice method \code{"Schulze"} implements the Schulze method for

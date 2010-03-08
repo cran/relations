@@ -45,7 +45,7 @@ function(x, method = NULL, control = list(), ...)
     } else match.arg(method, .methods)
 
     do.call(sprintf(".impute_%s", gsub("/", "_", method)),
-            list(.domain(R), I, NAs, control))
+            list(.domain(x), I, NAs, control))
 }
 
 ##############################################

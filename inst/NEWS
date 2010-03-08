@@ -1,3 +1,8 @@
+Changes in 0.5-7:
+
+  o support for finding up to n consensus relations added for 
+    most methods.
+
 Changes in 0.5-5:
 
   o mean method added for relation ensembles.

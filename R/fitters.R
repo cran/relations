@@ -150,7 +150,8 @@ function(x, family = .SD_families, control = list())
 
     labels <- dimnames(x)
 
-    all <- identical(control$all, TRUE)
+    nos <- .n_from_control_list(control)
+    one <- nos == 1L
 
     ## Compute diagonal:
     ## For families which are reflexive or irreflexive, set all ones or
@@ -161,11 +162,11 @@ function(x, family = .SD_families, control = list())
         rep.int(1, n)
     else if(family == "T")
         rep.int(0, n)
-    else if(!all)
+    else if(one)
         diag(x) >= 0
     else {
-        ## If all solutions are sought, mark diagonal entries with no
-        ## strict majority as NA to allow for later expansion.
+        ## If more than one solution is sought, mark diagonal entries
+        ## with no strict majority as NA to allow for later expansion.
         ifelse(diag(x) != 0, diag(x) >= 0, NA)
     }
 
@@ -180,15 +181,16 @@ function(x, family = .SD_families, control = list())
     if(is.null(verbose))
         verbose <- getOption("verbose")
     
-    if(all) {
+    if(!one) {
         ## Do this in a separate function which also handles diagonal
         ## expansion.
-        return(.find_all_relation_symdiff_optima(milp,
-                                                 control$solver,
-                                                 control$control,
-                                                 family, labels,
-                                                 diagonal,
-                                                 verbose))
+        return(.find_up_to_n_relation_symdiff_optima(milp,
+                                                     nos,
+                                                     control$solver,
+                                                     control$control,
+                                                     family, labels,
+                                                     diagonal,
+                                                     verbose))
     }
     out <- solve_MILP(milp, control$solver,
                       c(list(verbose = verbose), control$control))
@@ -219,14 +221,15 @@ function(status, family)
     }
 }
 
-### * .find_all_relation_symdiff_optima
+### * .find_up_to_n_relation_symdiff_optima
 
-.find_all_relation_symdiff_optima <-
-function(x, solver, control, family, labels, diagonal, verbose)
+.find_up_to_n_relation_symdiff_optima <-
+function(x, n, solver, control, family, labels, diagonal, verbose)
 {
+    ## Note that this only gets used if more than one solution is
+    ## sought.
     y <- solve_MILP(x, solver,
-                    c(list(n = NA_integer_, verbose = verbose),
-                      control))
+                    c(list(n = n, verbose = verbose), control))
     ## Check status:
     if(length(y) == 1L)
         .stop_if_lp_status_is_nonzero(y[[1L]]$status, family)
@@ -234,7 +237,7 @@ function(x, solver, control, family, labels, diagonal, verbose)
     .make_incidence <- function(e, d)
         .make_incidence_from_symdiff_MILP_solution(e$solution,
                                                    family, labels, d)
-    if(!any(ind <- which(is.na(diagonal))))
+    y <- if(!any(ind <- which(is.na(diagonal))))
         lapply(y, .make_incidence, diagonal)
     else {
         diagonals <- list(diagonal)
@@ -253,6 +256,9 @@ function(x, solver, control, family, labels, diagonal, verbose)
                        function(diagonal)
                        lapply(y, .make_incidence, diagonal)))
     }
+    if(length(y) > n)
+        y <- y[seq_len(n)]
+    y
 }    
 
 ### * Constraint generators: transitivity.
@@ -872,8 +878,13 @@ function(C, nc, control = list())
         rhs <- c(rhs, add$rhs)
     }
 
-    all <- identical(control$all, TRUE)
-    nos <- if(all) NA_integer_ else 1L
+    nos <- .n_from_control_list(control)
+    one <- nos == 1L
+    ## Membership matrices of equivalence relations are only unique up
+    ## to column permutations.  At worst, all classes have the same
+    ## number of elements, so arranging in non-increasing cardinality
+    ## does not reduce the number of solutions found.
+    nom <- as.integer(min(.Machine$integer.max, nos * factorial(nc)))
     solver <- control$solver
     verbose <- control$verbose
     if(is.null(verbose))
@@ -881,9 +892,9 @@ function(C, nc, control = list())
     ## Empirical evidence suggests that explicit linearization works
     ## faster even for cplex, so linearize by default.
     linearize <- !identical(control$linearize, FALSE)
-    control <- c(list(n = nos, verbose = verbose, linearize = linearize),
+    control <- c(list(n = nom, verbose = verbose, linearize = linearize),
                  control$control)
-    if(all) {
+    if(!one) {
         ## Split row-wise (as the first 1 in a row implies all other
         ## entries are 0).
         order <- c(matrix(seq_len(no * nc), nrow = nc, ncol = no,
@@ -899,10 +910,13 @@ function(C, nc, control = list())
         M <- matrix(e$solution, ncol = nc)
         .make_incidence_from_class_memberships(M, "E", labels)
     }
-    if(all) {
+    if(!one) {
         ## Note that equivalence classes are only unique up to
         ## permutations of the class labels.
-        unique(lapply(out, finisher))
+        out <- unique(lapply(out, finisher))
+        if(length(out) > nos)
+            out <- out[seq_len(nos)]
+        out
     }
     else finisher(out)
 
@@ -978,8 +992,8 @@ function(C, nc, control = list())
         rhs <- c(rhs, add$rhs)
     }
 
-    all <- identical(control$all, TRUE)
-    nos <- if(all) NA_integer_ else 1L
+    nos <- .n_from_control_list(control)
+    one <- nos == 1L
     solver <- control$solver
     verbose <- control$verbose
     if(is.null(verbose))
@@ -989,7 +1003,7 @@ function(C, nc, control = list())
     linearize <- !identical(control$linearize, FALSE)
     control <- c(list(n = nos, verbose = verbose, linearize = linearize),
                  control$control)
-    if(all) {
+    if(!one) {
         ## Split row-wise (as the first 1 in a row implies all other
         ## entries are 0).
         order <- c(matrix(seq_len(no * nc), nrow = nc, ncol = no,
@@ -1006,7 +1020,7 @@ function(C, nc, control = list())
         M <- matrix(e$solution, ncol = nc)
         .make_incidence_from_class_memberships(M, "W", labels)
     }
-    if(all) lapply(out, finisher) else finisher(out)
+    if(!one) lapply(out, finisher) else finisher(out)
 }
 
 ### * fit_relation_CKS_via_QP
@@ -1070,8 +1084,8 @@ function(P, Q, family, control)
         Q[cbind(pos(i, j), pos(j, i))] <- A[ind]
     }
 
-    all <- identical(control$all, TRUE)
-    nos <- if(all) NA_integer_ else 1L
+    nos <- .n_from_control_list(control)
+    one <- nos == 1L
     solver <- control$solver
     verbose <- control$verbose
     if(is.null(verbose))
@@ -1097,7 +1111,7 @@ function(P, Q, family, control)
         .make_incidence_from_offdiag(round(e$solution),
                                      family, dimnames(P), diagonal)
     }
-    if(all) lapply(out, finisher) else finisher(out)
+    if(!one) lapply(out, finisher) else finisher(out)
 }
 
 ### Local variables: ***

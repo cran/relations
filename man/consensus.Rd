@@ -53,11 +53,14 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       that \eqn{y R_b x}.  These are then aggregated across relations
       by weighted averaging.  Finally, objects are ordered according to
       their aggregated scores. Note that this may result in a weak order
-      (i.e., with objects being tied). One can enforce a linear order by
-      setting the control parameter \code{force_linear_order} to
-      \code{TRUE}, and obtain a relation ensemble
-      with \emph{all} such solutions by additionally setting the control
-      parameter \code{all} to \code{TRUE}.}
+      (i.e., with objects being tied).
+
+      One can enforce a linear order by setting the control parameter
+      \code{L} to \code{TRUE}, and obtain a relation ensemble with up to
+      \emph{n} or all such solutions by additionally setting the control
+      parameter \code{n} to some positive integer or \code{"all"},
+      respectively.
+    }
     \item{\code{"Copeland"}}{the consensus method proposed by Copeland
       (1951).  For each relation \eqn{R_b} and object \eqn{x}, one
       determines the Copeland scores, i.e., the number of objects
@@ -66,11 +69,14 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       then aggregated across relations by weighted averaging.  Finally,
       objects are ordered according to their aggregated scores.
       Note that this may result in a weak order
-      (i.e., with objects being tied). One can enforce a linear order by
-      setting the control parameter \code{force_linear_order} to
-      \code{TRUE}, and obtain a relation ensemble
-      with \emph{all} such solutions by additionally setting the control
-      parameter \code{all} to \code{TRUE}.}
+      (i.e., with objects being tied).
+
+      One can enforce a linear order by setting the control parameter
+      \code{L} to \code{TRUE}, and obtain a relation ensemble with up to
+      \emph{n} or all such solutions by additionally setting the control
+      parameter \code{n} to some positive integer or \code{"all"},
+      respectively.
+    }
     \item{\code{"Condorcet"}}{the consensus method proposed by Condorcet
       (1785).  For a given ensemble of crisp relations, this minimizes
       the criterion function \eqn{L} with \eqn{d} as symmetric
@@ -80,16 +86,22 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       times that \eqn{x R_b y} is no less than the weighted number of
       times that this is not the case.  Even when aggregating linear
       orders, this can lead to intransitive consensus solutions
-      (\dQuote{effet Condorcet}).  One can obtain a relation ensemble
-      with \emph{all} consensus relations by setting the control
-      parameter \code{all} to \code{TRUE}.}
+      (\dQuote{effet Condorcet}).
+
+      One can obtain a relation ensemble with up to \emph{n} or all such
+      solutions consensus relations by setting the control parameter
+      \code{n} to some positive integer or \code{"all"}, respectively.
+    } 
     \item{\code{"CS"}}{the consensus method of Cook and Seiford (1978)
       which determines a linear order minimizing the criterion function
       \eqn{L} with \eqn{d} as generalized Cook-Seiford (ranking)
       distance and \eqn{p = 1} via solving a linear sum assignment
-      problem.  One can obtain a relation ensemble with \emph{all}
-      consensus relations by setting the control parameter \code{all} to
-      \code{TRUE}.}
+      problem.
+
+      One can obtain a relation ensemble with up to \emph{n} or all such
+      consensus relations by setting the control parameter \code{n} to
+      some positive integer or \code{"all"}, respectively.
+    }
     \item{\code{"SD/\var{F}"}}{an exact solver for determining the
       consensus relation of an ensemble of crisp endorelations by
       minimizing the criterion function \eqn{L} with \eqn{d} as
@@ -139,9 +151,10 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       (I.e., incidences can be constrained to be zero or one on an
       object by object basis.)
 
-      One can obtain a relation ensemble with \emph{all} consensus
-      relations by setting the control parameter \code{all} to
-      \code{TRUE}.  (See the examples.)
+      One can obtain a relation ensemble with up to \emph{n} or all such
+      consensus relations by setting the control parameter \code{n} to
+      some positive integer or \code{"all"}, respectively.
+      (See the examples.)
     }
     \item{\code{"manhattan"}}{the (unrestricted) median of the
       ensemble, minimizing \eqn{L} with \eqn{d} as Manhattan (symmetric
@@ -172,6 +185,10 @@ relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
       suitable class (\dQuote{Family}) of crisp endorelations as
       indicated by \var{F}, with available families and control
       parameters as for methods \code{"SD/\var{F}"}.
+
+      One can obtain a relation ensemble with up to \emph{n} or all such
+      consensus relations by setting the control parameter \code{n} to
+      some positive integer or \code{"all"}, respectively.
     }
   }
 }
@@ -256,7 +273,7 @@ relation_incidence(L)
 ## Visualize provided that Rgraphviz is available.
 if(require("Rgraphviz")) plot(L)
 ## But note that this linear order is not unique.
-L <- relation_consensus(R, "SD/L", control = list(all = TRUE))
+L <- relation_consensus(R, "SD/L", control = list(n = "all"))
 print(L)
 if(require("Rgraphviz")) plot(L)
 ## (Oh no: c is once first and once last.)

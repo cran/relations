@@ -46,6 +46,26 @@ function(x)
 ##     Map(match, x, y)
 ## </NOTE>
 
+### * .n_from_control_list
+
+.n_from_control_list <-
+function(x)
+{
+    n <- x$n
+    if(is.null(n)) {
+        if(identical(x$all, TRUE))
+            n <- NA_integer_
+        else
+            n <- 1L
+    } else if(identical(n, "all"))
+        n <- NA_integer_
+    ## Ops code gets much easier if we do not have to special case NA:
+    if(is.na(n))
+        .Machine$integer.max
+    else
+        as.integer(n)
+}
+
 ### * .offdiag
 
 .offdiag <-
