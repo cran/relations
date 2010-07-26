@@ -1,3 +1,7 @@
+Changes in 0.5-8:
+
+  o Ensure that examples do not fail when Rgraphviz is unavailable.
+
 Changes in 0.5-7:
 
   o support for finding up to n consensus relations added for 

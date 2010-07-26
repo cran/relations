@@ -60,10 +60,14 @@ print(R)
 R <- as.relation(R)
 
 ## find all suitable completions within L
-plot(relation_impute(R, method = "any/L", n = "all"))
+ens<- relation_impute(R, method = "any/L", n = "all")
+lapply(ens, as.ranking)
+if(require("Rgraphviz")) plot(ens)
 
 ## find 3 suitable partial orders
-plot(relation_impute(R, method = "any/O", n = 3))
+ens<- relation_impute(R, method = "any/O", n = 3)
+lapply(ens, relation_incidence)
+if(require("Rgraphviz")) plot(ens)
 
 ## compute average completion
 R1 <- relation_impute(R, method = "average/O")
