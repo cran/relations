@@ -1,3 +1,8 @@
+Changes in 0.5-9:
+
+  o Add predicates for (a)cyclic relations.
+  o Fix incorrect transitive_reduction() code.
+
 Changes in 0.5-8:
 
   o Ensure that examples do not fail when Rgraphviz is unavailable.
@@ -88,7 +93,7 @@ Changes in 0.4:
 
   o relation_scores() now also works for relation ensembles
 
-  o [tansitive,reflexive]_[closure,reduction]() are now available as
+  o [transitive,reflexive]_[closure,reduction]() are now available as
     methods for closure and reduction generics (provided by sets)
 
   o During creation of relations, domains are converted to sets and

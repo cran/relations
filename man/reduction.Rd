@@ -23,9 +23,11 @@ reflexive_reduction(x)
   
   The \emph{transitive reduction} of \eqn{R} is the smallest relation
   \eqn{R'} on \eqn{X} so that the transitive closure of \eqn{R'} is the
-  same than the transitive closure of \eqn{R}.  The function is
-  implemented using a depth-first-search approach with complexity
-  \eqn{O(n^3)}.  Currently, it can only be used for crisp relations.
+  same than the transitive closure of \eqn{R}. The current
+  implementation can only be used for acyclic relations.
+  %The function is
+  %implemented using a depth-first-search approach with complexity
+  %\eqn{O(n^3)}.  Currently, it can only be used for crisp relations.
 
   The \emph{reflexive reduction} of \eqn{R} is computed by setting the
   diagonal of the incidence matrix to 0.

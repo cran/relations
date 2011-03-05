@@ -534,6 +534,14 @@ relation_has_missings <-
 function(x)
     any(is.na(.incidence(x)))
 
+relation_is_acyclic <-
+function(x)
+    relation_is_antisymmetric(transitive_closure(x))
+
+relation_is_cyclic <- 
+function(x)
+    !relation_is_acyclic(x)
+
 ## FIXME: add meta cache to improve performance
 ## (idea: all predicates should call .foo-methods internally with additional
 ## meta-argument, where all intermediate results are stored and which is

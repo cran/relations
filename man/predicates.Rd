@@ -2,6 +2,7 @@
 \alias{predicates}
 \alias{relation_is_Euclidean}
 \alias{relation_is_Ferrers}
+\alias{relation_is_acyclic}
 \alias{relation_is_antisymmetric}
 \alias{relation_is_asymmetric}
 \alias{relation_is_bijective}
@@ -9,6 +10,7 @@
 \alias{relation_is_complete}
 \alias{relation_is_coreflexive}
 \alias{relation_is_crisp}
+\alias{relation_is_cyclic}
 \alias{relation_is_endorelation}
 \alias{relation_is_equivalence}
 \alias{relation_is_functional}
@@ -47,6 +49,7 @@
 \usage{
 relation_is_Euclidean(x, na.rm = FALSE)
 relation_is_Ferrers(x, na.rm = FALSE)
+relation_is_acyclic(x)
 relation_is_antisymmetric(x, na.rm = FALSE)
 relation_is_asymmetric(x, na.rm = FALSE)
 relation_is_bijective(x)
@@ -54,6 +57,7 @@ relation_is_binary(x)
 relation_is_complete(x, na.rm = FALSE)
 relation_is_coreflexive(x, na.rm = FALSE)
 relation_is_crisp(x, na.rm = FALSE)
+relation_is_cyclic(x)
 relation_is_endorelation(x)
 relation_is_equivalence(x, na.rm = FALSE)
 relation_is_functional(x)
@@ -129,22 +133,24 @@ relation_has_missings(x)
       \eqn{x R z}.}
     \item{complete:}{for all distinct \eqn{x} and \eqn{y}, \eqn{x R y}
       or \eqn{y R x}.}
-    \item{strongly complete}{for all \eqn{x} and \eqn{y}, \eqn{x R y}
+    \item{strongly complete:}{for all \eqn{x} and \eqn{y}, \eqn{x R y}
       or \eqn{y R x} (i.e., complete and reflexive).}
-    \item{negatively transitive}{not \eqn{x R y} and not \eqn{y R z}
+    \item{negatively transitive:}{not \eqn{x R y} and not \eqn{y R z}
       imply that not \eqn{x R z}.}
-    \item{Ferrers}{\eqn{x R y} and \eqn{z R w} imply \eqn{x R w} or
+    \item{Ferrers:}{\eqn{x R y} and \eqn{z R w} imply \eqn{x R w} or
       \eqn{y R z}.}
-    \item{semitransitive}{\eqn{x R y} and \eqn{y R z} imply \eqn{x R w}
+    \item{semitransitive:}{\eqn{x R y} and \eqn{y R z} imply \eqn{x R w}
       or \eqn{w R z}.}
-    \item{quasitransitive}{
+    \item{quasitransitive:}{
       \eqn{x R y} and not \eqn{y R x} and
       \eqn{y R z} and not \eqn{z R y} imply
       \eqn{x R z} and not \eqn{z R x}
       (i.e., the asymmetric part of \eqn{R} is transitive).}
-    \item{trichotomous}{exactly one of \eqn{x R y}, \eqn{y R x}, or
+    \item{trichotomous:}{exactly one of \eqn{x R y}, \eqn{y R x}, or
       \eqn{x = y} holds.}
-    \item{Euclidean}{\eqn{x R y} and \eqn{x R z} imply \eqn{y R z}.}
+    \item{Euclidean:}{\eqn{x R y} and \eqn{x R z} imply \eqn{y R z}.}
+    \item{acyclic:}{the transitive closure of R is antisymmetric.}
+    \item{cyclic:}{R is not acyclic.}
   }
 
   Some combinations of these basic properties have special names

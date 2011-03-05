@@ -22,6 +22,34 @@ function(x, operation = c("transitive", "reflexive"), ...)
 
 ### * transitive_reduction
 
+## !!The following code is erroneous:!!
+##
+## transitive_reduction <-
+## function(x)
+## {
+##     if(!(is.relation(x) && relation_is_endorelation(x)))
+##         stop("Argument 'x' must be an endorelation.")
+##     if(!relation_is_crisp(x, na.rm = TRUE))
+##         stop("Argument 'x' must be a crisp relation.")
+##     I <- relation_incidence(x)
+##     diag_hold <- diag(I)
+##     diag(I) <- 0
+##     is_transitive <- FALSE
+##     for (i in seq_len(ncol(I))) {
+##         tmp <- outer(I[,i], I[i,], .T.)
+##         if (any(is.na(tmp))) is_transitive <- NA
+##         I <- .T.(.S.(I, is.na(I)), .N.(tmp))
+##     }
+##     meta <- list(is_endorelation = TRUE,
+##                  is_transitive = is_transitive)
+##     diag(I) <- diag_hold
+##     .make_relation_from_domain_and_incidence(.domain(x), I, meta)
+## }
+
+## <FIXME>
+## The following code only works for acyclic relations!
+## </FIXME>
+
 transitive_reduction <-
 function(x)
 {
@@ -29,19 +57,13 @@ function(x)
         stop("Argument 'x' must be an endorelation.")
     if(!relation_is_crisp(x, na.rm = TRUE))
         stop("Argument 'x' must be a crisp relation.")
-    I <- relation_incidence(x)
-    diag_hold <- diag(I)
-    diag(I) <- 0
-    is_transitive <- FALSE
-    for (i in seq_len(ncol(I))) {
-        tmp <- outer(I[,i], I[i,], .T.)
-        if (any(is.na(tmp))) is_transitive <- NA
-        I <- .T.(.S.(I, is.na(I)), .N.(tmp))
-    }
-    meta <- list(is_endorelation = TRUE,
-                 is_transitive = is_transitive)
-    diag(I) <- diag_hold
-    .make_relation_from_domain_and_incidence(.domain(x), I, meta)
+
+    R <- transitive_closure(x)
+
+    if(!relation_is_antisymmetric(R))
+        stop("Argument 'x' must be an acyclic relation.")
+
+    x - x * R
 }
 
 ### * transitive_closure

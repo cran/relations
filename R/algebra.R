@@ -30,6 +30,30 @@ function(x, margin = NULL)
                                              apply(I, ind, S.FUN))
 }
 
+aperm.relation <-
+function(a, perm = NULL, ...)
+{
+    D <- relation_domain(a)
+    s <- seq_along(D)
+
+    if(is.null(perm)) 
+        ind <- rev(s)
+    else {
+        ind <- if(is.character(perm))
+            match(perm, names(D))
+        else if(is.numeric(perm))
+            match(perm, s)
+        else
+            NULL
+        if(length(ind) != length(s) || any(is.na(ind)))
+            stop("Invalid permutation.")
+    }
+
+    I <- relation_incidence(a)
+    .make_relation_from_domain_and_incidence(.domain(a)[ind],
+                                             aperm(I, ind))
+}
+
 ### * relation_selection (= subset)
 
 ## <FIXME>

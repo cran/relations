@@ -40,9 +40,11 @@ export("as.ranking",
        "relation_is_Ferrers",
        "relation_is_antisymmetric",
        "relation_is_asymmetric",
+       "relation_is_acyclic",
        "relation_is_bijective",
        "relation_is_binary",
        "relation_is_complete",
+       "relation_is_cyclic",
        "relation_is_endorelation",
        "relation_is_strongly_complete",
        "relation_is_coreflexive",
@@ -225,3 +227,6 @@ S3method("as.gset", "relation_graph")
 S3method("as.relation", "gset")
 S3method("as.tuple", "relation")
 S3method("as.tuple", "relation_domain")
+
+if(getRversion() >= "2.13.0")
+    S3method("aperm", "relation")
