@@ -1,24 +1,30 @@
 \name{NEWS}
-\title{News for Package 'relations'}
-\section{Changes in relations version 0.5-9}{
+\title{News for Package \pkg{relations}}
+\section{Changes in version 0.5-10}{
+  \itemize{
+    \item Vignette fixes.
+    \item Package news converted to Rd format.
+  }
+}
+\section{Changes in version 0.5-9}{
   \itemize{
     \item Add predicates for (a)cyclic relations.
-    \item Fix incorrect transitive_reduction() code.
+    \item Fix incorrect \code{transitive_reduction()} code.
   }
 }
-\section{Changes in relations version 0.5-8}{
+\section{Changes in version 0.5-8}{
   \itemize{
-    \item Ensure that examples do not fail when \pkg{Rgraphviz} is
-      unavailable.
+    \item Ensure that examples do not fail when package \pkg{Rgraphviz}
+    is unavailable.
   }
 }
-\section{Changes in relations version 0.5-7}{
+\section{Changes in version 0.5-7}{
   \itemize{
     \item support for finding up to \eqn{n} consensus relations added
     for most methods.
   }
 }
-\section{Changes in relations version 0.5-5}{
+\section{Changes in version 0.5-5}{
   \itemize{
     \item \code{mean()} method added for relation ensembles.
     \item Jaccard dissimilarity added.
@@ -30,28 +36,28 @@
       and partial orders.
   }
 }
-\section{Changes in relations version 0.5-4}{
+\section{Changes in version 0.5-4}{
   \itemize{
     \item Rd fixes.
   }
 }
-\section{Changes in relations version 0.5-3}{
+\section{Changes in version 0.5-3}{
   \itemize{
     \item Adjust for recent changes in package \pkg{clue}.
   }
 }
-\section{Changes in relations version 0.5-2}{
+\section{Changes in version 0.5-2}{
   \itemize{
     \item Sparse lightweight array and matrix code moved to package
       \pkg{slam}. 
   }
 }
-\section{Changes in relations version 0.5-1}{
+\section{Changes in version 0.5-1}{
   \itemize{
     \item Rd fixes.
   }
 }
-\section{Changes in relations version 0.5}{
+\section{Changes in version 0.5}{
   \itemize{
     \item New \code{relation_consensus()} method for Cook-Kress-Seiford (CKS)
       dissimilarity.
@@ -78,15 +84,16 @@
     \item New predicate \code{relation_is_quasitransitive()}.
   }
 }
-\section{Changes in relations version 0.4}{
+\section{Changes in version 0.4}{
   \itemize{
     \item SD fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
       addition to lp_solve, and optionally use sparse constraint matrices
     \item more methods added to \code{relation_violations()}.
       optionally, return all tuples violating a property.
     \item \code{relation_scores()} now also works for relation ensembles
-    \item [transitive,reflexive]_[closure,reduction]() are now available as
-      methods for closure and reduction generics (provided by \pkg{sets})
+    \item Transitive/reflexive closure and reduction functions are now
+      available as methods for closure and reduction generics (provided
+      by package \pkg{sets})
     \item During creation of relations, domains are converted to sets and
       incidences are canonicalized to match the internal order of the domain
     \item \code{relation_consensus()} can now compute all solutions for the Condorcet
@@ -100,7 +107,7 @@
     \item \code{all.equal()} methods added for relations and ensembles
   }
 }
-\section{Changes in relations version 0.3}{
+\section{Changes in version 0.3}{
   \itemize{
     \item rank method is default for \code{relation_scores()}
     \item the relations in the SVM Benchmark data are now all reflexive
@@ -116,7 +123,7 @@
       of relations between these
   }
 }
-\section{Changes in relations version 0.2}{
+\section{Changes in version 0.2}{
   \itemize{
     \item Copeland's method added to \code{relation_consensus()}
     \item \code{relation_classes()} added to extract and pretty-print
@@ -138,7 +145,7 @@
       endorelations from/to other codings found in literature
   }
 }
-\section{Changes in relations version 0.1}{
+\section{Changes in version 0.1}{
   \itemize{
     \item Initial release
   }

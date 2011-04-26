@@ -43,16 +43,12 @@
      the title(s) is (are) set to the type of the visualized relation(s).}
 }
 \details{
-  Visualization
-%  is currently only provided for either antisymmetric or
-%  complete transitive crisp endorelations and
-requires that package \pkg{Rgraphviz} is available.
-For partial orders, a Hasse diagram is plotted.
-In case of transitive complete
-relations (weak orders, preferences), the dual is plotted. For all
-other relations, the asymmetric part is plotted. Note that the
-default settings create a diagram with nodes ordered bottom-up and
-with no arrows.
+  Visualization requires that package \pkg{Rgraphviz} is available.  For
+  partial orders, a Hasse diagram is plotted.  In case of transitive
+  complete relations (weak orders, preferences), the dual is plotted.
+  For all other relations, the asymmetric part is plotted.  Note that
+  the default settings create a diagram with nodes ordered bottom-up and
+  with no arrows.
 }
 \seealso{
   \code{\link{relation}}

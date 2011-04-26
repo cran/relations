@@ -7,12 +7,14 @@
 \description{
   \code{SVM_Benchmarking_Classification} and
   \code{SVM_Benchmarking_Regression} represent the
-  results of a benchmark study comparing Support Vector Machines to
+  results of a benchmark study (Meyer, Leisch and Hornik, 2003)
+  comparing Support Vector Machines to 
   other predictive methods on real and artificial data sets
   involving classification and regression
-  methods, respectively. \code{SVM_Benchmarking_Classification_Consensus}
+  methods, respectively.
+  \code{SVM_Benchmarking_Classification_Consensus}
   and \code{SVM_Benchmarking_Regression_Consensus}
-  are consensus rankings derived from these data.
+  provide consensus rankings derived from these data.
 }
 \usage{
 data("SVM_Benchmarking_Classification")
@@ -35,8 +37,9 @@ data("SVM_Benchmarking_Regression_Consensus")
   for details on the experimental design of the benchmark study, and
   Hornik and Meyer (2007) for the pairwise comparisons.
 
-  \code{SVM_Benchmarking_Classification_Consensus}
-  and \code{SVM_Benchmarking_Regression_Consensus} are lists of
+  The corresponding consensus objects
+  \code{SVM_Benchmarking_Classification_Consensus} and
+  \code{SVM_Benchmarking_Regression_Consensus} are lists of
   ensembles of consensus relations fitted to the benchmark
   results. For each of the following three endorelation families:
   \code{SD/L} (\dQuote{linear orders}),
@@ -45,7 +48,7 @@ data("SVM_Benchmarking_Regression_Consensus")
   relations have been computed (see \code{\link{relation_consensus}}).
   For both classification and regression,
   the three relation ensembles obtained are provided as a named list of
-  length 3. See Hornik et Meyer (2007) for details on the meta-analysis.
+  length 3. See Hornik & Meyer (2007) for details on the meta-analysis.
 }
 \source{
   D. Meyer, F. Leisch, and K. Hornik (2003),

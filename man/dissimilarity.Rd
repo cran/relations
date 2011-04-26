@@ -7,8 +7,9 @@
 relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
 }
 \arguments{
-  \item{x}{an ensemble of relations, or something which can be coerced
-    to such (see \code{\link{relation_ensemble}}).} 
+  \item{x}{an ensemble of relations (see
+    \code{\link{relation_ensemble}}),
+    or something which can be coerced to such.} 
   \item{y}{\code{NULL} (default), or as for \code{x}.}
   \item{method}{a character string specifying one of the built-in
     methods for computing dissimilarity, or a function to be taken as

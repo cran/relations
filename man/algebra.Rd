@@ -44,9 +44,9 @@ relation_antijoin(x, y, \dots)
     vector of domain indices.}
   \item{subset}{Expression resulting in a logical vector of length equal
     to the number of tuples in the graph.}
-  \item{\dots}{For \code{relation_cartesian}, \code{relation_union} and
-    \code{relation_intersection}: relation objects; otherwise,
-    parameters passed to \code{\link[base]{merge}}.}
+  \item{\dots}{Relation objects for \code{relation_union},
+    \code{relation_intersection} and \code{relation_cartesian};
+    otherwise, parameters passed to \code{\link[base]{merge}}.}
 }
 \details{
   These functions provide functionality similar to the corresponding

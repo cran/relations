@@ -10,11 +10,13 @@
   for suitable dissimilarities \eqn{d} and exponents \eqn{e}.
 }
 \usage{
-relation_pclust(x, k, method, m = 1, weights = 1, control = list())
+relation_pclust(x, k, method, m = 1, weights = 1,
+                control = list())
 }
 \arguments{
-  \item{x}{an ensemble of relations, or something which can be coerced
-    to this (see \code{\link{relation_ensemble}}).}
+  \item{x}{an ensemble of relations (see
+    \code{\link{relation_ensemble}}),
+    or something which can be coerced to this.}
   \item{k}{an integer giving the number of classes to be used in the
     partition.}
   \item{method}{the consensus method to be employed, see

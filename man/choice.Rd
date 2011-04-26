@@ -5,7 +5,8 @@
   Choose objects based on an ensemble of relations between these.
 }
 \usage{
-relation_choice(x, method = "symdiff", weights = 1, control = list(), ...)
+relation_choice(x, method = "symdiff", weights = 1,
+                control = list(), ...)
 }
 \arguments{
   \item{x}{an ensemble of endorelations.}

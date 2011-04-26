@@ -228,7 +228,7 @@ relation_has_missings(x)
 
   H. R. Varian (2002),
   \emph{Intermediate Microeconomics: A Modern Approach}.
-  6th Edition. W. W. Norton \& Company.
+  6th Edition. W. W. Norton & Company.
   
 }
 \keyword{math}

@@ -9,9 +9,12 @@
 \title{Relations}
 \description{Creation and manipulation of relations.}
 \usage{
-relation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
-endorelation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
-homorelation(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
+relation(domain = NULL, incidence = NULL, graph = NULL,
+         charfun = NULL)
+endorelation(domain = NULL, incidence = NULL, graph = NULL,
+             charfun = NULL)
+homorelation(domain = NULL, incidence = NULL, graph = NULL,
+             charfun = NULL)
 as.relation(x, \dots)
 is.relation(x)
 }

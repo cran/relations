@@ -6,11 +6,13 @@
   Compute consensus relations of a relation ensemble.
 }
 \usage{
-relation_consensus(x, method = NULL, weights = 1, control = list(), ...)
+relation_consensus(x, method = NULL, weights = 1,
+                   control = list(), ...)
 }
 \arguments{
-  \item{x}{an ensemble of relations, or something which can be coerced
-    to such (see \code{\link{relation_ensemble}}).}
+  \item{x}{an ensemble of relations (see
+    \code{\link{relation_ensemble}}),
+    or something which can be coerced to such.}
   \item{method}{a character string specifying one of the built-in
     methods for computing consensus relations, or a function to be
     taken as a user-defined method, or \code{NULL} (default value).  If
