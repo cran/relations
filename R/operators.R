@@ -58,12 +58,18 @@ function(x)
     if(!relation_is_crisp(x, na.rm = TRUE))
         stop("Argument 'x' must be a crisp relation.")
 
+    diag_hold <- diag(relation_incidence(x))
+    diag(relation_incidence(x)) <- 0
+
     R <- transitive_closure(x)
 
     if(!relation_is_antisymmetric(R))
         stop("Argument 'x' must be an acyclic relation.")
 
-    x - x * R
+    x <- x - x * R
+
+    diag(relation_incidence(x)) <- diag_hold
+    x
 }
 
 ### * transitive_closure

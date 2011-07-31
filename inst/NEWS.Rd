@@ -1,5 +1,12 @@
 \name{NEWS}
 \title{News for Package \pkg{relations}}
+\newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+
+\section{Changes in version 0.5-11}{
+  \itemize{
+    \item Bug in \code{transitive_reduction()} fixed.
+  }
+}
 \section{Changes in version 0.5-10}{
   \itemize{
     \item Vignette fixes.
@@ -14,7 +21,7 @@
 }
 \section{Changes in version 0.5-8}{
   \itemize{
-    \item Ensure that examples do not fail when package \pkg{Rgraphviz}
+    \item Ensure that examples do not fail when package \cpkg{Rgraphviz}
     is unavailable.
   }
 }
@@ -43,13 +50,13 @@
 }
 \section{Changes in version 0.5-3}{
   \itemize{
-    \item Adjust for recent changes in package \pkg{clue}.
+    \item Adjust for recent changes in package \cpkg{clue}.
   }
 }
 \section{Changes in version 0.5-2}{
   \itemize{
     \item Sparse lightweight array and matrix code moved to package
-      \pkg{slam}. 
+      \cpkg{slam}. 
   }
 }
 \section{Changes in version 0.5-1}{
@@ -93,7 +100,7 @@
     \item \code{relation_scores()} now also works for relation ensembles
     \item Transitive/reflexive closure and reduction functions are now
       available as methods for closure and reduction generics (provided
-      by package \pkg{sets})
+      by package \cpkg{sets})
     \item During creation of relations, domains are converted to sets and
       incidences are canonicalized to match the internal order of the domain
     \item \code{relation_consensus()} can now compute all solutions for the Condorcet
@@ -111,7 +118,7 @@
   \itemize{
     \item rank method is default for \code{relation_scores()}
     \item the relations in the SVM Benchmark data are now all reflexive
-    \item support for sets moved to separate \pkg{sets} package
+    \item support for sets moved to separate \cpkg{sets} package
     \item support for fuzzy relations added
     \item fitters can now use a sparse constraint matrix representation
     \item new SD fitters for the S (\code{"symmetric"}) and M (\code{"matches"}) families
