@@ -31,21 +31,20 @@ relation_classes <-
 function(x)
 {
     ids <- relation_class_ids(as.relation(x))
-    out <- split(seq_along(ids), ids)
+    out <- lapply(split(.get_elements_in_homorelation(x), ids), as.set)
     class(out) <- c("relation_classes_of_objects")
-    attr(out, "labels") <- names(ids)
     out
 }
 
 print.relation_classes_of_objects <-
 function(x, ...)
 {
-    labels <- attr(x, "labels")
-    y <- lapply(x, function(i) paste(labels[i], collapse = ", "))
-    writeLines(formatDL(rev(names(x)), sprintf("{%s}", rev(unlist(y))),
+    y <- lapply(x, function(e) paste(format(e), collapse = "\n"))
+    writeLines(formatDL(rev(names(x)), rev(unlist(y)),
                         style = "list", ...))
     invisible(x)
 }
+
 
 get_class_ids_from_incidence <-
 function(x)

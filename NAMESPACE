@@ -1,7 +1,10 @@
+import("sets")
 importFrom("cluster", "silhouette")
 importFrom("stats", "median")
-import("sets")
-import("slam")
+importFrom("slam",
+           "simple_triplet_matrix",
+           "simple_triplet_diag_matrix", "simple_triplet_zero_matrix",
+           "as.simple_triplet_matrix", "is.simple_triplet_matrix")
 
 export("as.ranking",
        "as.relation",
@@ -21,6 +24,9 @@ export("as.ranking",
        "relation_choice",
        "relation_class_ids",
        "relation_classes",
+       "relation_component_representation",
+       "relation_connected_components",
+       "relation_condensation",
        "relation_consensus",
        "relation_cover",
        "relation_dissimilarity",

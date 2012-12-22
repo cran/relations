@@ -15,17 +15,14 @@ relation_classes(x)
     representing a crisp endorelation.}
 }
 \value{
-  For \code{relation_class_ids},
-  a numeric vector with class ids corresponding to the classes of the
-  equivalence relation, or the indifference relation of the weak order
-  with ids ordered according to increasing preference.
+  For \code{relation_class_ids}, a numeric vector with class ids
+  corresponding to the classes of the equivalence relation, or the
+  indifference relation of the weak order with ids ordered according to
+  increasing preference.
   
   For \code{relation_classes}, an object of class
-  \code{relation_classes_of_objects}, which is a named list of character
-  vectors, where the list components correspond to the classes, the
-  component names to the class ids, and each character vector to the
-  object labels of each class.
-  
+  \code{relation_classes_of_objects}, which is a list of sets giving the
+  elements in the corresponding classes, named by the class ids.
 }
 \examples{
 ## Equivalence.

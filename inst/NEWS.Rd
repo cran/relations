@@ -2,6 +2,16 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6}{
+  \itemize{
+    \item Code added for computing (weakly/strongly) connected components,
+          condensations and component representations.
+    \item \code{transitive_reduction()} and the plot method for
+    relations now also work for cyclic relations.
+    \item The plot method for relations now also allows the drawing of
+    "raw" graphs without any transformation.
+  }
+}
 \section{Changes in version 0.5-11}{
   \itemize{
     \item Bug in \code{transitive_reduction()} fixed.
@@ -21,7 +31,7 @@
 }
 \section{Changes in version 0.5-8}{
   \itemize{
-    \item Ensure that examples do not fail when package \cpkg{Rgraphviz}
+    \item Ensure that examples do not fail when package \pkg{Rgraphviz}
     is unavailable.
   }
 }

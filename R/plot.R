@@ -3,52 +3,17 @@
 plot.relation <-
 function(x,
          attrs = list(graph = list(rankdir = "BT"),
-                      edge = list(arrowsize = "0"),
+                      edge = list(arrowsize = NULL),
                       node = list(shape = "rectangle", fixedsize = FALSE)),
          limit = 6L, labels = NULL, main = NULL,
+         type = c("simplified", "raw"),
          ...)
 {
-    if(!relation_is_endorelation(x))
-        stop("Plotting only available for endorelations.")
-    if(!isTRUE(relation_is_crisp(x)))
-        stop("Plotting only available for crisp endorelations without missings.")
-
-    if (!require("Rgraphviz"))
-        stop("Plotting requires package 'Rgraphviz'.")
-
-    ## possibly, transform relation to obtain a poset,
-    ## and change main title if not specified.
-    if(relation_is_linear_order(x)) {
-        if (is.null(main))
-            main <- "Linear Order"
-    } else if(relation_is_partial_order(x)) {
-        if (is.null(main))
-            main <- "Partial Order"
-    } else if(relation_is_weak_order(x)) {
-        ## If x is a preference, use dual instead.
-        x <- dual(x)
-        if (is.null(main))
-            main <- "Weak Order"
-    } else { ## extract asymmetric part
-        x <- x & dual(x)
-        if (is.null(main))
-            main <- "Strict Preference Part"
-    }
-
-    ## Compute transitive reduction to avoid cluttered graph, and
-    ## extract incidence.
-    I <- unclass(relation_incidence(transitive_reduction(x), limit = limit))
-
-    ## Perform reflexive reduction.
-    diag(I) <- 0
-
-    ## Transform to graphViz-compatible incidence.
-    if (is.null(labels))
-        labels <- labels(I)
-    dimnames(I) <- lapply(labels, .make_unique_labels)
-
-    plot(as(I, "graphNEL"), attrs = attrs, main = main, ...)
+    type <- match.arg(type)
+    plot(as.relation_ensemble(x),
+         attrs = list(attrs), type = type, limit = limit, labels = list(labels), ..., main = main)
 }
+
 
 .make_unique_labels <-
 function(x)
@@ -63,13 +28,13 @@ function(x)
 
 plot.relation_ensemble <-
 function(x, attrs = list(list(graph = list(rankdir = "BT"),
-                              edge = list(arrowsize = "0"),
+                              edge = list(arrowsize = NULL),
                               node = list(shape = "rectangle",
                                           fixedsize = FALSE))),
+         type = "simplified",
+         limit = 6L, labels = NULL,
          ..., layout = NULL, main = NULL)
 {
-    ## Why not?
-    ## Of course, we maybe should only have one thing ...
     if(!is.relation_ensemble(x))
         stop("Wrong class.")
     if(!all(sapply(x,
@@ -86,57 +51,85 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
     ## Number of elements.
     n <- length(x)
 
+    ## expand and check type argument.
+    type <- sapply(rep(type, length.out = n),
+                   match.arg, c("simplified", "raw"))
+
+    ## expand limit
+    limit <- rep(limit, length.out = n)
+
     ## Layout.
-    byrow <- TRUE
-    if(is.null(layout)) {
-        nc <- ceiling(sqrt(n))
-        nr <- ceiling(n / nc)
+    if (n > 1L) {
+        byrow <- TRUE
+        if(is.null(layout)) {
+            nc <- ceiling(sqrt(n))
+            nr <- ceiling(n / nc)
+        }
+        else {
+            layout <- c(as.list(layout), byrow)[seq_len(3)]
+            if(is.null(names(layout)))
+                names(layout) <- c("nr", "nc", "byrow")
+            nr <- layout[["nr"]]
+            nc <- layout[["nc"]]
+            byrow <- layout[["byrow"]]
+        }
+        op <- if(byrow)
+            par(mfrow = c(nr, nc))
+        else
+            par(mfcol = c(nr, nc))
+        on.exit(par(op))
     }
-    else {
-        layout <- c(as.list(layout), byrow)[seq_len(3)]
-        if(is.null(names(layout)))
-            names(layout) <- c("nr", "nc", "byrow")
-        nr <- layout[["nr"]]
-        nc <- layout[["nc"]]
-        byrow <- layout[["byrow"]]
-    }
-    op <- if(byrow)
-        par(mfrow = c(nr, nc))
-    else
-        par(mfcol = c(nr, nc))
-    on.exit(par(op))
+
     attrs <- rep(attrs, length.out = length(x))
     for(i in seq_along(x)) {
-        ## possibly, transform relation to obtain a poset,
-        ## and change main title if not specified.
-        if (relation_is_linear_order(x[[i]])) {
-            if (is.null(main[i]) || is.na(main[i]))
-                main[i] <- "Linear Order"
-        } else if (relation_is_partial_order(x[[i]])) {
-            if (is.null(main[i]) || is.na(main[i]))
-                main[i] <- "Partial Order"
-        } else if(relation_is_weak_order(x[[i]])) {
-            ## If x is a preference, use dual instead.
-            x[[i]] <- dual(x[[i]])
-            if (is.null(main[i]) || is.na(main[i]))
-                main[i] <- "Weak Order"
-        } else { ## extract asymmetric part
-            x[[i]] <- x[[i]] & dual(x[[i]])
-            if (is.null(main[i]) || is.na(main[i]))
-                main[i] <- "Strict Preference Part"
+        if(relation_is_acyclic(x[[i]]) && type[i] == "simplified") {
+            ## possibly, transform relation to obtain a poset,
+            ## and change main title if not specified.
+            if (relation_is_linear_order(x[[i]])) {
+                if (is.null(main[i]) || is.na(main[i]))
+                    main[i] <- "Linear Order"
+            } else if (relation_is_partial_order(x[[i]])) {
+                if (is.null(main[i]) || is.na(main[i]))
+                    main[i] <- "Partial Order"
+            } else if(relation_is_weak_order(x[[i]])) {
+                ## If x is a preference, use dual instead.
+                x[[i]] <- dual(x[[i]])
+                if (is.null(main[i]) || is.na(main[i]))
+                    main[i] <- "Weak Order"
+            } else { ## extract asymmetric part
+                x[[i]] <- x[[i]] & dual(x[[i]])
+                if (is.null(main[i]) || is.na(main[i]))
+                    main[i] <- "Strict Preference Part"
+            }
+            if(is.null(attrs[[i]]$edge$arrowsize))
+                attrs[[i]]$edge$arrowsize <- "0"
+        } else {
+            if(is.null(attrs[[i]]$edge$arrowsize))
+                attrs[[i]]$edge$arrowsize <- "1"
         }
+
+        if (type[i] == "simplified")
+            x[[i]] <- transitive_reduction(x[[i]])
 
         ## Compute transitive reduction to avoid cluttered graph and
         ## extract incidence.
-        I <- unclass(relation_incidence(transitive_reduction(x[[i]])))
+        I <- unclass(relation_incidence(x[[i]], limit = limit[i]))
 
         ## Perform reflexive reduction.
         diag(I) <- 0
 
-        dimnames(I) <- lapply(labels(I), .make_unique_labels)
+        l <- if (is.null(labels) || is.null(labels[[i]]))
+            labels(I)
+        else
+            labels[[i]]
+
+        ## Transform to graphViz-compatible incidence.
+        dimnames(I) <- lapply(l, .make_unique_labels)
+
         plot(as(I, "graphNEL"), attrs = attrs[[i]], main = main[i], ...)
     }
 }
+
 
 ####### plot incidence matrices
 

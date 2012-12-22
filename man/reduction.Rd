@@ -23,12 +23,16 @@ reflexive_reduction(x)
   
   The \emph{transitive reduction} of \eqn{R} is the smallest relation
   \eqn{R'} on \eqn{X} so that the transitive closure of \eqn{R'} is the
-  same than the transitive closure of \eqn{R}. The current
-  implementation can only be used for acyclic relations.
-  %The function is
-  %implemented using a depth-first-search approach with complexity
-  %\eqn{O(n^3)}.  Currently, it can only be used for crisp relations.
+  same than the transitive closure of \eqn{R}.
 
+  The transitive reduction of an \emph{acyclic} relation can be obtained
+  by subtracting from \eqn{R} the composition of \eqn{R} with its transitive closure.
+
+  The transitive reduction of a \emph{cyclic} relation is the transitive
+  reduction of the condensation, combined with the component
+  representation of \eqn{R}. (Note that the transitive reduction of a
+  cyclic relation is cyclic.)
+  
   The \emph{reflexive reduction} of \eqn{R} is computed by setting the
   diagonal of the incidence matrix to 0.
 
@@ -37,7 +41,9 @@ reflexive_reduction(x)
   \code{\link{relation}},
   \code{\link{reflexive_reduction}},
   \code{\link{transitive_reduction}},
-  \code{\link[sets:closure]{reduction}}.
+  \code{\link[sets:closure]{reduction}},
+  \code{\link{relation_condensation}},
+  \code{\link{relation_component_representation}}.
 }
 \examples{
 R <- as.relation(1 : 5)
@@ -56,12 +62,31 @@ R == closure(reduction(R))
 RR <- reflexive_reduction(R)
 relation_incidence(RR)
 R == reflexive_closure(RR)
+
 ## same:
 R == closure(reduction(R, "reflexive"), "reflexive")
+
+## transitive reduction of a cyclic relation:
+## (example from La Poutre and van Leeuwen)
+
+if(require("Rgraphviz")) {
+  G <- set(pair(1L, 2L), pair(2L, 1L), pair(1L, 3L), pair(3L, 1L),
+           pair(3L, 7L), pair(2L, 5L), pair(2L, 6L), pair(6L, 5L),
+           pair(5L, 7L), pair(4L, 6L), pair(5L, 4L), pair(4L, 7L))
+  R <- endorelation(graph = G)
+  plot(relation_ensemble(R, R), type = c("raw", "simplified"), main =
+           c("original graph", "transitive reduction"))
+  }
 }
 \references{
   S. Warshall (1962),
   A theorem on Boolean matrices.
   \emph{Journal of the ACM}, \bold{9}/1, 11--12.
+
+  J. A. La Poutré and J. van Leeuwen (1988),
+  Maintenance of Transitive Closures and Transitive Reductions of
+  Graphs.
+  \emph{Proceedings of the International Workshop of Graph-Theoretic
+  Concepts in Computer Science}, Springer, London, 106--120.
 }
 \keyword{math}
