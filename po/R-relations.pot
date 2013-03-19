@@ -1,8 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: R 2.3.0\n"
-"Report-Msgid-Bugs-To: bugs@r-project.org\n"
-"POT-Creation-Date: 2009-02-24 12:25\n"
+"Project-Id-Version: relations 0.6\n"
+"POT-Creation-Date: 2013-03-19 14:56\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12,6 +11,9 @@ msgstr ""
 
 
 msgid "Invalid projection margin."
+msgstr ""
+
+msgid "Invalid permutation."
 msgstr ""
 
 msgid "'subset' must evaluate to logical"
@@ -143,16 +145,28 @@ msgstr ""
 msgid "MIQP could not be solved."
 msgstr ""
 
+msgid "Argument 'x' must be a crisp relation with no missings."
+msgstr ""
+
 msgid "Can only determine class ids for equivalences and weak orders."
 msgstr ""
 
 msgid "Argument 'x' must be an endorelation."
 msgstr ""
 
+msgid "Argument 'x' must be a non-fuzzy relation."
+msgstr ""
+
 msgid "Elements of 'e' must be contained in the domain components."
 msgstr ""
 
 msgid "All elements need to be of same length."
+msgstr ""
+
+msgid "Argument 'x' must be a relation or a relation ensemble."
+msgstr ""
+
+msgid "'n > 1' not implemented for relation ensembles."
 msgstr ""
 
 msgid "Solver '%s' can only handle all-binary quadratic programs."
@@ -173,13 +187,10 @@ msgstr ""
 msgid "Can only relax mixed integer linear or quadratic programs."
 msgstr ""
 
-msgid "Cannot create empty multisets."
-msgstr ""
-
-msgid "An empty relation multiset."
-msgstr ""
-
 msgid "Argument 'x' must be a crisp relation."
+msgstr ""
+
+msgid "Argument 'x' must be a crisp endorelation without missings."
 msgstr ""
 
 msgid "Consensus method does not compute central relations."
@@ -191,19 +202,13 @@ msgstr ""
 msgid "A soft partition (degree m = %f) of a relation ensemble with %d elements into %d classes."
 msgstr ""
 
-msgid "Plotting only available for endorelations."
-msgstr ""
-
-msgid "Plotting only available for crisp relations."
-msgstr ""
-
-msgid "Plotting requires package 'Rgraphviz'."
-msgstr ""
-
 msgid "Wrong class."
 msgstr ""
 
-msgid "Plotting only available for ensembles of crisp endorelations."
+msgid "Plotting only available for ensembles of crisp endorelations without missings."
+msgstr ""
+
+msgid "Plotting requires package 'Rgraphviz'."
 msgstr ""
 
 msgid "Elements must be unique."
@@ -245,15 +250,6 @@ msgstr ""
 msgid "Relation domains differ in elements."
 msgstr ""
 
-msgid "A unary relation of size %s."
-msgstr ""
-
-msgid "A binary relation of size %s."
-msgstr ""
-
-msgid "A %d-ary relation of size %s."
-msgstr ""
-
 msgid "A unary fuzzy relation of size %s."
 msgstr ""
 
@@ -261,6 +257,15 @@ msgid "A binary fuzzy relation of size %s."
 msgstr ""
 
 msgid "A %d-ary fuzzy relation of size %s."
+msgstr ""
+
+msgid "A unary relation of size %s."
+msgstr ""
+
+msgid "A binary relation of size %s."
+msgstr ""
+
+msgid "A %d-ary relation of size %s."
 msgstr ""
 
 msgid "Power only defined for endorelations."
@@ -293,45 +298,6 @@ msgstr ""
 msgid "Relation scores are only available for endorelations."
 msgstr ""
 
-msgid "Incompatible dimensions."
-msgstr ""
-
-msgid "Invalid dimnames."
-msgstr ""
-
-msgid "Logical subscripting currently not implemented."
-msgstr ""
-
-msgid "Character subscripting currently not implemented."
-msgstr ""
-
-msgid "Cannot mix positive and negative subscripts."
-msgstr ""
-
-msgid "Invalid subscript."
-msgstr ""
-
-msgid "Only numeric two-index subscripting is implemented."
-msgstr ""
-
-msgid "Repeated indices currently not allowed."
-msgstr ""
-
-msgid "Numbers of columns of matrices must match."
-msgstr ""
-
-msgid "Numbers of rows of matrices must match."
-msgstr ""
-
-msgid "Invalid margin."
-msgstr ""
-
-msgid "Incorrect number of dimensions."
-msgstr ""
-
-msgid "Only numeric multi-index subscripting is implemented."
-msgstr ""
-
 msgid "Transformations only available for endorelations."
 msgstr ""
 
@@ -340,10 +306,5 @@ msgstr ""
 
 msgid        "An ensemble of %d relation of size %s."
 msgid_plural "An ensemble of %d relations of size %s."
-msgstr[0]    ""
-msgstr[1]    ""
-
-msgid        "A multiset of %d relation of size %s."
-msgid_plural "A multiset of %d relations of size %s."
 msgstr[0]    ""
 msgstr[1]    ""

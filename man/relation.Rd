@@ -173,7 +173,8 @@ as.tuple(R)
 
 ## (Almost) the same using the set specification
 ## (the domain labels are missing).
-R <- relation(graph = set(tuple(1,2), tuple(1,3), tuple(2,4), tuple(3,4)))
+R <- relation(graph = set(tuple(1,2), tuple(1,3),
+                          tuple(2,4), tuple(3,4)))
 ## equivalent to:
 ## relation(graph = list(c(1,2), c(1,3), c(2,4), c(3,4)))
 relation_incidence(R)

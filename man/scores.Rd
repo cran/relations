@@ -9,11 +9,13 @@
 }
 \usage{
 \method{relation_scores}{relation}(x,
-                method = c("ranks", "Barthelemy/Monjardet", "Borda",
-                           "Kendall", "Wei", "differential", "Copeland"),
+                method = c("ranks", "Barthelemy/Monjardet",
+                           "Borda", "Kendall", "Wei",
+                           "differential", "Copeland"),
                 normalize = FALSE, \dots)
 \method{relation_scores}{relation_ensemble}(x,
-                method = c("Borda", "Kendall", "differential", "Copeland"),
+                method = c("Borda", "Kendall", "differential",
+                           "Copeland"),
                 normalize = FALSE,
                 weights = 1, \dots)
 }

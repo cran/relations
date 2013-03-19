@@ -162,9 +162,11 @@ relation_table(relation_symdiff(R2, R3))
 
 ## Cartesian product
 Employee <-
-    data.frame(Name = c("Harry", "Sally", "George", "Harriet", "John"),
+    data.frame(Name =
+               c("Harry", "Sally", "George", "Harriet", "John"),
                EmpId = c(3415, 2241, 3401, 2202, 3999),
-               DeptName = c("Finance", "Sales", "Finance", "Sales", "N.N."),
+               DeptName =
+               c("Finance", "Sales", "Finance", "Sales", "N.N."),
 	       stringsAsFactors = FALSE)
 Employee <- as.relation(Employee)
 relation_table(Employee)

@@ -2,6 +2,12 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-1}{
+  \itemize{
+    \item Rd improvements.
+  }
+}
+
 \section{Changes in version 0.6}{
   \itemize{
     \item Code added for computing (weakly/strongly) connected components,
