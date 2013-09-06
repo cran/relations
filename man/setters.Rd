@@ -46,6 +46,7 @@ print(R)
 
 relation_domain(R)
 ## tuple format:
+require("sets")				# set(), pair() etc.
 relation_domain(R) <- pair(X = set("a","b","c"), Y = set("A","B","C"))
 relation_domain(R)
 ## the same in list format:

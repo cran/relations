@@ -70,6 +70,7 @@
   \code{\link{transitive_reduction}}
 }
 \examples{
+require("sets")				# set() etc.
 if(require("Rgraphviz")) {
   ## simple example
   plot(as.relation(1 : 5))

@@ -52,6 +52,8 @@ relation_component_representation(x)
 \examples{
 ## example from La Poutre and van Leeuwen:
 
+require("sets")				# set(), pair() etc.
+
 G <- set(pair(1L, 2L), pair(2L, 1L), pair(1L, 3L), pair(3L, 1L),
          pair(3L, 7L), pair(2L, 5L), pair(2L, 6L), pair(6L, 5L),
          pair(5L, 7L), pair(4L, 6L), pair(5L, 4L), pair(4L, 7L))

@@ -44,6 +44,7 @@ represented by 0, and \eqn{x_{jk} = -1} if \emph{not} \eqn{a_j R b_k}.
   \code{\link{relation_incidence}}.
 }
 \examples{
+require("sets")				# set(), pair() etc.
 x <- relation(domain = c(1,2,3,4),
               graph = set(pair(1,2), pair(4,2), pair(1,3), pair(1,4),
                           pair(3,2), pair(2,1)))

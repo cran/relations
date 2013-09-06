@@ -53,6 +53,7 @@ relation_violations(R, "symmetric")
 relation_violations(R, "symmetric", TRUE)
 
 ## create a simple relation:
+require("sets")				# set(), pair() etc.
 R <- relation(domain = letters[1:2],
               graph = set(pair("a","b"), pair("b","a")))
 relation_incidence(R)

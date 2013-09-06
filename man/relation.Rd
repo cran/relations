@@ -161,6 +161,8 @@ is.relation(x)
   \link{algebra} for further operations defined on relations.
 }
 \examples{
+require("sets")				# set(), tuple() etc.
+
 ## A relation created by specifying the graph:
 R <- relation(graph = data.frame(A = c(1, 1:3), B = c(2:4, 4)))
 relation_incidence(R)

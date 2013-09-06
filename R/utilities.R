@@ -181,7 +181,7 @@ function(x, w = NULL, na.rm = FALSE)
 .permute <-
 function(x, start = c())
 {
-    if (length(x) < 1)
+    if (length(x) < 1L)
         list(start)
     else
         unlist(lapply(seq_along(x),

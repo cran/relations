@@ -159,7 +159,7 @@ function(x, type = c("strongly", "weakly"))
         I <- .S.(I, t(I)) ## symmetric completion
 
     scc <- .connected_components(I)
-    vertices <- as.list(.domain(x)[[1]])
+    vertices <- as.list(.domain(x)[[1L]])
     leaders <- vertices[sapply(scc, min)]
     names(scc) <- LABELS(leaders)
 
@@ -222,7 +222,7 @@ function(x)
     leaders <- sapply(scc, min)
 
     M <- .condensation_incidences(I, scc, leaders)
-    D <- rep(list(as.list(relations:::.domain(x)[[1]])[leaders]), 2L)
+    D <- rep(list(as.list(.domain(x)[[1L]])[leaders]), 2L)
 
     .make_relation_from_domain_and_incidence(D, M)
 }
@@ -262,7 +262,7 @@ function(I, scc)
    for (i in scc)
        if (length(i) > 1L)
            for (j in seq_along(i))
-               M[i[j], c(i, i[1])[j + 1L]] <- 1
+               M[i[j], c(i, i[1L])[j + 1L]] <- 1
    M
 }
 

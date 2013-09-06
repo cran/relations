@@ -36,7 +36,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
             stop("Only crisp or fuzzy sets allowed.")
         G <- .make_relation_graph_components(graph)
         ## Be nice and recycle domain (useful for endorelations).
-        if (length(G) > 0)
+        if (!is.null(domain) && (length(G) > 0L))
             domain <- rep(domain, length.out = length(G))
         return(.make_relation_from_domain_and_graph_components(domain, G))
     }
@@ -222,7 +222,7 @@ function(x, ...)
              is_transitive = NA)
     else
         list(is_endorelation = TRUE,
-             is_complete = isTRUE(all(x == x[1])),
+             is_complete = isTRUE(all(x == x[1L])),
              is_reflexive = TRUE,
              is_symmetric = TRUE,
              is_transitive = TRUE)
@@ -813,7 +813,7 @@ function(D, G, size = NULL)
 {
     if(is.null(size)) size <- sapply(D, length)
     I <- array(0, size)
-    if(length(G) > 0)
+    if(length(G) > 0L)
         I[rbind(mapply(sets:::.exact_match,
                        G,
                        lapply(D, as.list)

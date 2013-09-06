@@ -2,6 +2,12 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-2}{
+  \itemize{
+    \item Package metadata improvements.
+  }
+}
+
 \section{Changes in version 0.6-1}{
   \itemize{
     \item Rd improvements.
@@ -18,35 +24,41 @@
     "raw" graphs without any transformation.
   }
 }
+
 \section{Changes in version 0.5-11}{
   \itemize{
     \item Bug in \code{transitive_reduction()} fixed.
   }
 }
+
 \section{Changes in version 0.5-10}{
   \itemize{
     \item Vignette fixes.
     \item Package news converted to Rd format.
   }
 }
+
 \section{Changes in version 0.5-9}{
   \itemize{
     \item Add predicates for (a)cyclic relations.
     \item Fix incorrect \code{transitive_reduction()} code.
   }
 }
+
 \section{Changes in version 0.5-8}{
   \itemize{
     \item Ensure that examples do not fail when package \pkg{Rgraphviz}
     is unavailable.
   }
 }
+
 \section{Changes in version 0.5-7}{
   \itemize{
     \item support for finding up to \eqn{n} consensus relations added
     for most methods.
   }
 }
+
 \section{Changes in version 0.5-5}{
   \itemize{
     \item \code{mean()} method added for relation ensembles.
@@ -64,22 +76,26 @@
     \item Rd fixes.
   }
 }
+
 \section{Changes in version 0.5-3}{
   \itemize{
     \item Adjust for recent changes in package \cpkg{clue}.
   }
 }
+
 \section{Changes in version 0.5-2}{
   \itemize{
     \item Sparse lightweight array and matrix code moved to package
       \cpkg{slam}. 
   }
 }
+
 \section{Changes in version 0.5-1}{
   \itemize{
     \item Rd fixes.
   }
 }
+
 \section{Changes in version 0.5}{
   \itemize{
     \item New \code{relation_consensus()} method for Cook-Kress-Seiford (CKS)
@@ -107,6 +123,7 @@
     \item New predicate \code{relation_is_quasitransitive()}.
   }
 }
+
 \section{Changes in version 0.4}{
   \itemize{
     \item SD fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
@@ -130,6 +147,7 @@
     \item \code{all.equal()} methods added for relations and ensembles
   }
 }
+
 \section{Changes in version 0.3}{
   \itemize{
     \item rank method is default for \code{relation_scores()}
@@ -146,6 +164,7 @@
       of relations between these
   }
 }
+
 \section{Changes in version 0.2}{
   \itemize{
     \item Copeland's method added to \code{relation_consensus()}
@@ -168,6 +187,7 @@
       endorelations from/to other codings found in literature
   }
 }
+
 \section{Changes in version 0.1}{
   \itemize{
     \item Initial release

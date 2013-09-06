@@ -45,6 +45,7 @@ relation_incidence(RR)
 R == transitive_closure(RR)
 
 ## same
+require("sets")				# closure() and reduction()
 R == closure(reduction(R))
 
 ## reflexive closure/reduction

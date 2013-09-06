@@ -284,7 +284,7 @@ function(D, I, NAs, control, by = 1, diag = 1)
     S <- colSums(I, na.rm = TRUE)
     S[NAs] <- NA
 
-    N <- LABELS(D[[1]], quote = FALSE)
+    N <- LABELS(D[[1L]], quote = FALSE)
     M <- rev(tapply(names(S), S, c))
     names(M) <- dimnames(M) <- NULL
     L <- setdiff(N, unlist(M))
@@ -299,7 +299,7 @@ function(D, I, NAs, control, by = 1, diag = 1)
         lapply(seq(1, length(slots), by = by), function(i) {
             tmp <- slots
             tmp[[i]] <- c(tmp[[i]], e)
-            tmp[sapply(tmp, length) > 0]
+            tmp[sapply(tmp, length) > 0L]
         })
     }
 
@@ -309,12 +309,12 @@ function(D, I, NAs, control, by = 1, diag = 1)
         ret <- unlist(lapply(ret, add_one, e), recursive = FALSE)
 
     FUN <- if (diag == 0)
-        function(i) reflexive_reduction(as.relation(ranking(i, D[[1]])))
+        function(i) reflexive_reduction(as.relation(ranking(i, D[[1L]])))
     else
-        function(i) as.relation(ranking(i, D[[1]]))
+        function(i) as.relation(ranking(i, D[[1L]]))
 
     if (is.null(control$n) || isTRUE(control$n == 1L))
-        FUN(ret[[1]])
+        FUN(ret[[1L]])
     else {
         if (!is.na(control$n) && control$n != "all" && control$n < length(ret))
             ret <- ret[seq_len(control$n)]
