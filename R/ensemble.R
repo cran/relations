@@ -155,7 +155,8 @@ function(e1, e2)
         ## Only complement makes sense.  Could make the other a no-op.
         if(!(as.character(.Generic) %in% "!"))
             stop(gettextf("Unary '%s' not defined for \"%s\" objects.",
-                          .Generic, .Class))
+                          .Generic, .Class),
+                 domain = NA)
         ## Could also do relation_ensemble(list = NextMethod()).
         return(.make_relation_ensemble_from_list_and_meta(lapply(e1,
                                                                  .Generic),
@@ -178,7 +179,8 @@ function(..., na.rm = FALSE)
     ok <- switch(.Generic, max = , min = , range = TRUE, FALSE)
     if(!ok)
         stop(gettextf("Generic '%s' not defined for \"%s\" objects.",
-                      .Generic, .Class))
+                      .Generic, .Class),
+             domain = NA)
     args <- list(...)
     ## Combine the given relation ensembles.
     x <- do.call(c, args)

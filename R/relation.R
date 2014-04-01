@@ -488,7 +488,8 @@ function(..., na.rm = FALSE)
     ok <- switch(.Generic, max = , min = , range = TRUE, FALSE)
     if(!ok)
         stop(gettextf("Generic '%s' not defined for \"%s\" objects.",
-                      .Generic, .Class))
+                      .Generic, .Class),
+             domain = NA)
     args <- list(...)
     x <- relation_ensemble(list = args)
     switch(.Generic,
@@ -507,7 +508,8 @@ function(e1, e2)
     if(nargs() == 1L) {
         if(!(as.character(.Generic) %in% "!"))
             stop(gettextf("Unary '%s' not defined for \"%s\" objects.",
-                          .Generic, .Class))
+                          .Generic, .Class),
+                 domain = NA)
         return(relation_complement(e1))
     }
 
@@ -516,7 +518,8 @@ function(e1, e2)
          %in% c("<", "<=", ">", ">=", "==", "!=",
                 "&", "|", "*", "+", "-", "%/%", "%%", "^")))
         stop(gettextf("Generic '%s' not defined for \"%s\" objects.",
-                      .Generic, .Class))
+                      .Generic, .Class),
+             domain = NA)
 
     switch(.Generic,
            "+" = return(relation_union(e1, e2)),

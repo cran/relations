@@ -217,7 +217,8 @@ function(status, family)
         ## This should really only be possible in case additional
         ## constraints were given.
         stop(gettextf("Given constraints are incompatible with family '%s'.",
-                      family))
+                      family),
+             domain = NA)
     }
 }
 

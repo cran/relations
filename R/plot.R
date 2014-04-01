@@ -45,7 +45,7 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
 
     ## Make things a bit more efficient.
     x <- unclass(x)
-    if (!require("Rgraphviz"))
+    if(system.file(package = "Rgraphviz") == "")
         stop("Plotting requires package 'Rgraphviz'.")
 
     ## Number of elements.
@@ -126,7 +126,8 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
         ## Transform to graphViz-compatible incidence.
         dimnames(I) <- lapply(l, .make_unique_labels)
 
-        plot(as(I, "graphNEL"), attrs = attrs[[i]], main = main[i], ...)
+        Rgraphviz::plot(methods::as(I, "graphNEL"),
+                        attrs = attrs[[i]], main = main[i], ...)
     }
 }
 

@@ -48,7 +48,8 @@ function(x, y = NULL, method = "symdiff", ...)
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
             stop(gettextf("Method '%s' is not a valid dissimilarity method.",
-                          method))
+                          method),
+                 domain = NA)
         method <- get(known_methods[[ind]][1L])
         method_name <- known_methods[[ind]][2L]
     }

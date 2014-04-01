@@ -32,7 +32,8 @@ function(x, method = NULL, weights = 1, control = list(), ...)
             entry <- get_relation_consensus_method(method)
             if(is.null(entry))
                 stop(gettextf("Method '%s' is not a valid consensus method.",
-                              method))
+                              method),
+                     domain = NA)
             method <- entry
         }
         method <- method$definition
@@ -670,7 +671,8 @@ function(name)
     keys <- objects(relation_consensus_methods_db)
     ind <- pmatch(name, keys)
     if(is.na(ind))
-        stop(gettextf("Invalid consensus method '%s'.", name))
+        stop(gettextf("Invalid consensus method '%s'.", name),
+             domain = NA)
     relation_consensus_methods_db[[keys[ind]]]
 }
 set_relation_consensus_method <-

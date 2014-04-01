@@ -136,7 +136,8 @@ function(x, solver = NULL, control = list())
             .solve_BQP_via_linearization(x, solver, control)
         else
             stop(gettextf("Solver '%s' can only handle all-binary quadratic programs.",
-                          solver))
+                          solver),
+                 domain = NA)
     }
 }
 

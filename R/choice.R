@@ -32,7 +32,8 @@ function(x, method = "symdiff", weights = 1, control = list(), ...)
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
-            stop(gettextf("Method '%s' is not a valid choice method."))
+            stop(gettextf("Method '%s' is not a valid choice method."),
+                 domain = NA)
         method <- get(known_methods[[ind]][1L])
     }
     else if(!is.function(method))

@@ -5,6 +5,8 @@ importFrom("slam",
            "simple_triplet_matrix",
            "simple_triplet_diag_matrix", "simple_triplet_zero_matrix",
            "as.simple_triplet_matrix", "is.simple_triplet_matrix")
+importFrom("grDevices", "gray")
+importFrom("graphics", "axis", "image.default", "par", "plot")
 
 export("as.ranking",
        "as.relation",
