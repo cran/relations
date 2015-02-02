@@ -54,7 +54,7 @@ relation_antijoin(x, y, \dots)
   (1970).  Note, however, that domains in database relations, unlike the
   concept of relations we use here, are unordered.  In fact, a database
   relation (\dQuote{table}) is defined as a set of elements called
-  \dQuote{tuples}, where the \dQuote{tuple} componentes are named, but
+  \dQuote{tuples}, where the \dQuote{tuple} components are named, but
   unordered.  So in fact, a \dQuote{tuple} in this sense is a set of
   mappings from the attribute names into the union of the attribute
   domains.

@@ -1,6 +1,6 @@
 \documentclass[fleqn]{article}
 \usepackage[round,longnamesfirst]{natbib}
-\usepackage{graphicx,keyval,thumbpdf,a4wide,makeidx,color,colordvi}
+\usepackage{graphicx,keyval,a4wide,makeidx,color,colordvi}
 \usepackage{hyperref}
 
 \newcommand\R{\textsf{R}}
