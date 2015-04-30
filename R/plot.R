@@ -58,6 +58,10 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
     ## expand limit
     limit <- rep(limit, length.out = n)
 
+    ## expand main
+    if(is.null(main))
+        main <- rep.int(NA_character_, n)
+
     ## Layout.
     if (n > 1L) {
         byrow <- TRUE
@@ -86,19 +90,19 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
             ## possibly, transform relation to obtain a poset,
             ## and change main title if not specified.
             if (relation_is_linear_order(x[[i]])) {
-                if (is.null(main[i]) || is.na(main[i]))
+                if (is.na(main[i]))
                     main[i] <- "Linear Order"
             } else if (relation_is_partial_order(x[[i]])) {
-                if (is.null(main[i]) || is.na(main[i]))
+                if (is.na(main[i]))
                     main[i] <- "Partial Order"
             } else if(relation_is_weak_order(x[[i]])) {
                 ## If x is a preference, use dual instead.
                 x[[i]] <- dual(x[[i]])
-                if (is.null(main[i]) || is.na(main[i]))
+                if (is.na(main[i]))
                     main[i] <- "Weak Order"
             } else { ## extract asymmetric part
                 x[[i]] <- x[[i]] & dual(x[[i]])
-                if (is.null(main[i]) || is.na(main[i]))
+                if (is.na(main[i]))
                     main[i] <- "Strict Preference Part"
             }
             if(is.null(attrs[[i]]$edge$arrowsize))
@@ -125,6 +129,9 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
 
         ## Transform to graphViz-compatible incidence.
         dimnames(I) <- lapply(l, .make_unique_labels)
+
+        if(is.na(main[i]))
+            main[i] <- ""
 
         Rgraphviz::plot(methods::as(I, "graphNEL"),
                         attrs = attrs[[i]], main = main[i], ...)
