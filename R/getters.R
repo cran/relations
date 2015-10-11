@@ -172,7 +172,7 @@ function(x, e = NULL)
     if(is.null(e)) {
         pos <- seq_along(X)
     } else {
-        pos <- sets:::.exact_match(e, X)
+        pos <- .exact_match(e, X)
         if(any(is.na(pos)))
             stop("Elements of 'e' must be contained in the domain components.")
     }

@@ -48,7 +48,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
         ## function (nor is this a well-defined notion).
         I <- array(do.call(mapply,
                            c(list(charfun),
-                             sets:::.cartesian_product(lapply(domain, as.list)))),
+                             .cartesian_product(lapply(domain, as.list)))),
                    dim = sapply(domain, length))
         return(.make_relation_from_domain_and_incidence(domain, I))
     }
@@ -331,11 +331,11 @@ function(x, ...)
             match(e, dn[[i]])
         ## else: match against domain elements
         else
-            sets:::.exact_match(list(e), D[[i]])
+            .exact_match(list(e), D[[i]])
     })
 
     ## subset domain
-    D <- Map(sets:::.set_subset, D, l)
+    D <- Map(.set_subset, D, l)
 
     ## subset incidence matrix using standard method
     I <- do.call("[", c(list(I), l, drop = FALSE))
@@ -817,7 +817,7 @@ function(D, G, size = NULL)
     if(is.null(size)) size <- sapply(D, length)
     I <- array(0, size)
     if(length(G) > 0L)
-        I[rbind(mapply(sets:::.exact_match,
+        I[rbind(mapply(.exact_match,
                        G,
                        lapply(D, as.list)
                        )

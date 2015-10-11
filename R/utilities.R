@@ -34,7 +34,7 @@ function(x)
 ### * .make_set_of_tuples_from_relation_graph_components
 
 .make_set_of_tuples_from_relation_graph_components <-
-    sets:::.make_set_of_tuples_from_list_of_lists
+    .make_set_of_tuples_from_list_of_lists
 
 ### * .match_domain_components
 

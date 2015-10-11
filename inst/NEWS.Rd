@@ -2,6 +2,31 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-6}{
+  \itemize{
+    \item No user-level changes.
+  }
+}
+
+\section{Changes in version 0.6-5}{
+  \itemize{
+    \item Safeguard code against \code{nchar(NA)} being \code{NA}.
+  }
+}
+
+\section{Changes in version 0.6-4}{
+  \itemize{
+    \item Rd improvements.
+  }
+}
+
+\section{Changes in version 0.6-3}{
+  \itemize{
+    \item Improve namespace and avoid search path semantics.
+    \item Improve message strings.
+  }
+}
+
 \section{Changes in version 0.6-2}{
   \itemize{
     \item Package metadata improvements.
@@ -21,7 +46,7 @@
     \item \code{transitive_reduction()} and the plot method for
     relations now also work for cyclic relations.
     \item The plot method for relations now also allows the drawing of
-    "raw" graphs without any transformation.
+    \dQuote{raw} graphs without any transformation.
   }
 }
 

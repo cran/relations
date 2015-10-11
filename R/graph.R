@@ -20,8 +20,8 @@ function(x) {
     S <- .make_set_of_tuples_from_relation_graph_components(out)
     if (!isTRUE(relation_is_crisp(x))) {
         I <- relation_incidence(x)
-        S <- sets:::.make_gset_from_support_and_memberships(support = S,
-                                                            memberships = I[I > 0 | is.na(I)])
+        S <- .make_gset_from_support_and_memberships(support = S,
+                                                     memberships = I[I > 0 | is.na(I)])
     }
     .make_relation_graph(S, domain_names = nms)
 }
@@ -56,14 +56,14 @@ function(x, ...)
        writeLines(sprintf(if (gset_is_fuzzy_set(x, na.rm = TRUE))
                           "A fuzzy set with %s%s:"
                           else "A set with %s%s:",
-                          sets:::.ntuple(as.list(x)[[1L]], plural = isTRUE(length(x) > 1L)),
+                          .ntuple(as.list(x)[[1L]], plural = isTRUE(length(x) > 1L)),
                           if (is.null(domain_names)) "" else
                           paste(" ", format(as.tuple(domain_names)), sep = "")
                           )
                   )
        if (gset_is_fuzzy_set(x, na.rm = TRUE) ||
-           any(is.na(sets:::.get_memberships(x))))
-           for (i in Map(e, unclass(x), sets:::.get_memberships(x))) print(i)
+           any(is.na(.get_memberships(x))))
+           for (i in Map(e, unclass(x), .get_memberships(x))) print(i)
        else
            for (i in x) print(i)
     }
@@ -111,7 +111,7 @@ function(x)
 .make_relation_graph_components.gset <-
 function(x)
     .structure(.make_relation_graph_components(as.list(x)),
-               memberships = sets:::.get_memberships(x))
+               memberships = .get_memberships(x))
 
 .make_relation_graph_components.relation <-
 function(x)
@@ -133,7 +133,7 @@ function(x)
     memberships <- NULL
     if (!isTRUE(relation_is_crisp(x)))
         memberships <- I[I > 0 | is.na(I)]
-    .structure(lapply(sets:::.cartesian_product(D), "[", ind),
+    .structure(lapply(.cartesian_product(D), "[", ind),
                memberships = memberships,
                names = names(D))
     ## </NOTE>

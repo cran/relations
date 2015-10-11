@@ -191,7 +191,7 @@ function(x, y = NULL)
         stop("Relation arity mismatch.")
 
     ## extract incidences for common domain
-    I <- do.call("[", c(list(.incidence(y)), Map(sets:::.exact_match, Dx, Dy)))
+    I <- do.call("[", c(list(.incidence(y)), Map(.exact_match, Dx, Dy)))
     I[is.na(I)] <- 0
     relation_intersection(x,
         relation_complement(.make_relation_from_domain_and_incidence(Dx, I)))

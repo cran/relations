@@ -81,7 +81,7 @@ function(x, ...)
     else
       paste(format(as.tuple(n), quote = FALSE), " ", sep = "")
 
-    writeLines(sprintf("%s %swith elements:", sets:::.ntuple(x, A = TRUE), s))
+    writeLines(sprintf("%s %swith elements:", .ntuple(x, A = TRUE), s))
     for (i in x) print(i)
     invisible(x)
 }

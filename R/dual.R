@@ -21,7 +21,7 @@ function(x, ...)
         db <- c(is_reflexive = "is_irreflexive",
                 is_irreflexive = "is_reflexive",
                 is_symmetric = "is_symmetric")
-        if(sets:::fuzzy_logic_predicates()$is_de_Morgan_triple) {
+        if(fuzzy_logic_predicates()$is_de_Morgan_triple) {
             db <-
                 c(db,
                   is_antisymmetric = "is_complete",
