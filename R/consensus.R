@@ -18,7 +18,7 @@ function(x, method = NULL, weights = 1, control = list(), ...)
     if(!length(relations))
         stop("Cannot compute consensus of empty ensemble.")
 
-    weights <- rep(weights, length.out = length(relations))
+    weights <- rep_len(weights, length(relations))
     if(any(weights < 0))
         stop("Argument 'weights' has negative elements.")
     if(!any(weights > 0))
@@ -118,7 +118,7 @@ function(relations, weights, control)
     ## Add some sanity checking for p eventually.
 
     incidences <- lapply(relations, relation_incidence)
-    weights <- rep(weights, length.out = length(relations))
+    weights <- rep_len(weights, length(relations))
 
     I <- (.weighted_sum_of_arrays(incidences, weights, na.rm = TRUE) /
           .weighted_sum_of_arrays(lapply(incidences, is.finite),
@@ -217,7 +217,7 @@ function(relations, weights, control)
     nos <- .n_from_control_list(control)
 
     incidences <- lapply(relations, relation_incidence)
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
+    M <- .make_fit_relation_symdiff_B(incidences, weights, TRUE)
     I <- M >= 0                         # We do not break ties (>=).
     objval <- .relation_consensus_symdiff_objval(I, incidences, weights)
     meta <- list(is_endorelation = TRUE,
@@ -341,7 +341,7 @@ function(relations, weights, control)
 function(relations, weights, control)
 {
     incidences <- lapply(relations, relation_incidence)
-    weights <- rep(weights, length.out = length(incidences))
+    weights <- rep_len(weights, length(incidences))
     ## Incidences of the consensus relation are the weighted medians.
     I <- array(apply(do.call("cbind", lapply(incidences, c)),
                      1L, clue:::weighted_median, weights),
@@ -360,7 +360,7 @@ function(relations, weights, control)
 .relation_consensus_euclidean <-
 function(relations, weights, control)
 {
-    weights <- rep(weights, length.out = length(relations))
+    weights <- rep_len(weights, length(relations))
     weights <- weights / sum(weights)
     incidences <- lapply(relations, relation_incidence)
     ## Incidences of the consensus relation are the weighted means.
@@ -452,8 +452,6 @@ function(relations, weights, control)
                                 weights, control, TRUE)
 
 ## Consensus methods for central relations using CKS distance.
-## Currently we only have fitters for crisp ensembles and families where
-## the CKS consensus problem can be reduced to a binary linear program.
 
 ### ** .relation_consensus_CKS_A
 
@@ -469,12 +467,15 @@ function(relations, weights, control)
 
 ### ** .relation_consensus_CKS_E
 
-## <NOTE>
-## Could add support for CKS/E/k ...
-## </NOTE>
 .relation_consensus_CKS_E <-
 function(relations, weights, control)
-    .relation_consensus_CKS(relations, "E", weights, control)
+{
+    k <- control$k
+    if(!is.null(k))
+        .relation_consensus_CKS_E_k(relations, weights, k, control)
+    else
+        .relation_consensus_CKS(relations, "E", weights, control)
+}
 
 ## ** .relation_consensus_CKS_G
 
@@ -485,10 +486,27 @@ function(relations, weights, control)
 
     incidences <- lapply(relations, relation_incidence)
 
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
+    M <- .make_fit_relation_symdiff_B(incidences, weights, TRUE)
     Q <- .make_fit_relation_CKS_Q(incidences, weights)
     w <- sum(weights)
 
+    ## See the 'Relations: Issues' writeup for the theory.
+    ## With
+    ##    m_{ij} = [M]_{ij} with M as above
+    ##    q_{ij} = [Q]_{ij} with Q as above 
+    ## we have
+    ##    m_{ij} = 2 w (\bar{x}_{ij} - 1/2
+    ##    q_{ij} = 2 w (\bar{q}_{ij} - 1/2
+    ## or equivalently
+    ##   \bar{x}_{ij} = 1/2 + m_{ij} / (2 w)
+    ##   \bar{q}_{ij} = 1/2 + q_{ij} / (2 w)
+    ## and hence
+    ##    \bar{x}_{ij} \ge 1/2
+    ##      .iff. m_{ij} \ge 0
+    ##    \bar{q}_{ij} < 1/2
+    ##      .iff. q_{ij} < 0
+    ##    \bar{x}_{ij} \ge 1/2 - \bar{q}_{ij}
+    ##      .iff. m_{ij} + q_{ij} \ge -w
     I <- (M >= 0) | ((Q < 0) & (M + Q >= - w))
     objval <- .relation_consensus_CKS_objval(I, incidences, weights)
     meta <- list(is_endorelation = TRUE, objval = objval)
@@ -547,40 +565,40 @@ function(relations, weights, control)
             I <- do_split(I,
                           function(x, i, j) {
                               z <- y <- x
-                              x[i, j] <- x[j, i] <- 1
+                              x[i, j] <- x[j, i] <- 0
                               y[i, j] <- 1; y[j, i] <- 0
-                              z[i, j] <- z[j, i] <- 0
+                              z[i, j] <- z[j, i] <- 1
                               list(x, y, z)
                           },
                           which(P & Q, arr.ind = TRUE))
+            ## If only q_{ij} = 0, can take 0/0 1/1.
+            I <- do_split(I,
+                          function(x, i, j) {
+                              y <- x
+                              x[i, j] <- x[j, i] <- 0
+                              y[i, j] <- y[j, i] <- 1
+                              list(x, y)
+                          },
+                          which((Q & !P) & !t(P), arr.ind = TRUE))
             ## If p_{ij} = p_{ji} = 0, can take 1/0 0/1 1/1.
             I <- do_split(I,
                           function(x, i, j) {
                               z <- y <- x
-                              x[i, j] <- x[j, i] <- 1
-                              y[i, j] <- 1; y[j, i] <- 0
-                              z[i, j] <- 0; z[j, i] <- 1
+                              x[i, j] <- 1; x[j, i] <- 0
+                              y[i, j] <- 0; y[j, i] <- 1
+                              z[i, j] <- z[j, i] <- 1
                               list(x, y, z)
                           },
                           which((P & t(P)) & U, arr.ind = TRUE))
-            ## If only q_{ij} = 0, can take 0/1 1/1.
-            I <- do_split(I,
-                          function(x, i, j) {
-                              y <- x
-                              x[i, j] <- x[j, i] <- 1
-                              y[i, j] <- y[j, i] <- 0
-                              list(x, y)
-                          },
-                          which((Q & !P) & !t(P), arr.ind = TRUE))
             ## If only p_{ij} = 0, can take 1/0 1/1.
             I <- do_split(I,
                           function(x, i, j) {
                               y <- x
-                              x[i, j] <- x[j, i] <- 1
-                              y[i, j] <- 1; y[j, i] <- 0
+                              x[i, j] <- 1; x[j, i] <- 0
+                              y[i, j] <- y[j, i] <- 1
                               list(x, y)
                           },
-                          which((P & Q) & !t(P), arr.ind = TRUE))
+                          which((P & !Q) & !t(P), arr.ind = TRUE))
             ## Do this only once and not inside do_split.
             if(length(I) > nos)
                 I <- I[seq_len(nos)]
@@ -608,18 +626,6 @@ function(relations, weights, control)
 function(relations, weights, control)
     .relation_consensus_CKS(relations, "O", weights, control)
 
-### ** .relation_consensus_CKS_W
-
-.relation_consensus_CKS_W <-
-function(relations, weights, control)
-{
-    k <- control$k
-    if(!is.null(k))
-        .relation_consensus_CKS_W_k(relations, weights, k, control)
-    else
-        .relation_consensus_CKS(relations, "W", weights, control)
-}
-
 ### ** .relation_consensus_CKS_S
 
 .relation_consensus_CKS_S <-
@@ -632,19 +638,203 @@ function(relations, weights, control)
 function(relations, weights, control)
     .relation_consensus_CKS(relations, "T", weights, control)
 
+### ** .relation_consensus_CKS_W
+
+.relation_consensus_CKS_W <-
+function(relations, weights, control)
+{
+    k <- control$k
+    if(!is.null(k))
+        .relation_consensus_CKS_W_k(relations, weights, k, control)
+    else
+        .relation_consensus_CKS(relations, "W", weights, control)
+}
+
 ### ** .relation_consensus_CKS_preorder
 
 .relation_consensus_CKS_preorder <-
 function(relations, weights, control)
-    .relation_consensus_CKS_via_QP(relations, "preorder",
-                                   weights, control)
+    .relation_consensus_CKS(relations, "preorder",
+                            weights, control)
 
 ### ** .relation_consensus_CKS_transitive
 
 .relation_consensus_CKS_transitive <-
 function(relations, weights, control)
-    .relation_consensus_CKS_via_QP(relations, "transitive",
-                                   weights, control)
+    .relation_consensus_CKS(relations, "transitive",
+                            weights, control)
+
+## Consensus methods for central relations using PC distance.
+
+### ** .relation_consensus_PC_A
+
+.relation_consensus_PC_A <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "A", weights, control)
+
+### ** .relation_consensus_PC_C
+
+.relation_consensus_PC_C <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "C", weights, control)
+
+### ** .relation_consensus_PC_E
+
+.relation_consensus_PC_E <-
+function(relations, weights, control)
+{
+    k <- control$k
+    if(!is.null(k))
+        .relation_consensus_PC_E_k(relations, weights, k, control)
+    else
+        .relation_consensus_PC(relations, "E", weights, control)
+}
+
+### ** .relation_consensus_PC_G
+
+## <FIXME>
+## Not yet ...
+## </FIXME>
+.relation_consensus_PC_G <-
+function(relations, weights, control)
+{
+    ## Generalized paired comparison majority.
+    ## The consensus problem is to minimize
+    ##   \sum_{i,j} L_{ij} x_{ij} + \sum_{i,j:i<j} Q_{ij} x_{ij}x_{ji}
+    ## over all binary x_{ij}.
+    ## For the x_{ii}, this is archieved upon taking x_{ii} = 0 if
+    ## L_{ii} > 0, and x_{ii} = 1 if L_{ii} < 0 (if L_{ii} = 0, both
+    ## 0 and 1 can be taken).
+    ## For i < j, the values for x_{ij}/x_{ji} 0/0, 1/0, 0/1 and 1/1 are
+    ##   0, L_{ij}, L_{ji}, L_{ij} + L_{ji} + Q_{ij}
+    ## and the incidences need to be taken to minimize the above.
+
+    delta <- control$delta
+    gamma <- control$gamma
+    incidences <- lapply(relations, relation_incidence)
+    AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
+
+    B <- AB$B
+    n <- nrow(B)
+    vd <- diag(B)
+    I <- diag(1 - (vd >= 0), n, n)
+    ind <- row(B) < col(B)
+    pos_ij <- which(ind, arr.ind = TRUE)
+    pos_ji <- pos_ij[, c(2L, 1L)]
+    vo1 <- B[ind]
+    vo2 <- t(B)[ind]
+    vo3 <- vo1 + vo2 + AB$A[ind]
+    Mo <- which(cbind(0, vo1, vo2, vo3) == pmin(0, vo1, vo2, vo3),
+                arr.ind = TRUE)
+    Mo <- Mo[order(Mo[, 1L]), , drop = FALSE]
+    ## Rows of Mo corresponding to first minima in each i/j row:
+    ro <- 1 + c(0, which(diff(Mo[, 1L]) > 0))
+    k <- Mo[ro, 1L]
+    l <- Mo[ro, 2L] - 1
+    ## Values for q are from 0 to 3 corresponding to x_{ij}/x_{ji} pairs
+    ## 0/0, 1/0, 0/1 and 1/1: we can get these from q as remainder and
+    ## quotient of integer division by 2.
+    I[pos_ij[k, , drop = FALSE]] <- l %% 2
+    I[pos_ji[k, , drop = FALSE]] <- l %/% 2
+
+    objval <- .relation_consensus_PC_objval(I, incidences, weights,
+                                            delta, gamma)
+    meta <- list(is_endorelation = TRUE, objval = objval)
+
+    ## If more than one solution is sought, we need to "split" at all
+    ## positions where the minimum is not unique.
+    nos <- .n_from_control_list(control)
+
+    if(nos > 1L) {
+        I <- list(I)
+        ## Split diagonal terms when vd == 0.
+        for(k in which(vd == 0)) {
+            if(length(I) >= nos) break
+            I <- do.call(c,
+                         lapply(I,
+                                function(x) {
+                                    y <- x
+                                    ## x[k, k] should be 0.
+                                    y[k, k] <- 1
+                                    list(x, y)
+                                }))
+        }
+        ## Split off-diagonal terms.
+        ## Drop the ones used for the first solution.
+        Mo <- Mo[-ro, , drop = FALSE]
+        for(e in split(Mo, row(Mo))) {
+            if(length(I) >= nos) break
+            I <- do.call(c,
+                         lapply(I,
+                                function(x) {
+                                    k <- e[1L]
+                                    l <- e[2L] - 1
+                                    y <- x
+                                    y[pos_ij[k, , drop = FALSE]] <- l %% 2
+                                    y[pos_ji[k, , drop = FALSE]] <- l %/% 2
+                                    list(x, y)
+                                }))
+        }
+        if(length(I) > nos)
+            I <- I[seq_len(nos)]
+    }
+                                    
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+### ** .relation_consensus_PC_L
+
+.relation_consensus_PC_L <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "L", weights, control)
+
+### ** .relation_consensus_PC_M
+
+.relation_consensus_PC_M <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "M", weights, control)
+
+### ** .relation_consensus_PC_O
+
+.relation_consensus_PC_O <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "O", weights, control)
+
+### ** .relation_consensus_PC_S
+
+.relation_consensus_PC_S <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "S", weights, control)
+
+### ** .relation_consensus_PC_T
+
+.relation_consensus_PC_T <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "T", weights, control)
+
+### ** .relation_consensus_PC_W
+
+.relation_consensus_PC_W <-
+function(relations, weights, control)
+{
+    k <- control$k
+    if(!is.null(k))
+        .relation_consensus_PC_W_k(relations, weights, k, control)
+    else
+        .relation_consensus_PC(relations, "W", weights, control)
+}
+
+### ** .relation_consensus_PC_preorder
+
+.relation_consensus_PC_preorder <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "preorder", weights, control)
+
+### ** .relation_consensus_PC_transitive
+
+.relation_consensus_PC_transitive <-
+function(relations, weights, control)
+    .relation_consensus_PC(relations, "transitive", weights, control)
 
 ### * Relation consensus method registration
 
@@ -688,12 +878,16 @@ function(name, definition, ...)
 
 set_relation_consensus_method("Borda",
                               .relation_consensus_Borda)
+
 set_relation_consensus_method("Copeland",
                               .relation_consensus_Copeland)
+
 set_relation_consensus_method("majority",
                               .relation_consensus_majority)
+
 ## Note that constructive methods do not necessarily give central
 ## relations.
+
 set_relation_consensus_method("CKS/A",
                               .relation_consensus_CKS_A,
                               dissimilarity = "CKS",
@@ -747,8 +941,65 @@ set_relation_consensus_method("CS",
                               .relation_consensus_CS,
                               dissimilarity = "CS",
                               exponent = 1)
+
 set_relation_consensus_method("Condorcet",
                               .relation_consensus_Condorcet,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+
+set_relation_consensus_method("symdiff/A",
+                              .relation_consensus_symdiff_A,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/C",
+                              .relation_consensus_symdiff_C,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/E",
+                              .relation_consensus_symdiff_E,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/G",
+                              .relation_consensus_Condorcet,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/L",
+                              .relation_consensus_symdiff_L,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/M",
+                              .relation_consensus_symdiff_M,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/O",
+                              .relation_consensus_symdiff_O,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+## <NOTE>
+## Keep this for back-compatibility.
+set_relation_consensus_method("symdiff/P",
+                              .relation_consensus_symdiff_W,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+## </NOTE>
+set_relation_consensus_method("symdiff/S",
+                              .relation_consensus_symdiff_S,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/T",
+                              .relation_consensus_symdiff_T,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/W",
+                              .relation_consensus_symdiff_W,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/preorder",
+                              .relation_consensus_symdiff_preorder,
+                              dissimilarity = "symdiff",
+                              exponent = 1)
+set_relation_consensus_method("symdiff/transitive",
+                              .relation_consensus_symdiff_transitive,
                               dissimilarity = "symdiff",
                               exponent = 1)
 set_relation_consensus_method("SD/A",
@@ -806,10 +1057,12 @@ set_relation_consensus_method("SD/transitive",
                               .relation_consensus_symdiff_transitive,
                               dissimilarity = "symdiff",
                               exponent = 1)
+
 set_relation_consensus_method("manhattan",
                               .relation_consensus_manhattan,
                               dissimilarity = "manhattan",
                               exponent = 1)
+
 set_relation_consensus_method("euclidean",
                               .relation_consensus_euclidean,
                               dissimilarity = "euclidean",
@@ -863,6 +1116,56 @@ set_relation_consensus_method("euclidean/transitive",
                               dissimilarity = "euclidean",
                               exponent = 2)
 
+set_relation_consensus_method("PC/A",
+                              .relation_consensus_PC_A,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/C",
+                              .relation_consensus_PC_C,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/E",
+                              .relation_consensus_PC_E,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/G",
+                              .relation_consensus_PC_G,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/L",
+                              .relation_consensus_PC_L,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/M",
+                              .relation_consensus_PC_M,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/O",
+                              .relation_consensus_PC_O,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/S",
+                              .relation_consensus_PC_S,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/T",
+                              .relation_consensus_PC_T,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/W",
+                              .relation_consensus_PC_W,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/preorder",
+                              .relation_consensus_PC_preorder,
+                              dissimilarity = "PC",
+                              exponent = 1)
+set_relation_consensus_method("PC/transitive",
+                              .relation_consensus_PC_transitive,
+                              dissimilarity = "PC",
+                              exponent = 1)
+
+
 ### * Relation consensus workers
 
 ### ** .relation_consensus_symdiff
@@ -876,8 +1179,8 @@ function(relations, family, weights, control, euclidean = FALSE)
         stop("Need an ensemble of crisp relations.")
 
     incidences <- lapply(relations, relation_incidence)
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
-    I <- fit_relation_symdiff(M, family, control)
+    B <- .make_fit_relation_symdiff_B(incidences, weights)
+    I <- fit_relation_LP(B, family, control)
     objval <- if(euclidean)
         .relation_consensus_euclidean_objval(I, incidences, weights)
     else
@@ -898,8 +1201,8 @@ function(relations, weights, k, control, euclidean = FALSE)
         stop("Need an ensemble of crisp relations.")
 
     incidences <- lapply(relations, relation_incidence)
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
-    I <- fit_relation_symdiff_E_k(M, k, control)
+    B <- .make_fit_relation_symdiff_B(incidences, weights)
+    I <- fit_relation_LP_E_k(B, k, control)
     objval <- if(euclidean)
         .relation_consensus_euclidean_objval(I, incidences, weights)
     else
@@ -920,8 +1223,8 @@ function(relations, weights, k, control, euclidean = FALSE)
         stop("Need an ensemble of crisp relations.")
 
     incidences <- lapply(relations, relation_incidence)
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
-    I <- fit_relation_symdiff_W_k(M, k, control)
+    B <- .make_fit_relation_symdiff_B(incidences, weights)
+    I <- fit_relation_LP_W_k(B, k, control)
     objval <- if(euclidean)
         .relation_consensus_euclidean_objval(I, incidences, weights)
     else
@@ -941,54 +1244,56 @@ function(relations, family, weights, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
-    ## Solve via QP formulation if requested explicitly.
-    ## Mostly useful for testing purposes.
-    if(identical(control$simplify, FALSE))
-       return(.relation_consensus_CKS_via_QP(relations, family,
-                                             weights, control))
-
     incidences <- lapply(relations, relation_incidence)
-    if(family %in% c("C", "L", "M", "T", "W")) {
-        ## For the complete families, we can fit CKS via transforming
-        ## incidences and fitting symdiff.
-        incidences <-
-            lapply(incidences,
-                   function(I) {
-                       ind <- row(I) != col(I)
-                       I[ind] <- pmax(I, 1 - t(I))[ind]
-                       I
-                   })
-        M <- .make_fit_relation_symdiff_M(incidences, weights)
-    } else if(family %in% c("O", "A")) {
-        ## If the consensus relation is antisymmetric, the CKS consensus
-        ## problem reduces to a linear program with coefficients
-        ## $p_{ij} - q_{ij}$ and $- q_{ii}$ for the off-diagonal and
-        ## diagonal terms, respectively.
-        ## For O, the diagonal is "fixed" by the family.
-        ## For A, it is handled by the majority rule.
-        P <- .make_fit_relation_CKS_P(incidences, weights)
-        Q <- .make_fit_relation_CKS_Q(incidences, weights)
-        M <- P - Q
-        ## Note that $p_{ii} = \sum_b w_b (1 - 2 p_{ii}(b)) = \sum_b w_b.
-        diag(M) <- diag(M) - sum(weights)
-        ## Alternatively, do diag(M) <- - diag(Q).
-    } else if(family %in% c("E", "S")) {
-        ## If the consensus relation is symmetric, the CKS consensus
-        ## problem reduces to a linear program with coefficients
-        ## $- q_{ij} / 2$ and $- q_{ii}$ for the off-diagonal and
-        ## diagonal terms, respectively.
-        ## For E, the diagonal is "fixed" by the family.
-        ## For S, it is handled by the majority diagonal rule
-        ## Note that it is not necessary to halve the off-diagonal terms
-        ## as the diagonal and off-diagonal terms are handled separately
-        ## by symdiff fitting.
-        M <- - .make_fit_relation_CKS_Q(incidences, weights)
+    AB <- .make_fit_relation_CKS_AB(incidences, weights)
+    if(identical(control$simplify, FALSE) ||
+       family %in% c("preorder", "transitive")) {
+        ## Solve via QP formulation if requested explicitly or
+        ## necessary.
+        ## Mostly useful for testing purposes.
+        I <- fit_relation_QP(AB$A, AB$B, family, control)
     } else {
-        stop("Not implemented.")
+        if(family %in% c("A", "L", "O", "T")) {
+            B <- AB$B
+        } else if(family %in% c("E", "S")) {
+            B <- AB$B + AB$A
+        } else if(family %in% c("C", "M", "W")) {
+            B <- AB$B + AB$A + t(AB$A)
+        } else {
+            stop("Not implemented.")
+        }
+        I <- fit_relation_LP(B, family, control)
     }
-    I <- fit_relation_symdiff(M, family, control)
     objval <- .relation_consensus_CKS_objval(I, incidences, weights)
     meta <- c(.relation_meta_db[[family]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+## ** .relation_consensus_CKS_E_k
+
+.relation_consensus_CKS_E_k <-
+function(relations, weights, k, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    incidences <- lapply(relations, relation_incidence)
+    ## The coefficients we need are B + A.
+    ## By symmetry, we can also use M = (B + B' + A + A') / 2, and
+    ## diagonal terms are irrelevant.
+    ## Now for i \ne j,
+    ##   [B + B']_{ij} = 2 q_{ij} - p_{ij} - p_{ji}
+    ##   [A + A']_{ij} = - q_{ij} + p_{ij} + p_{ji}
+    ## Hence we can simply take Q for the coefficients.
+    ## Alternatively, we can proceed as for general PC_E_k.
+    
+    B <- .make_fit_relation_CKS_Q(incidences, weights)
+    I <- fit_relation_LP_E_k(B, k, control)
+    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    meta <- c(.relation_meta_db[["E"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
@@ -1003,25 +1308,19 @@ function(relations, weights, k, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
-    incidences <-
-        lapply(relations,
-               function(R) {
-                   I <- relation_incidence(R)
-                   ind <- row(I) != col(I)
-                   I[ind] <- pmax(I, 1 - t(I))[ind]
-                   I
-               })
-    M <- .make_fit_relation_symdiff_M(incidences, weights)
-    I <- fit_relation_symdiff_W_k(M, k, control)
+    incidences <- lapply(relations, relation_incidence)
+    AB <- .make_fit_relation_CKS_AB(incidences, weights)
+    B <- AB$B + AB$A + t(AB$A)
+    I <- fit_relation_LP_W_k(B, k, control)    
     objval <- .relation_consensus_CKS_objval(I, incidences, weights)
     meta <- c(.relation_meta_db[["W"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
-## ** .relation_consensus_CKS_via_QP
+## ** .relation_consensus_PC
 
-.relation_consensus_CKS_via_QP <-
+.relation_consensus_PC <-
 function(relations, family, weights, control)
 {
     if(!.is_ensemble_of_endorelations(relations))
@@ -1029,51 +1328,154 @@ function(relations, family, weights, control)
     if(!.is_ensemble_of_crisp_relations(relations))
         stop("Need an ensemble of crisp relations.")
 
+    delta <- control$delta
+    gamma <- control$gamma
     incidences <- lapply(relations, relation_incidence)
-    P <- .make_fit_relation_CKS_P(incidences, weights)
-    Q <- .make_fit_relation_CKS_Q(incidences, weights)
-    I <- fit_relation_CKS_via_QP(P, Q, family, control)
-    objval <- .relation_consensus_CKS_objval(I, incidences, weights)
+    AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
+    if(identical(control$simplify, FALSE) ||
+       family %in% c("preorder", "transitive")) {
+        ## Solve via QP formulation if requested explicitly or
+        ## necessary.
+        ## Mostly useful for testing purposes.
+        I <- fit_relation_QP(AB$A, AB$B, family, control)
+    } else {
+        if(family %in% c("A", "L", "O", "T")) {
+            B <- AB$B
+        } else if(family %in% c("E", "S")) {
+            B <- AB$B + AB$A
+        } else if(family %in% c("C", "M", "W")) {
+            B <- AB$B + AB$A + t(AB$A)
+        } else {
+            stop("Not implemented.")
+        }
+        I <- fit_relation_LP(B, family, control)
+    }
+    objval <- .relation_consensus_PC_objval(I, incidences, weights,
+                                            delta, gamma)
     meta <- c(.relation_meta_db[[family]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+## ** .relation_consensus_PC_E_k
+
+.relation_consensus_PC_E_k <-
+function(relations, weights, k, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    delta <- control$delta
+    gamma <- control$gamma
+    incidences <- lapply(relations, relation_incidence)
+    AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
+    B <- AB$B + AB$A
+    I <- fit_relation_LP_E_k(B, k, control)
+    objval <- .relation_consensus_PC_objval(I, incidences, weights,
+                                            delta, gamma)
+    meta <- c(.relation_meta_db[["E"]], list(objval = objval))
+
+    .make_consensus_from_incidences(.domain(relations), I, meta)
+}
+
+## ** .relation_consensus_PC_W_k
+
+.relation_consensus_PC_W_k <-
+function(relations, weights, k, control)
+{
+    if(!.is_ensemble_of_endorelations(relations))
+        stop("Need an ensemble of endorelations.")
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    delta <- control$delta
+    gamma <- control$gamma
+    incidences <- lapply(relations, relation_incidence)
+    AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
+    B <- AB$B + AB$A + t(AB$A)
+    I <- fit_relation_LP_W_k(B, k, control)
+    objval <- .relation_consensus_PC_objval(I, incidences, weights,
+                                            delta, gamma)
+    meta <- c(.relation_meta_db[["W"]], list(objval = objval))
 
     .make_consensus_from_incidences(.domain(relations), I, meta)
 }
 
 ### * Utilities
 
-### ** .make_fit_relation_symdiff_M
+### ** .make_fit_relation_symdiff_B
 
-.make_fit_relation_symdiff_M <-
-function(incidences, weights)
+.make_fit_relation_symdiff_B <-
+function(incidences, weights, flip = FALSE)
 {
     ## Compute the array
+    ##   \sum_b w_b (1 - 2 incidence(b))
+    ## or
     ##   \sum_b w_b (2 incidence(b) - 1)
-    ## used in fit_relation_symdiff() and also for the Condorcet
-    ## consensus solution.
+    ## if flip is true.
 
-    w <- rep(weights, length.out = length(incidences))
+    w <- rep_len(weights, length(incidences))
     if(is.relation_ensemble(incidences))
         incidences <- lapply(incidences, relation_incidence)
     M <- .weighted_sum_of_arrays(incidences, w)
-    2 * M - sum(w)
+    if(flip)
+        2 * M - sum(w)
+    else
+        sum(w) - 2 * M
 }
 
 ### ** .make_fit_relation_CKS_P
 
 .make_fit_relation_CKS_P <-
 function(incidences, weights)
-    .make_fit_relation_symdiff_M(lapply(incidences,
+    .make_fit_relation_symdiff_B(lapply(incidences,
                                         function(I) pmin(I, 1 - t(I))),
-                                 weights)
+                                 weights,
+                                 TRUE)
 
 ### ** .make_fit_relation_CKS_Q
 
 .make_fit_relation_CKS_Q <-
 function(incidences, weights)
-    .make_fit_relation_symdiff_M(lapply(incidences,
+    .make_fit_relation_symdiff_B(lapply(incidences,
                                         function(I) 1 - pmax(I, t(I))),
-                                 weights)
+                                 weights,
+                                 TRUE)
 
+### ** .make_fit_relation_CKS_AB
+
+.make_fit_relation_CKS_AB <-
+function(incidences, weights, P = NULL, Q = NULL)
+{
+    if(is.null(P))
+        P <- .make_fit_relation_CKS_P(incidences, weights)
+    if(is.null(Q))
+        Q <- .make_fit_relation_CKS_Q(incidences, weights)
+    B <- Q - P
+    diag(B) <- diag(Q) / 2
+    A <- P + t(P) - Q
+    A[row(A) >= col(A)] <- 0
+    list(A = A, B = B)
+}
+        
+### ** .make_fit_relation_PC_AB
+
+.make_fit_relation_PC_AB <-
+function(incidences, weights, delta, gamma)
+{
+    w <- rep_len(weights, length(incidences))
+    if(is.relation_ensemble(incidences)) 
+        incidences <- lapply(incidences, relation_incidence)
+    D <- .relation_dissimilarity_PC_Delta(delta)
+    M <- .relation_dissimilarity_PC_M(D)
+    ABC <- lapply(incidences, .relation_dissimilarity_PC_ABC,
+                  delta, gamma, D, M)
+    A <- .weighted_sum_of_arrays(lapply(ABC, `[[`, "A"), w)
+    B <- .weighted_sum_of_arrays(lapply(ABC, `[[`, "B"), w)
+    list(A = A, B = B)
+}
 
 ### ** .make_consensus_from_incidences
 
@@ -1147,7 +1549,8 @@ function(I, incidences, weights)
         incidences <- lapply(incidences, relation_incidence)
     if(is.list(I)) I <- I[[1L]]
 
-    sum(weights * sapply(incidences, .incidence_dissimilarity_CS, I))
+    sum(weights *
+        sapply(incidences, .incidence_dissimilarity_CS, I))
 }
 
 ### ** .relation_consensus_CKS_objval
@@ -1160,8 +1563,26 @@ function(I, incidences, weights)
         incidences <- lapply(incidences, relation_incidence)
     if(is.list(I)) I <- I[[1L]]
 
-    sum(weights * sapply(incidences, .incidence_dissimilarity_CKS, I))
+    sum(weights *
+        sapply(incidences, .incidence_dissimilarity_CKS, I))
 }
+
+## ** .relation_consensus_PC_objval
+
+.relation_consensus_PC_objval <-
+function(I, incidences, weights, delta, gamma)
+{
+    ## Be nice.
+    if(is.relation_ensemble(incidences))
+        incidences <- lapply(incidences, relation_incidence)
+    if(is.list(I)) I <- I[[1L]]
+
+    sum(weights *
+        sapply(incidences,
+               .incidence_dissimilarity_PC, I, delta, gamma))
+}
+
+
 
 ### Local variables: ***
 ### mode: outline-minor ***

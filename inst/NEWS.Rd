@@ -1,6 +1,20 @@
 \name{NEWS}
 \title{News for Package \pkg{relations}}
-\newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+\newcommand{\cpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+
+\section{Changes in version 0.6-7}{
+  \itemize{
+    \item \code{relation_dissimilarity()}, \code{relation_consensus()}
+    and \code{relation_choice()} gain methods for generalized paired
+    comparison dissimilarities (which include symdiff, CKS, and
+    Emond-Mason dissimilarities as special cases).
+
+    \item \code{relation_is()} meta-predicate function added, to replace
+    the current single predicate functions in future releases.
+  
+    \item \code{is.na} method for relations added.
+  }
+}
 
 \section{Changes in version 0.6-6}{
   \itemize{
@@ -125,14 +139,15 @@
   \itemize{
     \item New \code{relation_consensus()} method for Cook-Kress-Seiford (CKS)
       dissimilarity.
-    \item New SD fitters for consensus preorders, and family \samp{G}
+    \item New symdiff fitters for consensus preorders, and family \samp{G}
       for general crisp endorelations.
-    \item Performance enhancements for finding all SD consensus solutions, and
-      SD consensus for equivalences or weak orders with a given number of
+    \item Performance enhancements for finding all symdiff consensus solutions, and
+      symdiff consensus for equivalences or weak orders with a given number of
       classes.
     \item \code{relation_choice()} gains a method for CKS dissimilarity, and a
       \code{weights} argument.
-    \item Performance enhancements for SD choice via employing a more compact
+    \item Performance enhancements for symdiff choice via employing a
+    more compact 
       linearization of the underlying binary quadratic program (BQP).
     \item GLPK is now used as the default MILP solver.
     \item Consensus and choice fitters now use sparse constraint matrices by
@@ -151,7 +166,7 @@
 
 \section{Changes in version 0.4}{
   \itemize{
-    \item SD fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
+    \item symdiff fitters can now use the GLPK, SYMPHONY and CPLEX solvers in
       addition to lp_solve, and optionally use sparse constraint matrices
     \item more methods added to \code{relation_violations()}.
       optionally, return all tuples violating a property.
@@ -180,7 +195,7 @@
     \item support for sets moved to separate \cpkg{sets} package
     \item support for fuzzy relations added
     \item fitters can now use a sparse constraint matrix representation
-    \item new SD fitters for the S (\code{"symmetric"}) and M (\code{"matches"}) families
+    \item new symdiff fitters for the S (\code{"symmetric"}) and M (\code{"matches"}) families
     \item relations are now subsettable
     \item fitters for Cook-Seiford method and Euclidean consensus added
     \item new \code{summary()} method for relations which computes all implemented
@@ -201,7 +216,7 @@
       the complement of the union and the intersection of a set, which is
       wrong in general).  Now, the argument list is treated recursively.
     \item Vignette added
-    \item New SD fitter added for the C (\code{"complete"}) and A (\code{"antisymmetric"}) 
+    \item New symdiff fitter added for the C (\code{"complete"}) and A (\code{"antisymmetric"}) 
       families of relations
     \item Summary methods for tuples and sets added
     \item Ops and \code{t()} methods for the relation_ensemble class added

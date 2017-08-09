@@ -30,10 +30,10 @@ reflexive_closure(x)
 
 }
 \seealso{
-  \code{\link{relation}},
-  \code{\link{reflexive_reduction}},
-  \code{\link{transitive_reduction}},
-  \code{\link[sets]{closure}}.
+  \code{\link{relation}()},
+  \code{\link{reflexive_reduction}()},
+  \code{\link{transitive_reduction}()},
+  \code{\link[sets]{closure}()}.
 }
 \examples{
 R <- as.relation(1 : 5)
@@ -60,5 +60,6 @@ R == closure(reduction(R, "reflexive"), "reflexive")
   S. Warshall (1962),
   A theorem on Boolean matrices.
   \emph{Journal of the ACM}, \bold{9}/1, 11--12.
+  \doi{10.1145/321105.321107}.
 }
 \keyword{math}

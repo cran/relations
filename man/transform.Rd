@@ -41,7 +41,7 @@ represented by 0, and \eqn{x_{jk} = -1} if \emph{not} \eqn{a_j R b_k}.
 
 }
 \seealso{
-  \code{\link{relation_incidence}}.
+  \code{\link{relation_incidence}()}.
 }
 \examples{
 require("sets")				# set(), pair() etc.

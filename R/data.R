@@ -44,7 +44,7 @@ function(...)
     if(is.null(nms <- names(args)) || !all(nzchar(nms)))
         stop("All arguments must be named.")
     ## Check lengths.
-    if(length(table(sapply(args, length))) > 1L)
+    if(length(table(lengths(args))) > 1L)
         stop("All arguments must have the same length.")
     `class<-`(.make_data_frame_from_list(args), classes)
 }

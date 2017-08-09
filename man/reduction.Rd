@@ -38,12 +38,12 @@ reflexive_reduction(x)
 
 }
 \seealso{
-  \code{\link{relation}},
-  \code{\link{reflexive_reduction}},
-  \code{\link{transitive_reduction}},
-  \code{\link[sets:closure]{reduction}},
-  \code{\link{relation_condensation}},
-  \code{\link{relation_component_representation}}.
+  \code{\link{relation}()},\cr
+  \code{\link{reflexive_reduction}()},
+  \code{\link{transitive_reduction}()},
+  \code{\link[sets:closure]{reduction}()},\cr
+  \code{\link{relation_condensation}()},
+  \code{\link{relation_component_representation}()}.
 }
 \examples{
 R <- as.relation(1 : 5)
@@ -84,6 +84,7 @@ if(require("Rgraphviz")) {
   S. Warshall (1962),
   A theorem on Boolean matrices.
   \emph{Journal of the ACM}, \bold{9}/1, 11--12.
+  \doi{10.1145/321105.321107}.
 
   J. A. La Poutré and J. van Leeuwen (1988),
   Maintenance of Transitive Closures and Transitive Reductions of

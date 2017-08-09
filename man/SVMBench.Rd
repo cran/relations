@@ -12,6 +12,7 @@
   other predictive methods on real and artificial data sets
   involving classification and regression
   methods, respectively.
+  In addition,
   \code{SVM_Benchmarking_Classification_Consensus}
   and \code{SVM_Benchmarking_Regression_Consensus}
   provide consensus rankings derived from these data.
@@ -37,11 +38,9 @@ data("SVM_Benchmarking_Regression_Consensus")
   for details on the experimental design of the benchmark study, and
   Hornik and Meyer (2007) for the pairwise comparisons.
 
-  The corresponding consensus objects
-  \code{SVM_Benchmarking_Classification_Consensus} and
-  \code{SVM_Benchmarking_Regression_Consensus} are lists of
-  ensembles of consensus relations fitted to the benchmark
-  results. For each of the following three endorelation families:
+  The corresponding consensus objects are lists of ensembles of
+  consensus relations fitted to the benchmark results.
+  For each of the following three endorelation families:
   \code{SD/L} (\dQuote{linear orders}),
   \code{SD/O} (\dQuote{partial orders}), and \code{SD/W}
   (\dQuote{weak orders}), \emph{all} possible consensus
@@ -54,6 +53,7 @@ data("SVM_Benchmarking_Regression_Consensus")
   D. Meyer, F. Leisch, and K. Hornik (2003),
   The support vector machine under test.
   \emph{Neurocomputing}, \bold{55}, 169--186.
+  \doi{10.1016/S0925-2312(03)00431-4}.
 
   K. Hornik and D. Meyer (2007),
   Deriving consensus rankings from benchmarking experiments.

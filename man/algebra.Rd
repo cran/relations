@@ -28,9 +28,9 @@
 relation_projection(x, margin = NULL)
 relation_selection(x, subset)
 relation_cartesian(x, y, \dots)
-relation_union(x, y, \dots)
 relation_complement(x, y)
 relation_intersection(x, y, \dots)
+relation_union(x, y, \dots)
 relation_symdiff(x, y)
 relation_division(x, y)
 relation_remainder(x, y)
@@ -44,9 +44,9 @@ relation_antijoin(x, y, \dots)
     vector of domain indices.}
   \item{subset}{Expression resulting in a logical vector of length equal
     to the number of tuples in the graph.}
-  \item{\dots}{Relation objects for \code{relation_union},
-    \code{relation_intersection} and \code{relation_cartesian};
-    otherwise, parameters passed to \code{\link[base]{merge}}.}
+  \item{\dots}{Relation objects for \code{relation_cartesian()},
+    \code{relation_intersection()}, and \code{relation_union()}.
+    Otherwise, passed to \code{\link[base]{merge}()}.}
 }
 \details{
   These functions provide functionality similar to the corresponding
@@ -72,43 +72,43 @@ relation_antijoin(x, y, \dots)
   resulting pairs into single tuples.
 
   The \emph{union} of two relations simply combines the graph elements
-  of both relations; the \emph{complement} of two relations \eqn{X} and
-  \eqn{Y} removes the tuples of \eqn{Y} from \eqn{X}.
+  of both relations; the \emph{complement} of two relations \eqn{R} and
+  \eqn{S} removes the tuples of \eqn{S} from \eqn{R}.
 
   The \emph{intersection} (\emph{symmetric difference})
   of two relations is the relation with all tuples they have (do not have)
   in common.
 
-  The \emph{division} of relation \eqn{X} by relation \eqn{Y} is the
+  The \emph{division} of relation \eqn{R} by relation \eqn{S} is the
   reversed Cartesian product. The result is a relation with the domain
-  unique to \eqn{X} and containing the maximum number of tuples which,
-  multiplied by \eqn{Y}, are contained in \eqn{X}. The \emph{remainder}
-  of this operation is the complement of \eqn{X} and the division of
-  \eqn{X} by \eqn{Y}. Note that for both operations, the domain of
-  \eqn{Y} must be contained in the domain of \eqn{X}.
+  unique to \eqn{R} and containing the maximum number of tuples which,
+  multiplied by \eqn{S}, are contained in \eqn{R}. The \emph{remainder}
+  of this operation is the complement of \eqn{R} and the division of
+  \eqn{R} by \eqn{S}. Note that for both operations, the domain of
+  \eqn{S} must be contained in the domain of \eqn{R}.
 
   The (natural) \emph{join} of two relations is their Cartesian product,
   restricted to the subset where the elements of the common attributes
   do match. The left/right/full outer join of two relations
-  \eqn{X} and \eqn{Y} is
-  the union of \eqn{X}/\eqn{Y}/\eqn{X} and \eqn{Y},
-  and the inner join of \eqn{X} and \eqn{Y}.
-  The implementation uses \code{\link{merge}}, and so the
+  \eqn{R} and \eqn{S} is
+  the union of \eqn{R}/\eqn{S}/\eqn{R} and \eqn{S},
+  and the inner join of \eqn{R} and \eqn{S}.
+  The implementation uses \code{\link{merge}()}, and so the
   left/right/full outer joins are obtained by setting
   \code{all.x}/\code{all.y}/\code{all} to \code{TRUE} in
-  \code{relation_join}.
+  \code{relation_join()}.
   The domains to be matched are specified using \code{by}.
 
-  The left (right) \emph{semijoin} of two relations \eqn{X} and \eqn{Y}
-  is the join of these, projected to the attributes of \eqn{X}
-  (\eqn{Y}). Thus, it yields all tuples of \eqn{X}
-  (\eqn{Y}) participating in the join of \eqn{X} and \eqn{Y}. 
+  The left (right) \emph{semijoin} of two relations \eqn{R} and \eqn{S}
+  is the join of these, projected to the attributes of \eqn{R}
+  (\eqn{S}). Thus, it yields all tuples of \eqn{R}
+  (\eqn{S}) participating in the join of \eqn{R} and \eqn{S}. 
 
-  The left (right) \emph{antijoin} of two relations \eqn{X} and \eqn{Y}
-  is the complement of \eqn{X} (\eqn{Y}) and the join of both,
-  projected to the attributes of \eqn{X} (\eqn{Y}).
-  Thus, it yields all tuples of \eqn{X}
-  (\eqn{Y}) \emph{not} participating in the join of \eqn{X} and \eqn{Y}. 
+  The left (right) \emph{antijoin} of two relations \eqn{R} and \eqn{S}
+  is the complement of \eqn{R} (\eqn{S}) and the join of both,
+  projected to the attributes of \eqn{R} (\eqn{S}).
+  Thus, it yields all tuples of \eqn{R}
+  (\eqn{S}) \emph{not} participating in the join of \eqn{R} and \eqn{S}. 
 
   The operators \code{\%><\%}, \code{\%=><\%}, \code{\%><=\%},
   \code{\%=><=\%}, \code{\%|><\%}, \code{\%><|\%}, \code{\%|><|\%},
@@ -121,10 +121,11 @@ relation_antijoin(x, y, \dots)
 \references{
   E. F. Codd (1970),
   A relational model of data for large shared data banks.
-  \emph{Communications of the ACM}, \bold{13}/6, 377--387. 
+  \emph{Communications of the ACM}, \bold{13}/6, 377--387.
+  \doi{10.1145/362384.362685}.
 }
 \seealso{
-  \code{\link{relation}}
+  \code{\link{relation}()}
 }
 \examples{
 ## projection

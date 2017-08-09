@@ -38,7 +38,9 @@ function(x)
 function(x)
 {
     scores <- x$scores
-    outer(scores, scores, `<=`) + 0
+    I <- outer(scores, scores, `<=`) + 0
+    I[row(I) == col(I)] <- 1
+    I
 }
 
 print.relation_incidence <-

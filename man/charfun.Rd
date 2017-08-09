@@ -17,7 +17,7 @@ relation_charfun(x, components = FALSE)
     relations.}
 }
 \seealso{
-  \code{\link{relation}}
+  \code{\link{relation}()}
 }
 \examples{
 ## Relation 'a divides b':

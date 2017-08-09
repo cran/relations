@@ -1,6 +1,7 @@
 import("sets")
 importFrom("cluster", "silhouette")
 importFrom("stats", "median")
+importFrom("stats", "na.omit")
 importFrom("slam",
            "simple_triplet_matrix",
            "simple_triplet_diag_matrix", "simple_triplet_zero_matrix",
@@ -11,7 +12,8 @@ importFrom("graphics", "axis", "image.default", "par", "plot")
 export("as.ranking",
        "as.relation",
        "as.relation_ensemble",
-       "dual",
+       "asy",
+       "codual",
        "endorelation",
        "homorelation",
        "is.ranking",
@@ -44,6 +46,7 @@ export("as.ranking",
        "relation_impute",
        "relation_incidence",
        "relation_incidence<-",
+       "relation_is",
        "relation_is_Euclidean",
        "relation_is_Ferrers",
        "relation_is_antisymmetric",
@@ -70,6 +73,8 @@ export("as.ranking",
        "relation_is_negatively_transitive",
        "relation_is_partial_order",
        "relation_is_preference",
+       "relation_is_quaternary",
+       "relation_is_quasitransitive",
        "relation_is_reflexive",
        "relation_is_right_total",
        "relation_is_semiorder",
@@ -78,6 +83,7 @@ export("as.ranking",
        "relation_is_strict_partial_order",
        "relation_is_surjective",
        "relation_is_symmetric",
+       "relation_is_ternary",
        "relation_is_tournament",
        "relation_is_transitive",
        "relation_is_trichotomous",
@@ -92,6 +98,7 @@ export("as.ranking",
        "relation_table",
        "relation_trace",
        "relation_violations",
+       "sym",
        "transform_incidences",
        "transitive_reduction",
        "transitive_closure"
@@ -114,7 +121,9 @@ S3method("as.list", "relation_ensemble")
 S3method("c", "relation_ensemble")
 S3method("cut", "relation")
 S3method("dim", "relation")
+S3method("is.na", "relation")
 S3method("mean", "relation_ensemble")
+S3method("na.omit", "relation")
 S3method("plot", "relation")
 S3method("plot", "relation_ensemble")
 S3method("plot", "relation_incidence")
@@ -143,7 +152,10 @@ S3method("unique", "relation_ensemble")
 S3method("closure", "relation")
 S3method("reduction", "relation")
 
-S3method("dual", "relation")
+S3method("codual", "relation")
+
+S3method("sym", "relation")
+S3method("asy", "relation")
 
 S3method("as.relation", "default")
 S3method("as.relation", "character")

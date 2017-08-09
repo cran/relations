@@ -42,7 +42,7 @@ function(x, solver = NULL, control = list())
     ## Handle the boundary case of no variables.
     if(!length(x$objective)) {
         y <- .solve_empty_MIP(x)
-        if(!is.null(nos <- control$n)
+        if(!is.null(nos <- control[["n"]])
            && !identical(as.integer(nos), 1L))
             y <- list(y)
         return(y)
@@ -52,13 +52,13 @@ function(x, solver = NULL, control = list())
 
     ## If more than one (binary) solution is sought and the solver does
     ## not provide direct support, use poor person's branch and cut:
-    if(!is.null(nos <- control$n) && (solver != "cplex")) {
-        control$n <- NULL
+    if(!is.null(nos <- control[["n"]]) && (solver != "cplex")) {
+        control[["n"]] <- NULL
         ## Mimic the mechanism currently employed by Rcplex(): return a
         ## list of solutions only if nos > 1 (or NA).
         if(!identical(as.integer(nos), 1L)) {
-            add <- identical(control$add, TRUE)
-            control$add <- NULL
+            add <- identical(control[["add"]], TRUE)
+            control[["add"]] <- NULL
             return(.find_up_to_n_binary_MILP_solutions(x, nos, add,
                                                        solver, control))
         }
@@ -105,7 +105,7 @@ function(x, solver = NULL, control = list())
     ## Handle the boundary case of no variables.
     if(!length(x$objective)) {
         y <- .solve_empty_MIP(x)
-        if(!is.null(nos <- control$n)
+        if(!is.null(nos <- control[["n"]])
            && !identical(as.integer(nos), 1L))
             y <- list(y)
         return(y)
@@ -124,7 +124,7 @@ function(x, solver = NULL, control = list())
     ## For real MIQP solvers (currently only CPLEX), do not linearize by
     ## default, but allow for doing so for debugging purposes.
     if(solver %in% .MIQP_solvers) {
-        if(identical(control$linearize, TRUE))
+        if(identical(control[["linearize"]], TRUE))
             .solve_BQP_via_linearization(x, solver, control)
         else {
             ## Add switch() when adding support for other MIQP solvers.
@@ -155,7 +155,7 @@ function(x, solver, control)
     }
     ## <FIXME>
     ## Wouldn't it be simpler to check if y inherits from MIP_solution?
-    if(!is.null(nos <- control$n) && !identical(nos, 1L))
+    if(!is.null(nos <- control[["n"]]) && !identical(nos, 1L))
         lapply(y, finisher)
     else
         finisher(y)
@@ -222,7 +222,7 @@ function(x, control)
         mat <- as.matrix(mat)
     }
 
-    if(is.null(nos <- control$n)) nos <- 1L
+    if(is.null(nos <- control[["n"]])) nos <- 1L
     value_is_list_of_solutions <- !identical(as.integer(nos), 1L)
 
     out <-
@@ -245,7 +245,7 @@ function(x, control)
         ## Currently, Rcplex signals problems via error() rather than
         ## returning a non-zero status.  Hence, we try catching these
         ## errors.  (Of course, these could also be real errors ...).
-        solution <- rep(NA_real_, length(types))
+        solution <- rep.int(NA_real_, length(types))
         objval <- NA_real_
         status <- 2                     # or whatever ...
         names(status) <- msg            # should be of length one ...
@@ -413,7 +413,7 @@ function(x, n)
         if(!is.character(x) || !all(x %in% c("C", "I", "B")))
             stop("Invalid MIP variable types.")
         ## Be nicer than necessary ...
-        rep(x, length.out = n)
+        rep_len(x, n)
     }
 }
 
@@ -480,7 +480,7 @@ function(x, nos = 1L, add = FALSE, solver = NULL, control = NULL)
     binary_positions <- which(types == "B")
     n_of_binary_variables <- length(binary_positions)
 
-    verbose <- identical(control$verbose, TRUE)
+    verbose <- identical(control[["verbose"]], TRUE)
 
     .make_node <- function(b, y, v, r) list(b = b, y = y, v = v, r = r)
 
@@ -542,7 +542,7 @@ function(x, nos = 1L, add = FALSE, solver = NULL, control = NULL)
     ## We allow callers to specify the order in which binary splits
     ## should be attempted (so the i-th split is for binary variable
     ## order[i]).
-    order <- control$order
+    order <- control[["order"]]
     if(is.null(order) || length(order) != n_of_binary_variables)
         order <- seq_len(n_of_binary_variables)
     ## Rearrange variables to have the binary ones last in reverse split
@@ -554,8 +554,9 @@ function(x, nos = 1L, add = FALSE, solver = NULL, control = NULL)
     y$solution <- y$solution[ind]
 
     pos_i <- n_of_variables
-    pos_b <- seq(from = n_of_variables, length.out =
-                 n_of_binary_variables, by = -1L)
+    pos_b <- seq.int(from = n_of_variables,
+                     length.out = n_of_binary_variables,
+                     by = -1L)
     nodes <- list(.make_node(y$solution[pos_b], y, 0, x$constraints$rhs))
     for(i in seq_len(n_of_binary_variables)) {
         pos_b <- pos_b[-1L]
@@ -585,7 +586,8 @@ function(x, nos = 1L, add = FALSE, solver = NULL, control = NULL)
         ## parts and the respective objective values.
         y <- node$y
         y$solution <- c(y$solution, node$b)[pos]
-        y$objval <- y$objval + node$v
+        y$objval <- sum(y$solution * x$objective)
+        ## In principle, should be the same as Vopt.
         y
     }
 
@@ -611,7 +613,7 @@ function(x, nos = 1L, solver = NULL, control = NULL, y,
     binary_positions <- which(types == "B")
     n_of_binary_variables <- length(binary_positions)
 
-    verbose <- identical(control$verbose, TRUE)
+    verbose <- identical(control[["verbose"]], TRUE)
 
     mat <- x$constraints$mat
 
@@ -661,7 +663,7 @@ function(x, nos = 1L, solver = NULL, control = NULL, y,
     ## We allow callers to specify the order in which binary splits
     ## should be attempted (so the i-th split is for binary variable
     ## order[i], i.e., at binary_positions[order[i]]).
-    order <- control$order
+    order <- control[["order"]]
     if(is.null(order))
         order <- seq_len(n_of_binary_variables)
     for(i in seq_len(n_of_binary_variables)) {
@@ -696,7 +698,7 @@ function(x)
     ##   y_{ij} <= x_i, y_{ij} <= x_j              (A)
     ##   y_{ij} >= 0, y_{ij} >= x_i + x_j - 1      (B)
     ## where for a minimization problem (A) is redundant if r_{ij} > 0
-    ## and (B) if \gamma_{ij} < 0, and vice versa for a maximization
+    ## and (B) if r_{ij} < 0, and vice versa for a maximization
     ## problem.
 
     if(!inherits(x, "MIQP") && !identical(unique(x$types), "B"))
@@ -814,13 +816,13 @@ function(x)
             add[cbind(ind, j[pp])] <- -1
             add[cbind(ind, n + pp)] <- 1
             mat <- rbind(cbind(mat, matrix(0, nrow(mat), nr)), add)
-            dir <- c(x$constraints$dir,
-                     rep.int("<=", 2L * npn),
-                     rep.int(">=", npp))
-            rhs <- c(x$constraints$rhs,
-                     rep.int(0, 2L * npn),
-                     rep.int(-1, npp))
         }
+        dir <- c(x$constraints$dir,
+                 rep.int("<=", 2L * npn),
+                 rep.int(">=", npp))
+        rhs <- c(x$constraints$rhs,
+                 rep.int(0, 2L * npn),
+                 rep.int(-1, npp))
     }
 
     MILP(c(s, r),

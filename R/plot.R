@@ -52,11 +52,11 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
     n <- length(x)
 
     ## expand and check type argument.
-    type <- sapply(rep(type, length.out = n),
+    type <- sapply(rep_len(type, n),
                    match.arg, c("simplified", "raw"))
 
     ## expand limit
-    limit <- rep(limit, length.out = n)
+    limit <- rep_len(limit, n)
 
     ## expand main
     if(is.null(main))
@@ -84,7 +84,7 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
         on.exit(par(op))
     }
 
-    attrs <- rep(attrs, length.out = length(x))
+    attrs <- rep_len(attrs, length(x))
     for(i in seq_along(x)) {
         if(relation_is_acyclic(x[[i]]) && type[i] == "simplified") {
             ## possibly, transform relation to obtain a poset,

@@ -41,7 +41,14 @@ relation_graph(as.relation(factor(c("A", "B", "A"))))
 
 
 ###################################################
-### code chunk number 3: charfun
+### code chunk number 3: relations.Rnw:140-142
+###################################################
+relation_graph(as.relation(factor(c(X = "A", Y = "B", Z = "A"))))
+relation_graph(as.relation(factor(c("A", "B", "C"))))
+
+
+###################################################
+### code chunk number 4: charfun
 ###################################################
 divides <- function(a, b) b %% a == 0
 R <- relation(domain = list(1 : 10, 1 : 10), charfun = divides)
@@ -56,16 +63,16 @@ R
 
 
 ###################################################
-### code chunk number 4: predicates
+### code chunk number 5: predicates
 ###################################################
 R <- as.relation(1:5)
-relation_is_binary(R)
-relation_is_transitive(R)
-relation_is_partial_order(R)
+relation_is(R, "binary")
+relation_is(R, "transitive")
+relation_is(R, "partial_order")
 
 
 ###################################################
-### code chunk number 5: ops1
+### code chunk number 6: ops1
 ###################################################
 x <- matrix(0, 3L, 3L)
 R1 <- as.relation(row(x) >= col(x))
@@ -78,15 +85,15 @@ relation_dissimilarity(min(R1, R2), max(R1, R2))
 
 
 ###################################################
-### code chunk number 6: ops2
+### code chunk number 7: ops2
 ###################################################
-relation_incidence(R1 * R2)
 relation_incidence(! R1)
+relation_incidence(R1 * R2)
 relation_incidence(t(R2))
 
 
 ###################################################
-### code chunk number 7: plot
+### code chunk number 8: plot
 ###################################################
 ps <- 2 ^ set("a", "b", "c")
 inc <- set_outer(ps, "<=")
@@ -94,7 +101,7 @@ if (require("Rgraphviz")) plot(relation(incidence = inc))
 
 
 ###################################################
-### code chunk number 8: plotfig
+### code chunk number 9: plotfig
 ###################################################
 ps <- 2 ^ set("a", "b", "c")
 inc <- set_outer(ps, "<=")
@@ -102,16 +109,16 @@ if (require("Rgraphviz")) plot(relation(incidence = inc))
 
 
 ###################################################
-### code chunk number 9: relations.Rnw:365-369
+### code chunk number 10: relations.Rnw:371-375
 ###################################################
 data("Cetacea")
-ind <- sapply(Cetacea, function(s) all(!is.na(s)))
+ind <- vapply(Cetacea, function(s) all(!is.na(s)), TRUE)
 relations <- as.relation_ensemble(Cetacea[, ind])
 print(relations)
 
 
 ###################################################
-### code chunk number 10: relations.Rnw:374-377
+### code chunk number 11: relations.Rnw:380-383
 ###################################################
 any(duplicated(relations))
 thrice <- c(rep(relations, 2L), relations)
@@ -119,33 +126,33 @@ all.equal(unique(thrice), relations)
 
 
 ###################################################
-### code chunk number 11: relations.Rnw:382-383
+### code chunk number 12: relations.Rnw:388-389
 ###################################################
 all.equal(thrice[!duplicated(thrice)], relations)
 
 
 ###################################################
-### code chunk number 12: relations.Rnw:388-389
+### code chunk number 13: relations.Rnw:394-395
 ###################################################
 relation_dissimilarity(relations[1 : 2], relations["CLASS"])
 
 
 ###################################################
-### code chunk number 13: relations.Rnw:393-395
+### code chunk number 14: relations.Rnw:399-401
 ###################################################
 d <- relation_dissimilarity(relations)
 sort(as.matrix(d)[, "CLASS"])[-1L]
 
 
 ###################################################
-### code chunk number 14: relations.Rnw:400-402
+### code chunk number 15: relations.Rnw:406-408
 ###################################################
 complement <- !relations
 complement
 
 
 ###################################################
-### code chunk number 15: projection
+### code chunk number 16: projection
 ###################################################
 ## projection
 Person <-
@@ -159,7 +166,7 @@ relation_table(relation_projection(Person, c("Age", "Weight")))
 
 
 ###################################################
-### code chunk number 16: selection
+### code chunk number 17: selection
 ###################################################
 ## selection
 relation_table(R1 <- relation_selection(Person, Age < 29))
@@ -168,7 +175,7 @@ relation_table(R3 <- relation_selection(Person, Age == Weight))
 
 
 ###################################################
-### code chunk number 17: unioncomplement
+### code chunk number 18: unioncomplement
 ###################################################
 ## union
 relation_table(R1 %U% R2)
@@ -181,7 +188,7 @@ relation_table(Person - R2)
 
 
 ###################################################
-### code chunk number 18: intersectionsymdiff
+### code chunk number 19: intersectionsymdiff
 ###################################################
 ## intersection
 relation_table(relation_intersection(R2, R3))
@@ -194,7 +201,7 @@ relation_table(relation_symdiff(R2, R3))
 
 
 ###################################################
-### code chunk number 19: cartesian
+### code chunk number 20: cartesian
 ###################################################
 ## cartesian product
 Employee <-
@@ -214,7 +221,7 @@ relation_table(Employee %><% Dept)
 
 
 ###################################################
-### code chunk number 20: division
+### code chunk number 21: division
 ###################################################
 ## division
 Completed <-
@@ -238,7 +245,7 @@ relation_table(Completed %% DBProject)
 
 
 ###################################################
-### code chunk number 21: naturaljoin
+### code chunk number 22: naturaljoin
 ###################################################
 ## Natural join
 relation_table(Employee %|><|% Dept)
@@ -254,7 +261,7 @@ relation_table(Employee %=><=% Dept)
 
 
 ###################################################
-### code chunk number 22: semijoin
+### code chunk number 23: semijoin
 ###################################################
 ## semijoin
 relation_table(Employee %|><% Dept)
@@ -262,7 +269,7 @@ relation_table(Employee %><|% Dept)
 
 
 ###################################################
-### code chunk number 23: antijoin
+### code chunk number 24: antijoin
 ###################################################
 ## antijoin
 relation_table(Employee %|>% Dept)
@@ -270,23 +277,23 @@ relation_table(Employee %<|% Dept)
 
 
 ###################################################
-### code chunk number 24: consensus1a
+### code chunk number 25: consensus1a
 ###################################################
 data("Felines")
 relations <- as.relation_ensemble(Felines)
 
 
 ###################################################
-### code chunk number 25: consensus1b
+### code chunk number 26: consensus1b
 ###################################################
-E <- relation_consensus(relations, "SD/E")
+E <- relation_consensus(relations, "symdiff/E")
 
 ids <- relation_class_ids(E)
 split(rownames(Felines), ids)
 
 
 ###################################################
-### code chunk number 26: consensus2a
+### code chunk number 27: consensus2a
 ###################################################
 pm <- matrix(c(0, 1, 0, 1, 1,
                0, 0, 0, 1, 1,
@@ -298,46 +305,46 @@ pm <- matrix(c(0, 1, 0, 1, 1,
              dimnames = list(letters[1:5], letters[1:5]))
 R <- as.relation(t(pm))
 relation_incidence(R)
-relation_is_tournament(R)
+relation_is(R, "tournament")
 
 
 ###################################################
-### code chunk number 27: consensus2b
+### code chunk number 28: consensus2b
 ###################################################
-L <- relation_consensus(R, "SD/L")
+L <- relation_consensus(R, "symdiff/L")
 relation_incidence(L)
 
 
 ###################################################
-### code chunk number 28: relations.Rnw:747-748
+### code chunk number 29: relations.Rnw:761-762
 ###################################################
 relation_class_ids(L)
 
 
 ###################################################
-### code chunk number 29: consensus2c
+### code chunk number 30: consensus2c
 ###################################################
-L <- relation_consensus(R, "SD/L", control = list(all = TRUE))
+L <- relation_consensus(R, "symdiff/L", control = list(all = TRUE))
 print(L)
 if(require("Rgraphviz")) plot(L)
 
 
 ###################################################
-### code chunk number 30: relations.Rnw:759-760
+### code chunk number 31: relations.Rnw:773-774
 ###################################################
 lapply(L, relation_class_ids)
 
 
 ###################################################
-### code chunk number 31: consensus2d
+### code chunk number 32: consensus2d
 ###################################################
-W3 <- relation_consensus(R, "SD/W", control = list(k = 3))
+W3 <- relation_consensus(R, "symdiff/W", control = list(k = 3))
 relation_incidence(W3)
 relation_class_ids(W3)
 
 
 ###################################################
-### code chunk number 32: consensusfig
+### code chunk number 33: consensusfig
 ###################################################
 if(require("Rgraphviz")) plot(L)
 

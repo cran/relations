@@ -15,9 +15,9 @@ relation_graph(x)
   \code{\link[sets]{set}}.
 }
 \seealso{
-  \code{\link[sets]{set}};
-  \code{\link{relation}};
-  \code{\link{relation_graph<-}} for modifying the graph.
+  \code{\link[sets]{set}()};
+  \code{\link{relation}()};
+  \code{\link{relation_graph<-}()} for modifying the graph.
 }
 \examples{
 ## A simple relation:

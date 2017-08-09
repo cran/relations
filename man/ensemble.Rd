@@ -12,20 +12,20 @@ is.relation_ensemble(x)
 \arguments{
   \item{\dots}{\R objects representing relations, or coercible to such.}
   \item{list}{a list of \R objects as in \code{\dots}.}
-  \item{x}{for coercion with \code{as.relation_ensemble}, an \R object
-    as in \code{\dots}; for testing with \code{is.relation_ensemble}, an
-    arbitrary \R object.}
+  \item{x}{for coercion with \code{as.relation_ensemble()}, an \R object
+    as in \code{\dots}; for testing with \code{is.relation_ensemble()},
+    an arbitrary \R object.}
 }
 \details{
-  \code{relation_ensemble} creates non-empty \dQuote{relation
+  \code{relation_ensemble()} creates non-empty \dQuote{relation
     ensembles}, i.e., collections of relations \eqn{R_i = (D, G_i)} with
   the same domain \eqn{D} and possibly different graphs \eqn{G_i}.
 
   Such ensembles are implemented as suitably classed lists of relation
-  objects, making it possible to use \code{lapply} for computations on
+  objects, making it possible to use \code{lapply()} for computations on
   the individual relations in the ensemble.  Available methods for
-  relation ensembles include those for subscripting, \code{c}, \code{t},
-  \code{rep}, and \code{print}.
+  relation ensembles include those for subscripting, \code{c()},
+  \code{t()}, \code{rep()}, and \code{print()}.
 }
 \examples{
 data("Cetacea")

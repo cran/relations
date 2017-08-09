@@ -34,11 +34,11 @@ relation_incidence(x) <- value
   }
 }
 \seealso{
-  \code{\link{relation_domain}} for getting the domain of a relation;
-  \code{\link{relation_domain_names}} for getting the domain names;
-  \code{\link{relation_graph}} for getting the graph;
-  \code{\link{relation_incidence}} for getting the incidences;
-  \code{\link{relation}} for basic information.
+  \code{\link{relation_domain}()} for getting the domain of a relation;
+  \code{\link{relation_domain_names}()} for getting the domain names;
+  \code{\link{relation_graph}()} for getting the graph;
+  \code{\link{relation_incidence}()} for getting the incidences;
+  \code{\link{relation}()} for basic information.
 }
 \examples{
 R <- as.relation(1 : 3)

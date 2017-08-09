@@ -32,15 +32,15 @@
 }
 \details{
   In the following, consider an endorelation \eqn{R} on \eqn{n} objects.
-  Let the \emph{in-degree} \eqn{I(a)} and \emph{out-degree} \eqn{O(a)}
-  of an object \eqn{a} be defined as the numbers of objects \eqn{b} such
-  that \eqn{b R a} and, respectively, \eqn{a R b}, and let \eqn{D(a) =
-    I(a) - O(a)} be the \emph{differential} of \eqn{a} (see Regenwetter
+  Let the \emph{in-degree} \eqn{I(x)} and \emph{out-degree} \eqn{O(x)}
+  of an object \eqn{x} be defined as the numbers of objects \eqn{y} such
+  that \eqn{y R x} and, respectively, \eqn{x R y}, and let \eqn{D(x) =
+    I(x) - O(x)} be the \emph{differential} of \eqn{x} (see Regenwetter
   and Rykhlevskaia (2004)).  Note that \eqn{I} and \eqn{O} are given by
   the column sums and row sums of the incidence matrix of \eqn{R}.  If
   \eqn{R} is a preference relation with a \eqn{\le} interpretation,
-  \eqn{D(a)} is the difference between the numbers of objects dominated
-  by \eqn{a} (i.e., \eqn{< a}) and dominating \eqn{a} (i.e., \eqn{> a}),
+  \eqn{D(x)} is the difference between the numbers of objects dominated
+  by \eqn{x} (i.e., \eqn{< x}) and dominating \eqn{x} (i.e., \eqn{> x}),
   as \dQuote{ties} cancel out.
 
   \code{relation_score()} is generic with methods for relations and
@@ -54,15 +54,15 @@
       order of the ranks.  By default, or if \code{decreasing} is true,
       objects are ranked according to decreasing differential
       (\dQuote{from the largest to the smallest} in the \eqn{\le}
-      preference context) using \eqn{(n + 1 - D(a)) / 2}.
+      preference context) using \eqn{(n + 1 - D(x)) / 2}.
       Otherwise, if \code{decreasing} is false, objects are ranked via
-      \eqn{(n + 1 + D(a)) / 2} (\dQuote{from the smallest to the largest}).
+      \eqn{(n + 1 + D(x)) / 2} (\dQuote{from the smallest to the largest}).
       See Regenwetter and Rykhlevskaia (2004) for more details on
       generalized ranks.
     }
-    \item{\code{"Barthelemy/Monjardet"}}{\eqn{(M(a) + N(a) - 1) / 2},
-      where \eqn{M(a)} and \eqn{N(a)} are the numbers of objects \eqn{b}
-      such that \eqn{b R a}, and \eqn{b R a} and not \eqn{a R b},
+    \item{\code{"Barthelemy/Monjardet"}}{\eqn{(M(x) + N(x) - 1) / 2},
+      where \eqn{M(x)} and \eqn{N(x)} are the numbers of objects \eqn{y}
+      such that \eqn{y R x}, and \eqn{y R x} and not \eqn{x R y},
       respectively.  If \eqn{R} is a \eqn{\le} preference relation, we
       get the number of dominated objects plus half the number of the
       equivalent objects minus 1 (the \dQuote{usual} average ranks minus
@@ -102,6 +102,7 @@
   J.-P. Barthélemy and B. Monjardet (1981),
   The median procedure in cluster analysis and social choice theory.
   \emph{Mathematical Social Sciences}, \bold{1}, 235--267.
+  \doi{10.1016/0165-4896(81)90041-X}.
 
   J. C. Borda (1781),
   Mémoire sur les élections au scrutin.
@@ -111,14 +112,17 @@
   Ranking methods based on valued preference relations: A
   characterization of the net flow network.
   \emph{European Journal of Operational Research}, \bold{60}, 61--67.
+  \doi{10.1016/0377-2217(92)90333-5}.
 	
   M. Kendall (1955),
   Further contributions to the theory of paired comparisons.
   \emph{Biometrics}, \bold{11}, 43--62.
+  \doi{10.2307/3001479}.
 
   M. Regenwetter and E. Rykhlevskaia (2004),
   On the (numerical) ranking associated with any finite binary relation.
   \emph{Journal of Mathematical Psychology}, \bold{48}, 239--246.
+  \doi{10.1016/j.jmp.2004.03.003}.
   
   T. H. Wei (1952).
   \emph{The algebraic foundation of ranking theory}.

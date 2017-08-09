@@ -17,7 +17,7 @@ function(x, method = "symdiff", weights = 1, control = list(), ...)
     if(!.is_ensemble_of_endorelations(relations))
         stop("Need an ensemble of endorelations.")
     
-    weights <- rep(weights, length.out = length(relations))
+    weights <- rep_len(weights, length(relations))
     if(any(weights < 0))
         stop("Argument 'weights' has negative elements.")
     if(!any(weights > 0))
@@ -25,14 +25,17 @@ function(x, method = "symdiff", weights = 1, control = list(), ...)
 
     known_methods <-
         list("symdiff" = ".relation_choice_symdiff",
+             "PC" = ".relation_choice_symdiff",
              "euclidean" = ".relation_choice_euclidean",
              "CKS" = ".relation_choice_CKS",
+             "PC" = ".relation_choice_PC",
              "Schulze" = ".relation_choice_Schulze"
              )
     if(is.character(method)) {
         ## Hopefully of length one, add some tests eventually ...
         if(is.na(ind <- pmatch(method, names(known_methods))))
-            stop(gettextf("Method '%s' is not a valid choice method."),
+            stop(gettextf("Method '%s' is not a valid choice method.",
+                          method),
                  domain = NA)
         method <- get(known_methods[[ind]][1L])
     }
@@ -57,22 +60,14 @@ function(relations, weights, control, euclidean = FALSE)
     if(is.null(k)) k <- 1L              # Single winner by default.
 
     ## Coefficients of the choice QP.
-    B <- .make_fit_relation_symdiff_M(relations, weights)
-    if(identical(control$reverse, TRUE))
-        B <- t(B)
-    ## Explicitly, we have
-    ##   C <- pmax(B, 0)
-    ##   M <- C + t(C) - B
-    ##   diag(M) <- 0
-    ## which can be simplified to:    
-    M <- pmax(t(B), 0) - pmin(B, 0)
-    diag(M) <- 0
+    B <- .make_fit_relation_symdiff_B(relations, weights)
+    M <- pmax(B, 0) - pmin(t(B), 0)
 
     ## Underlying set of objects to choose from.
     ## (Domain of the choice problem.)
     D <- .get_elements_in_homorelation(relations)
 
-    .find_SD_or_CKS_choice(M, k, D, control)
+    .find_PC_choice(M, k, D, control)
 }
 
 .relation_choice_euclidean <-
@@ -92,28 +87,43 @@ function(relations, weights, control)
     ## Coefficients of the choice QP.
     incidences <- lapply(relations, relation_incidence)
     P <- .make_fit_relation_CKS_P(incidences, weights)
-    if(identical(control$reverse, TRUE))
-        P <- t(P)
     Q <- .make_fit_relation_CKS_Q(incidences, weights)
-    ## Explicitly, we have
-    ##   B <- P - Q
-    ##   diag(B) <- - diag(Q)
-    ##   C <- (pmax(Q, P, t(P), 0) - Q) / 2
-    ##   diag(C) <- pmax(- diag(Q), 0)
-    ##   M <- 2 * C - B
-    ##   diag(M) <- 0
-    ## which can be simplified to:
-    M <- pmax(0, P, t(P), Q) - P
-    diag(M) <- 0
+    M <- pmax(Q, P, t(P), 0) - P
 
     ## Underlying set of objects to choose from.
     ## (Domain of the choice problem.)
     D <- .get_elements_in_homorelation(relations)
 
-    .find_SD_or_CKS_choice(M, k, D, control)
+    .find_PC_choice(M, k, D, control)
 }
 
-.find_SD_or_CKS_choice <-
+.relation_choice_PC <-
+function(relations, weights, control)
+{
+    if(!.is_ensemble_of_crisp_relations(relations))
+        stop("Need an ensemble of crisp relations.")
+
+    ## Argument handling.
+    k <- control$k
+    if(is.null(k)) k <- 1L              # Single winner by default.
+    delta <- control$delta
+    gamma <- control$gamma
+
+    incidences <- lapply(relations, relation_incidence)
+    AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
+    A <- AB$A
+    B <- AB$B
+    T <- t(B)
+    M <- B - pmin(0, B, T, B + T + A + t(A))
+
+    ## Underlying set of objects to choose from.
+    ## (Domain of the choice problem.)
+    D <- .get_elements_in_homorelation(relations)
+
+    .find_PC_choice(M, k, D, control)
+}
+
+.find_PC_choice <-
 function(M, k, D, control)
 {
     ## It is somewhat unclear which formulation in general works
@@ -131,18 +141,25 @@ function(M, k, D, control)
     ## the constraints only---maybe this accounts for the difference.
     ## Hence, by default we use the direct linearization.
     ## We might change the QP formulation to also linearize by default.
+
+    if(identical(control$reverse, TRUE))
+        M <- t(M)
+
+    ## Wlog:
+    diag(M) <- 0
+    
     if(identical(control$QP, TRUE))
-        .find_SD_or_CKS_choice_via_QP(M, k, D, control)
+        .find_PC_choice_via_QP(M, k, D, control)
     else
-        .find_SD_or_CKS_choice_via_LP(M, k, D, control)
+        .find_PC_choice_via_LP(M, k, D, control)
 }
 
-## Solve SD/CKS choice problem via LP.
+## Solve PC choice problem via LP.
 
-.find_SD_or_CKS_choice_via_LP <-
+.find_PC_choice_via_LP <-
 function(M, k, D, control)
 {
-    ## Solve SD/CKS choice problem via LP using a "tailor-made"
+    ## Solve PC choice problem via LP using a "tailor-made"
     ## linearization.
     ## With u the committee/winners indicator, the BQP is
     ##   \sum_{i,j} (1 - u_i) m_{ij} u_j \to \min
@@ -199,9 +216,9 @@ function(M, k, D, control)
     out
 }
 
-## Solve SD/CKS choice problem via QP.
+## Solve PC choice problem via QP.
 
-.find_SD_or_CKS_choice_via_QP <-
+.find_PC_choice_via_QP <-
 function(M, k, D, control)
 {
     ## Argument handling.

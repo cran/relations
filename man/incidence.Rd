@@ -21,8 +21,8 @@ relation_incidence(x, \dots)
   the corresponding tuples are contained in the relation or not).
 }
 \seealso{
-  \code{\link{relation}};
-  \code{\link{relation_incidence<-}} for modifying the incidences.
+  \code{\link{relation}()};
+  \code{\link{relation_incidence<-}()} for modifying the incidences.
 }
 \examples{
 R <- as.relation(c(A = 1, B = 2, C = 3))

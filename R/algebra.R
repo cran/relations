@@ -123,7 +123,7 @@ function(x, y, ...)
     Dxy <- Map(set_union, Dx, Dy)
 
     ## extract incidences for combined domain
-    Ix <- Iy <- array(0, sapply(Dxy, length),
+    Ix <- Iy <- array(0, lengths(Dxy),
                       lapply(Dxy, LABELS, quote = FALSE))
     Ix <- do.call("[<-", c(list(Ix),
                            lapply(Dx, LABELS, quote = FALSE),

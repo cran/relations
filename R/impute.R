@@ -29,7 +29,12 @@ function(x, method = NULL, control = list(), ...)
 
     I <- as.array(.incidence(.get_representation(x)))
     ## could use if (!relation_has_missings(x)), but for efficiency ...
-    if (!any(is.na(I))) return(x)
+    if (!any(is.na(I))) {
+        if (!is.null(control$n) && !isTRUE(control$n == 1L))
+            return(relation_ensemble(x))
+        else
+            return(x)
+    }
 
     NAs <- .missing_objects(I)
 
@@ -77,7 +82,7 @@ function(D, I, NAs, control)
     m <- mn - n
 
     A <- I[1:m, 1:m]
-    B <- matrix(rep(seq_len(m), n), m, n) / (m + 1)
+    B <- matrix(rep.int(seq_len(m), n), m, n) / (m + 1)
     C <- matrix(rep(rev(seq_len(m)), each = n), n, m) / (m + 1)
     D <- matrix(0.5, n, n)
     diag(D) <- 1
@@ -156,9 +161,9 @@ function(I, n, diag = 1)
 
     f1 <- (.nsol_W(c, n - 1) + .nsol_W(c + 1, n - 1)) / N
     fp <- f1 * (c + 1) / 2
-    fi <- rep(seq_len(c) * f1, reps)
+    fi <- rep.int(seq_len(c) * f1, reps)
 
-    B <- matrix(rep(fi, n), m, n)
+    B <- matrix(rep.int(fi, n), m, n)
     C <- matrix(rep(rev(fi), each = n), n, m)
     D <- matrix(fp, n, n)
     diag(D) <- diag
@@ -296,10 +301,10 @@ function(D, I, NAs, control, by = 1, diag = 1)
                           recursive = FALSE))
 
         ## fill in element
-        lapply(seq(1, length(slots), by = by), function(i) {
+        lapply(seq.int(1, length(slots), by = by), function(i) {
             tmp <- slots
             tmp[[i]] <- c(tmp[[i]], e)
-            tmp[sapply(tmp, length) > 0L]
+            tmp[lengths(tmp) > 0L]
         })
     }
 
@@ -329,7 +334,7 @@ function(c, n)
 {
     if (n < 1L) return(1L)
     x <- rep.int(1, n + 1L)
-    v <- seq(from = c, to = c + n)
+    v <- seq.int(from = c, to = c + n)
     while((len <- length(x)) > 1L) {
         x <- v[-len] * x[-len] + v[-1L] * x[-1L]
         v <- v[-len]
@@ -339,7 +344,11 @@ function(c, n)
 
 .missing_objects <-
 function(I)
+{
+    if(length(I) > 1L)
+        I[row(I) == col(I)] <- NA
     which(apply(I, 1, function(i) all(is.na(i))))
+}
 
 .impute_L_one <-
 function(perm, I, NAs, last = TRUE)

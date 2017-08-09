@@ -32,7 +32,7 @@
 \definecolor{Blue}{rgb}{0,0,0.8}
 \definecolor{Red}{rgb}{0.7,0,0}
 
-\date{2008-08-13}
+\date{2016-07-01}
 \title{Good Relations with \R}
 \author{David Meyer and Kurt Hornik}
 %% \VignetteIndexEntry{Relations}
@@ -134,6 +134,14 @@ as.relation(1:3)
 relation_graph(as.relation(c(TRUE, FALSE, TRUE)))
 relation_graph(as.relation(factor(c("A", "B", "A"))))
 @
+Note that while coercion uses the factor values to obtain the graph, it
+infers the domain from the factor names if available and unique, or from
+the values if unique:
+<<>>=
+relation_graph(as.relation(factor(c(X = "A", Y = "B", Z = "A"))))
+relation_graph(as.relation(factor(c("A", "B", "C"))))
+@ 
+
 
 The \emph{characteristic function} $f_R$ (sometimes also referred to as
 indicator function) of a relation $R$ is the predicate (Boolean-valued)
@@ -256,9 +264,9 @@ the functions provided (see Table~\ref{tab:combinations}).
 
 <<predicates>>=
 R <- as.relation(1:5)
-relation_is_binary(R)
-relation_is_transitive(R)
-relation_is_partial_order(R)
+relation_is(R, "binary")
+relation_is(R, "transitive")
+relation_is(R, "partial_order")
 @
 
 Relations with the same domain can naturally be ordered according to
@@ -285,17 +293,15 @@ R3 < R2
 relation_dissimilarity(min(R1, R2), max(R1, R2))
 @
 
-The \emph{complement} of a relation $R$ is the relation with
-domain $D(R)$ whose graph is the complement of $G(R)$, i.e.,
-which contains exactly the tuples not contained in $R$.
-For binary relations $R$
-and $S$ with domains $(X, Y)$ and $(Y, Z)$, the
-\emph{composition} of $R$ and $S$ is defined by taking
-$x S z$ iff there is a $y$ such that $x R y$ and
-$y S z$.  The \emph{dual} (or \emph{converse}) $R^*$ of the
+The \emph{complement} (or negation) $R^c$ of a relation $R$ is the
+relation with domain $D(R)$ whose graph is the complement of $G(R)$,
+i.e., which contains exactly the tuples not contained in $R$.
+For binary relations $R_1$ and $R_2$ with domains $(X, Y)$ and $(Y, Z)$,
+the \emph{composition} $S = R_1 \ast R_2$ of $R_1$ and $R_2$ is defined
+by taking $x S z$ iff there is a $y$ such that $x R_1 y$ and $y R_2 z$.
+The \emph{transpose} (or \emph{inverse}) $R^t$ of the
 relation $R$ with domain $(X, Y)$ is the relation with domain
-$(Y, X)$ such that $x R^* y$ iff $y R x$.
-
+$(Y, X)$ such that $x R^t y$ iff $y R x$.
 
 % Basic relation operations are available as group methods: \code{min}
 % and \code{max} give the meet and join, and \code{range} a
@@ -303,21 +309,21 @@ $(Y, X)$ such that $x R^* y$ iff $y R x$.
 % Comparison operators implement the natural ordering in the relation
 % lattice.  Where applicable, \code{!} gives the complement, \code{\&}
 % and \code{|} intersection and union, and \code{*} composition,
-% respectively.  Finally, \code{t} gives the dual.
+% respectively.  Finally, \code{t} gives the transpose.
 
 <<ops2>>=
-relation_incidence(R1 * R2)
 relation_incidence(! R1)
+relation_incidence(R1 * R2)
 relation_incidence(t(R2))
 @
 
 There is a \codefun{plot} method for certain endorelations (currently,
 only complete or antisymmetric transitive relations are supported)
 provided that package \pkg{Rgraphviz}
-\citep{relations:Gentry+Long+Gentleman:2008} is available, creating a
+\citep{relations:Hansen+Gentry+Long:2017} is available, creating a
 Hasse diagram of the relation.  The following code produces the Hasse
 diagram corresponding to the inclusion relation on the power set of
-$\left\{1,2,3\right\}$ which is a partial order (see
+$\{a,b,c\}$ which is a partial order (see
 Figure~\ref{fig:plot}).
 
 <<plot,fig=FALSE>>=
@@ -364,7 +370,7 @@ consider each variable an equivalence relation on the objects, excluding
 (number of complete variables in the data set).
 <<>>=
 data("Cetacea")
-ind <- sapply(Cetacea, function(s) all(!is.na(s)))
+ind <- vapply(Cetacea, function(s) all(!is.na(s)), TRUE)
 relations <- as.relation_ensemble(Cetacea[, ind])
 print(relations)
 @
@@ -408,7 +414,7 @@ complement
 In addition to the basic operations defined on relations,
 the package provides functionality similar to the corresponding
 operations defined in relational algebra theory as introduced by
-\cite{ranking:Codd:1970}.
+\cite{relations:Codd:1970}.
 Note, however, that domains in database relations, unlike the
 concept of relations we use here, are unordered.  In fact, a database
 relation (\dQuote{table}) is defined as a set of elements called
@@ -448,8 +454,8 @@ relation_table(R3 <- relation_selection(Person, Age == Weight))
 @
 
 The \emph{union} of two relations simply combines the graph elements of
-both relations; the \emph{complement} of two relations $X$ and $Y$
-removes the tuples of $Y$ from $X$.  One can use \codeind{-} as a
+both relations; the \emph{complement} of two relations $R$ and $S$
+removes the tuples of $S$ from $R$.  One can use \codeind{-} as a
 shortcut for \codefunind{relation\_complement}, and \codeind{\%U\%} or
 \codeind{|} for \codefunind{relation\_union}.
 The difference between \code{\%U\%}
@@ -505,13 +511,13 @@ relation_table(Dept)
 relation_table(Employee %><% Dept)
 @
 
-The \emph{division} of relation $X$ by relation $Y$ is the
+The \emph{division} of relation $R$ by relation $S$ is the
 reversed Cartesian product.  The result is a relation with the domain
-unique to $X$ and containing the maximum number of tuples which,
-multiplied by $Y$, are contained in $X$.  The \emph{remainder}
-of this operation is the complement of $X$ and the division of
-$X$ by $Y$.  Note that for both operations, the domain of
-$Y$ must be contained in the domain of $X$. The shortcuts for
+unique to $R$ and containing the maximum number of tuples which,
+multiplied by $S$, are contained in $R$.  The \emph{remainder}
+of this operation is the complement of $R$ and the division of
+$R$ by $S$.  Note that for both operations, the domain of
+$S$ must be contained in the domain of $R$. The shortcuts for
 \codefunind{relation\_division} and \codefunind{relation\_remainder} are
 \codeind{\%/\%} and \codeind{\%\%}, respectively.
 
@@ -539,8 +545,8 @@ relation_table(Completed %% DBProject)
 
 The (natural) \emph{join} of two relations is their Cartesian product,
 restricted to the subset where the elements of the common attributes do
-match.  The left/right/full outer join of two relations $X$ and $Y$ is
-the union of $X$/$Y$/($X$ and $Y$), and the inner join of $X$ and $Y$.
+match.  The left/right/full outer join of two relations $R$ and $S$ is
+the union of $R$/$S$/($R$ and $S$), and the inner join of $R$ and $S$.
 The implementation of \codefun{relation\_join} uses \codefun{merge}, and
 so the left/right/full outer joins are obtained by setting
 \code{all.x}/\code{all.y}/\code{all} to \code{TRUE} in
@@ -565,10 +571,10 @@ relation_table(Employee %><=% Dept)
 relation_table(Employee %=><=% Dept)
 @
 
-The left (right) \emph{semijoin} of two relations $X$ and $Y$
-is the join of these, projected to the attributes of $X$
-($Y$). Thus, it yields all tuples of $X$
-($Y$) participating in the join of $X$ and $Y$.
+The left (right) \emph{semijoin} of two relations $R$ and $S$
+is the join of these, projected to the attributes of $R$
+($S$). Thus, it yields all tuples of $R$
+($S$) participating in the join of $R$ and $S$.
 Shortcuts for \codefunind{relation\_semijoin} are
 \codeind{\%|><\%} and \codeind{\%><|\%} for left and right
 semijoin, respectively.
@@ -579,10 +585,10 @@ relation_table(Employee %|><% Dept)
 relation_table(Employee %><|% Dept)
 @
 
-The left (right) \emph{antijoin} of two relations $X$ and $Y$
-is the complement of $X$ ($Y$) and the join of both,
-projected to the attributes of $X$ ($Y$). Thus, it yields all tuples
-of $X$ ($Y$) \emph{not} participating in the join of $X$ and $Y$.
+The left (right) \emph{antijoin} of two relations $R$ and $S$
+is the complement of $R$ ($S$) and the join of both,
+projected to the attributes of $R$ ($S$). Thus, it yields all tuples
+of $R$ ($S$) \emph{not} participating in the join of $R$ and $S$.
 Shortcuts for \codefunind{relation\_antijoin} are
 \codeind{\%|>\%} and \codeind{\%<|\%} for left and right antijoin, respectively.
 
@@ -599,12 +605,12 @@ Consensus relations \dQuote{synthesize} the information in the elements
 of a relation ensemble into a single relation, often by minimizing a
 criterion function measuring how dissimilar consensus candidates are
 from the (elements of) the ensemble (the so-called \dQuote{optimization
-  approach}), typically of the form $L(R) = \sum w_b d(R_b, R) ^ p$,
+  approach}), typically of the form $\Phi(R) = \sum w_b d(R_b, R) ^ e$,
 where $d$ is a suitable dissimilarity measure, $w_b$ is the case weight
-given to element $R_b$ of the ensemble, and $p \ge 1$.  Such consensus
+given to element $R_b$ of the ensemble, and $e \ge 1$.  Such consensus
 relations are called \dQuote{central relations} in
-\cite{ranking:Regnier:1965}.  For $p = 1$, we obtain (generalized)
-medians; $p = 2$ gives (generalized) means (least squares consensus
+\cite{relations:Regnier:1965}.  For $e = 1$, we obtain (generalized)
+medians; $e = 2$ gives (generalized) means (least squares consensus
 relations).
 
 Consensus relations can be computed by \codefunind{relation\_consensus},
@@ -613,19 +619,19 @@ the unrestricted Manhattan and Euclidean consensus methods, these are
 applicable to ensembles of endorelations only.
 \begin{description}
  \item[\code{"Borda"}] the consensus method proposed by
-  \cite{ranking:Borda:1781}.  For each relation $R_b$ and object $x$,
+  \cite{relations:Borda:1781}.  For each relation $R_b$ and object $x$,
   one determines the Borda/Kendall scores, i.e., the number of objects
   $y$ such that $y R_b x$ (\dQuote{wins} in case of orderings).  These
   are then aggregated across relations by weighted averaging.  Finally,
   objects are ordered according to their aggregated scores.
  \item[\code{"Copeland"}] the consensus method proposed by
-  \cite{ranking:Copeland:1951} is similar to the Borda method, except
+  \cite{relations:Copeland:1951} is similar to the Borda method, except
   that the Copeland scores are the number of objects $y$ such that $y
   R_b x$, minus the number of objects $y$ such that $x R_b y$
   (\dQuote{defeats} in case of orderings).
  \item[\code{"Condorcet"}] the consensus method proposed by
-  \cite{ranking:Condorcet:1785}, in fact minimizing the criterion
-  function $L$ with $d$ as symmetric difference distance over all
+  \cite{relations:Condorcet:1785}, in fact minimizing the criterion
+  function $\Phi$ with $d$ as symmetric difference distance over all
   possible relations.  In the case of endorelations, consensus is
   obtained by weighting voting, such that $x R y$ if the weighted number
   of times that $x R_b y$ is no less than the weighted number of times
@@ -634,13 +640,13 @@ applicable to ensembles of endorelations only.
     Condorcet}).
  \item[\code{"CS"}] the consensus method of
   \cite{relations:Cook+Seiford:1978} which determines a linear order
-  minimizing the criterion function $L$ with $d$ as generalized
-  Cook-Seiford (ranking) distance and $p = 1$ via solving a linear sum
+  minimizing the criterion function $\Phi$ with $d$ as generalized
+  Cook-Seiford (ranking) distance and $e = 1$ via solving a linear sum
   assignment problem.
- % Using \code{"SD/\var{F}"} does not italicize the F ...
- \item[\code{"SD/$F$"}] an exact solver for determining the
-  consensus relation by minimizing the criterion function $L$ with $d$
-  as symmetric difference distance (\dQuote{SD}) and $p = 1$ over a
+ % Using \code{"symdiff/\var{F}"} does not italicize the F ...
+ \item[\code{"symdiff/$F$"}] an exact solver for determining the
+  consensus relation by minimizing the criterion function $\Phi$ with $d$
+  as symmetric difference distance (\dQuote{symdiff}) and $e = 1$ over a
   suitable class (\dQuote{Family}) of endorelations as indicated by
   \var{F}, with values:
   \begin{description}
@@ -664,15 +670,15 @@ applicable to ensembles of endorelations only.
   \end{description}
   These consensus relations are determined by reformulating the
   consensus problem as an integer program (for the relation incidences),
-  see \cite{ranking:Hornik+Meyer:2007} for details.  The solver employed
+  see \cite{relations:Hornik+Meyer:2007} for details.  The solver employed
   can be specified via the control argument \code{solver}, with
   currently possible values \code{"glpk"}, \code{"lpsolve"},
   \code{"symphony"}, or \code{"cplex"} or a unique abbreviation thereof,
   specifying to use the solvers from packages
-  \pkg{Rglpk} \citep[default]{relations:Theussl+Hornik:2008},
-  \pkg{lpSolve} \citep{ranking:Buttrey:2005},
-  \pkg{Rsymphony} \citep{relations:Harter+Hornik+Theussl:2008}, or
-  \pkg{Rcplex} \citep{relations:Bravo:2008}, respectively.  Unless
+  \pkg{Rglpk} \citep[default]{relations:Theussl+Hornik:2017},
+  \pkg{lpSolve} \citep{relations:Buttrey:2005},
+  \pkg{Rsymphony} \citep{relations:Harter+Hornik+Theussl:2017}, or
+  \pkg{Rcplex} \citep{relations:Bravo+Theussl:2016}, respectively.  Unless
   control option \code{sparse} is false, a sparse formulation of the
   binary program is used, which is typically more efficient.
 
@@ -681,16 +687,24 @@ applicable to ensembles of endorelations only.
   parameter \code{k}.  For fitting weak orders, one can also specify the
   number of elements in the classes via control parameter \code{l}.
  \item[\code{"CKS/$F$"}] an exact solver for determining the
-  consensus relation by minimizing the criterion function $L$ with $d$
-  as Cook-Kress-Seiford distance (\dQuote{CKS}) and $p = 1$ over a
-  suitable class (\dQuote(Family)) of endorelations as indicated by
+  consensus relation by minimizing the criterion function $\Phi$ with $d$
+  as Cook-Kress-Seiford distance (\dQuote{CKS}) and $e = 1$ over a
+  suitable class (\dQuote{Family}) of endorelations as indicated by
   \var{F}, with available families and control parameters as for methods
-  \code{"SD/\var{F}"}.
+  \code{"symdiff/\var{F}"}.
+ \item[\code{"PC/$F$"}] an exact solver for determining the consensus
+  relation of an ensemble of crisp endorelations by minimizing the
+  criterion function $\Phi$ with $d$ as (generalized) paired
+  comparison (\dQuote{PC}) distance and $e = 1$ over a suitable class
+  (\dQuote{Family}) of crisp endorelations as indicated by \var{F}, with
+  available families and control parameters as for methods
+  \code{"symdiff/\var{F}"}, and control option \code{delta} for specifying
+  the paired comparison discrepancies.
  \item[\code{"manhattan"}] the (unrestricted) median of the ensemble,
-  minimizing $L$ with $d$ as Manhattan (symmetric difference) distance
-  and $p = 1$ over all (possibly fuzzy) relations.
+  minimizing $\Phi$ with $d$ as Manhattan (symmetric difference) distance
+  and $e = 1$ over all (possibly fuzzy) relations.
  \item[\code{"euclidean"}] the (unrestricted) mean of the ensemble,
-  minimizing $L$ with $d$ as Euclidean distance and $p = 2$ over all
+  minimizing $\Phi$ with $d$ as Euclidean distance and $e = 2$ over all
   (possibly fuzzy) relations.
  \item[\code{"majority"}] a generalized majority method for which the
   consensus relation contains of all tuples occurring with a relative
@@ -698,13 +712,13 @@ applicable to ensembles of endorelations only.
   The fraction $p$ can be specified via the control parameter \code{p}.
   By default, $p = 1/2$ is used.
 \end{description}
-For the Condorcet, CS and SD methods, one can obtain a relation ensemble
-with \emph{all} consensus  relations by setting the control parameter
-\code{all} to \code{TRUE}.
+For the Condorcet, CS, symdiff, CKS and PC methods, one can obtain a
+relation ensemble with \emph{all} consensus relations by setting the
+control parameter \code{all} to \code{TRUE}.
 
 In the following, we first show an example of computing a consensus
 equivalence (i.e., a consensus partition) of 30 felines repeating the
-classical analysis of \cite{ranking:Marcotorchino+Michaud:1982}.  The
+classical analysis of \cite{relations:Marcotorchino+Michaud:1982}.  The
 data comprises 10 morphological and 4 behavioral variables, taken here
 as different classifications of the same 30 animals:
 
@@ -714,16 +728,16 @@ relations <- as.relation_ensemble(Felines)
 @
 Now fit an equivalence relation to this, and look at the classes:
 <<consensus1b,fig=FALSE>>=
-E <- relation_consensus(relations, "SD/E")
+E <- relation_consensus(relations, "symdiff/E")
 
 ids <- relation_class_ids(E)
 split(rownames(Felines), ids)
 @ %%
 Next, we demonstrate the computation of consensus preferences, using an
-example from \citet[pp.~48ff]{ranking:Cook+Kress:1992}.  The input data
-is a \dQuote{preference matrix} of paired comparisons where entry
-$(i,j)$ is one iff object~$i$ is preferred to object~$j$ ($i \succ j$).
-We set up the corresponding `$\prec$' relation.
+example from \citet[pp.~48ff]{relations:Cook+Kress:1992}.  The input
+data is a \dQuote{preference matrix} of paired comparisons where entry
+$(i,j)$ is one iff object~$x_i$ is preferred to object~$x_j$ ($x_i \succ
+x_j$).  We set up the corresponding `$\prec$' relation.
 <<consensus2a,fig=FALSE>>=
 pm <- matrix(c(0, 1, 0, 1, 1,
                0, 0, 0, 1, 1,
@@ -735,11 +749,11 @@ pm <- matrix(c(0, 1, 0, 1, 1,
              dimnames = list(letters[1:5], letters[1:5]))
 R <- as.relation(t(pm))
 relation_incidence(R)
-relation_is_tournament(R)
+relation_is(R, "tournament")
 @
 Next, we seek a linear consensus order:
 <<consensus2b,fig=FALSE>>=
-L <- relation_consensus(R, "SD/L")
+L <- relation_consensus(R, "symdiff/L")
 relation_incidence(L)
 @
 or perhaps more conveniently, the class ids sorted according to
@@ -751,7 +765,7 @@ Note, however, that this linear order is not unique; we can compute
 \emph{all} consensus linear orders, and also produce a comparing plot
 (see Figure~\ref{fig:plot2}):
 <<consensus2c,fig=FALSE>>=
-L <- relation_consensus(R, "SD/L", control = list(all = TRUE))
+L <- relation_consensus(R, "symdiff/L", control = list(all = TRUE))
 print(L)
 if(require("Rgraphviz")) plot(L)
 @ %
@@ -762,7 +776,7 @@ lapply(L, relation_class_ids)
 Finally, we compute the closest weak order with at most 3 indifference
 classes:
 <<consensus2d,fig=FALSE>>=
-W3 <- relation_consensus(R, "SD/W", control = list(k = 3))
+W3 <- relation_consensus(R, "symdiff/W", control = list(k = 3))
 relation_incidence(W3)
 relation_class_ids(W3)
 @ %

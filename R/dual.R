@@ -4,6 +4,15 @@ dual <-
 function(x, ...)
     UseMethod("dual")
 
+## Ideally there would be a good reference which defines the dual as the
+## negative of the inverse, as e.g. Fishburn uses "dual" differently.
+## Possible references are
+##   Ovchinnikov (2000)
+##     <http://link.springer.com/chapter/10.1007%2F978-1-4615-4429-6_5>
+## or chapter 2 in Fodor & Roubens (1994)
+##     <http://www.springer.com/us/book/9780792331162>
+## but there should really be better/earlier ones ...
+
 dual.relation <-
 function(x, ...)
 {
@@ -12,8 +21,10 @@ function(x, ...)
     I <- .incidence(x)
     meta <- if(relation_is_endorelation(x)) {
         ## Predicates for the dual relation of an endorelation R can be
-        ## inferred from those of R, see e.g. Fodor & Roubens, Table
-        ## 2.2, page 41.
+        ## inferred from those of R, see e.g. Fodor & Roubens, "Fuzzy
+        ## Preference Modelling and Multicriteria Decision Support",
+        ## Table 2.2, page 41.
+        ## <http://www.springer.com/us/book/9780792331162>
         ## For valued relations, only the correspondencies
         ##   reflexive <-> irreflexive, symmetric <-> symmetric
         ## are always true: the others require a deMorgan triple of

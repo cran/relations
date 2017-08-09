@@ -49,7 +49,7 @@ function(x)
 
 .domain.ranking <-
 function(x)
-    rep(list(x$domain), 2)
+    rep.int(list(x$domain), 2L)
 
 .domain.relation <-
 function(x)
@@ -79,7 +79,7 @@ function(x, ...)
     s <- if (is.null(n))
       ""
     else
-      paste(format(as.tuple(n), quote = FALSE), " ", sep = "")
+      paste0(format(as.tuple(n), quote = FALSE), " ")
 
     writeLines(sprintf("%s %swith elements:", .ntuple(x, A = TRUE), s))
     for (i in x) print(i)
@@ -105,7 +105,7 @@ function(x, value)
     ## current one.  Note that we currently do not allow extending the
     ## current domain, or eliminating "unused" values.  This would be
     ## doable, but of course also require modifying the incidences.
-    if(!all(size == sapply(value, length)))
+    if(!all(size == lengths(value)))
         stop("Relation size mismatch between 'x' and 'value'.")
 
     ## In the old days we could simply do
@@ -167,7 +167,7 @@ function(x)
     UseMethod(".size")
 .size.ranking <-
 function(x)
-    rep(length(x$domain), 2)
+    rep.int(length(x$domain), 2L)
 .size.relation <-
 function(x)
     .get_property_from_object_or_representation(x, "size", .size)

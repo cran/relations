@@ -222,7 +222,7 @@ function(x)
     leaders <- sapply(scc, min)
 
     M <- .condensation_incidences(I, scc, leaders)
-    D <- rep(list(as.list(.domain(x)[[1L]])[leaders]), 2L)
+    D <- rep.int(list(as.list(.domain(x)[[1L]])[leaders]), 2L)
 
     .make_relation_from_domain_and_incidence(D, M)
 }
@@ -266,7 +266,139 @@ function(I, scc)
    M
 }
 
+### symmetric and asymmetric parts as methods for sym() and asy()
+### generics.
 
+### * sym
+
+sym <-
+function(x)
+    UseMethod("sym")
+
+sym.relation <-
+function(x)
+{
+    if(!relation_is_endorelation(x))
+        stop("Argument 'x' must be an endorelation.")
+
+    ## For crisp relations, the symmetric part is
+    ##   R \cap t(R)
+    ## which is symmetric if there are no missings.
+    ## The natural extension to fuzzy relations is
+    ##   T( R(x, y), R(y, x) )
+    ## which is clearly symmetric in x and y.  Apparently, this
+    ## definition is at least given in
+    ##   Ovchinnikov (2000)
+    ##     <http://link.springer.com/chapter/10.1007%2F978-1-4615-4429-6_5>
+    ## so we also use it here.
+
+    I <- .incidence(x)
+
+    meta <- if(any(is.na(I))) NULL else list(is_symmetric = TRUE)
+
+    .make_relation_from_domain_and_incidence(.domain(x),
+                                             .T.(I, t(I)),
+                                             meta)
+}
+
+### * asy
+
+asy <-
+function(x)
+    UseMethod("asy")
+
+asy.relation <-
+function(x)
+{
+    ## For crisp relations, the asymmetric part is
+    ##   R \cap not(t(R))
+    ## which is asymmetric (and hence irreflexive) if there are no
+    ## missings.
+    ## A possible extension to fuzzy relations is
+    ##   T( R(x, y), N(R(y, x)) )
+    ## but apparently this does not necessarily yield asymmetry in the
+    ## sense of satisfying T( S(x, y), S(y, x) ) = 0, i.e.
+    ##   T ( T(R(x, y), N(R(y, x))), T(R(y, x), N(R(x, y))) ) = 0.
+    ## (It would be interesting to investigate this for common choices
+    ## for T and N, and check the literature once more.)
+    ## So for now we only do asymmetric parts of *crisp* endorelations
+    ## which requires no missings (as otherwise we cannot know whether
+    ## we have a crisp relation).
+
+    if(!relation_is_endorelation(x) && !isTRUE(relation_is_crisp(x)))
+        stop("Argument 'x' must be a crisp endorelation without missings.")
+
+    I <- .incidence(x)
+
+    .make_relation_from_domain_and_incidence(.domain(x),
+                                             pmin(I, 1 - t(I)),
+                                             list(is_asymmetric = TRUE,
+                                                  is_irreflexive = TRUE))
+}
+
+### * codual
+
+## This used to be 'dual', but then this is not use consistently in the
+## literature, with the (fuzzy) preference modeling community typically
+## using 'dual' for the complement of the transpose, e.g.,
+##   Ovchinnikov (2000)
+##     <http://link.springer.com/chapter/10.1007%2F978-1-4615-4429-6_5>
+## or chapter 2 in Fodor & Roubens (1994)
+##     <http://www.springer.com/us/book/9780792331162>
+## but Fishburn and the utility theory community using 'dual' as synonym
+## for transpose/inverse.
+## To avoid confusion, we now use 'codual' for the complement of the
+## transpose, with
+##   Clark (1990)
+##     <doi:10.1016/0165-4896(90)90065-F>
+##     <http://www.sciencedirect.com/science/article/pii/016548969090065F>
+## as references.
+
+codual <-
+function(x, ...)
+    UseMethod("codual")
+
+codual.relation <-
+function(x, ...)
+{
+    if(!relation_is_binary(x))
+        stop("Argument 'x' must be a binary relation.")
+    I <- .incidence(x)
+    meta <- if(relation_is_endorelation(x)) {
+        ## Predicates for the codual relation of an endorelation R can
+        ## be inferred from those of R, see e.g. Fodor & Roubens, "Fuzzy
+        ## Preference Modelling and Multicriteria Decision Support",
+        ## Table 2.2, page 41.
+        ## <http://www.springer.com/us/book/9780792331162>
+        ## For valued relations, only the correspondencies
+        ##   reflexive <-> irreflexive, symmetric <-> symmetric
+        ## are always true: the others require a deMorgan triple of
+        ## fuzzy connectives N/T/S.
+        db <- c(is_reflexive = "is_irreflexive",
+                is_irreflexive = "is_reflexive",
+                is_symmetric = "is_symmetric")
+        if(fuzzy_logic_predicates()$is_de_Morgan_triple) {
+            db <-
+                c(db,
+                  is_antisymmetric = "is_complete",
+                  is_complete = "is_antisymmetric",
+                  is_asymmetric = "is_strongly_complete",
+                  is_strongly_complete = "is_asymmetric",
+                  is_transitive = "is_negatively_transitive",
+                  is_negatively_transitive = "is_transitive",
+                  is_Ferrers = "is_Ferrers",
+                  is_semitransitive = "is_semitransitive"
+                  )
+        }
+        predicates <-
+            names(Filter(function(e) identical(e, TRUE),
+                         relation_properties(x)[names(db)]))
+        c(list(is_endorelation = TRUE),
+          .structure(as.list(rep.int(TRUE, length(predicates))),
+                     names = db[predicates]))
+    } else NULL
+    .make_relation_from_domain_and_incidence(.domain(x), .N.(t(I)), meta)
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

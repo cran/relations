@@ -30,17 +30,18 @@
      layout = NULL, main = NULL)
 }
 \arguments{
-  \item{x}{an \R object inheriting from class \code{\link{relation}} or \code{\link{relation_ensemble}}.}
+  \item{x}{an \R object inheriting from class \code{\link{relation}} or
+     \code{\link{relation_ensemble}}.}
   \item{attrs}{argument passed to the plot method for class
-    \code{\link[graph:graphNEL-class]{graphNEL}}. For the
-    \code{relation_ensemble} method, it is a \emph{list} of such objects,
-    recycled as needed.}
+    \code{\link[graph:graphNEL-class]{graphNEL}}.
+    
+    Note that for the \code{relation_ensemble} method, it is a
+    \emph{list} of such objects, recycled as needed.}
   \item{type}{character vector of either "simplified" or "raw"
      strings, one for each relation plotted. (See details.)}
   \item{limit}{Argument passed to the labeling function creating default
-    labels for the nodes (see
-     \code{\link[sets:labels]{LABELS}}). Recycled as needed for relation
-     ensembles.}
+    labels for the nodes (see \code{\link[sets:labels]{LABELS}()}).
+    Recycled as needed for relation ensembles.}
   \item{labels}{Optional list of character vectors defining unique
     labels for the nodes. List of such lists for relation ensembles.}
   \item{layout}{integer vector of length 2 specifying the number of rows
@@ -66,8 +67,8 @@
      any transformation is plotted from the relation.
 }
 \seealso{
-  \code{\link{relation}},
-  \code{\link{transitive_reduction}}
+  \code{\link{relation}()},
+  \code{\link{transitive_reduction}()}
 }
 \examples{
 require("sets")				# set() etc.

@@ -17,7 +17,7 @@ relation_table(x, memberships = TRUE)
   \code{\link{data.frame}}.
 }
 \seealso{
-  \code{\link{relation_join}}
+  \code{\link{relation_join}()}
 }
 \examples{
 R <- data.frame(Name = c("David", "John"),

@@ -23,10 +23,10 @@ relation_size(x)
   inheriting from \code{\link[sets]{tuple}}.
 }
 \seealso{
-  \code{\link[sets]{tuple}};
-  \code{\link{relation}};
-  \code{\link{relation_domain<-}} and
-  \code{\link{relation_domain_names<-}}
+  \code{\link[sets]{tuple}()};
+  \code{\link{relation}()};
+  \code{\link{relation_domain<-}()} and
+  \code{\link{relation_domain_names<-}()}
   for modifying the domain and domain names of a relation, respectively.
 }
 \examples{

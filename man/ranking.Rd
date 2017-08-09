@@ -12,10 +12,12 @@ as.ranking(x, \dots)
 is.ranking(x)
 }
 \arguments{
-  \item{x}{For \code{ranking}: either an atomic vector interpreted as
-    labels of the ranked objects, or a list of such vectors representing
-    equivalence classes.  For \code{as.ranking}: an \R object coercible
-    to a ranking object (including \code{relation} objects).}
+  \item{x}{For \code{ranking()}: either an atomic vector interpreted as
+    labels of the ranked objects, or as their scores in case of a named
+    numeric vector (with the names giving the labels), or a list of
+    atomic vectors representing equivalence classes of labels.
+    For \code{as.ranking()}: an \R object coercible to a ranking object
+    (including \code{relation} objects).}
   \item{domain}{object coercible to a set, from which the labels usable
     in \code{x} are derived.  If \code{NULL}, it is created from
     \code{x}.}
@@ -32,7 +34,7 @@ is.ranking(x)
   An object of class \code{ranking}.
 }
 \seealso{
-  \code{\link{relation}}
+  \code{\link{relation}()}
 }
 \examples{
 ## simple rankings
@@ -43,6 +45,9 @@ ranking(OBJECTS[2:4], domain = OBJECTS, complete = TRUE)
 
 ## ranking with ties (weak orders)
 ranking(list(c("PhD", "MD"), "MSc", c("BSc", "BA")))
+
+## ranking A > B ~ C with D missing:
+ranking(c(A = 1, B = 2, C = 2, D = NA))
 
 ## coercion functions
 identical(as.ranking(as.relation(R)), R)

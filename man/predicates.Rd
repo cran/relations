@@ -1,5 +1,6 @@
 \name{predicates}
 \alias{predicates}
+\alias{relation_is}
 \alias{relation_is_Euclidean}
 \alias{relation_is_Ferrers}
 \alias{relation_is_acyclic}
@@ -27,6 +28,7 @@
 \alias{relation_is_preorder}
 \alias{relation_is_quasiorder}
 \alias{relation_is_quasitransitive}
+\alias{relation_is_quaternary}
 \alias{relation_is_reflexive}
 \alias{relation_is_right_total}
 \alias{relation_is_semiorder}
@@ -36,6 +38,7 @@
 \alias{relation_is_strongly_complete}
 \alias{relation_is_surjective}
 \alias{relation_is_symmetric}
+\alias{relation_is_ternary}
 \alias{relation_is_tournament}
 \alias{relation_is_transitive}
 \alias{relation_is_trichotomous}
@@ -47,6 +50,7 @@
   endorelations, and special kinds thereof.
 }
 \usage{
+relation_is(x, predicate, ...)
 relation_is_Euclidean(x, na.rm = FALSE)
 relation_is_Ferrers(x, na.rm = FALSE)
 relation_is_acyclic(x)
@@ -74,6 +78,7 @@ relation_is_preference(x, na.rm = FALSE)
 relation_is_preorder(x, na.rm = FALSE)
 relation_is_quasiorder(x, na.rm = FALSE)
 relation_is_quasitransitive(x, na.rm = FALSE)
+relation_is_quaternary(x)
 relation_is_reflexive(x, na.rm = FALSE)
 relation_is_right_total(x)
 relation_is_semiorder(x, na.rm = FALSE)
@@ -83,6 +88,7 @@ relation_is_strict_partial_order(x, na.rm = FALSE)
 relation_is_strongly_complete(x, na.rm = FALSE)
 relation_is_surjective(x)
 relation_is_symmetric(x, na.rm = FALSE)
+relation_is_ternary(x)
 relation_is_tournament(x, na.rm = FALSE)
 relation_is_transitive(x, na.rm = FALSE)
 relation_is_trichotomous(x, na.rm = FALSE)
@@ -93,12 +99,64 @@ relation_has_missings(x)
   \item{x}{an object inheriting from class \code{\link{relation}}.}
   \item{na.rm}{a logical indicating whether tuples with missing
     memberships are excluded in the predicate computations.}
+  \item{predicate}{character vector matching one of the following (see \bold{details}):
+\code{"binary"},
+\code{"ternary"},
+\code{"quaternary"},
+\code{"left_total"},
+\code{"right_total"},
+\code{"surjective"},
+\code{"functional"},
+\code{"injective"},
+\code{"bijective"},
+\code{"endorelation"},
+\code{"homogeneous"},
+\code{"crisp"},
+\code{"complete"},
+\code{"match"},
+\code{"strongly_complete"},
+\code{"reflexive"},
+\code{"irreflexive"},
+\code{"coreflexive"},
+\code{"symmetric"},
+\code{"asymmetric"},
+\code{"antisymmetric"},
+\code{"transitive"},
+\code{"negatively_transitive"},
+\code{"quasitransitive"},
+\code{"Ferrers"},
+\code{"semitransitive"},
+\code{"trichotomous"},
+\code{"Euclidean"},
+\code{"equivalence"},
+\code{"weak_order"},
+\code{"preference"},
+\code{"preorder"},
+\code{"quasiorder"},
+\code{"partial_order"},
+\code{"linear_order"},
+\code{"strict_partial_order"},
+\code{"strict_linear_order"},
+\code{"tournament"},
+\code{"interval_order"},
+\code{"semiorder"},
+\code{"acyclic"}
+\code{"cyclic"}
+  }
+\item{\dots}{Additional arguments passed to the predicate functions
+  (currently, only \code{na.rm} for most predicates).}
 }
 \details{
+  This help page documents the predicates currently available. Note that
+  the preferred way is to use the meta-predicate function
+  \code{relation_is(x, "FOO")} instead of the individual predicates
+  \code{relation_is_FOO(x)} since the latter will become deprecated in
+  future releases.
+  
   A binary relation is a relation with arity 2.
 
   A relation \eqn{R} on a set \eqn{X} is called
-  \emph{homogeneous} iff \eqn{D(R) = (X, \dots, X)}
+  \emph{homogeneous} iff \eqn{D(R) = (X, \dots, X)}.
 
   An \emph{endorelation} is a binary homogeneous relation.
 
@@ -218,7 +276,9 @@ relation_has_missings(x)
   as for crisp endorelations (see above).
 
   A relation has missings iff at least one cell in the incidence matrix
-  is \code{NA}.
+  is \code{NA}. In addition to \code{relation_has_missings()}, an
+  \code{is.na} method for relations is available, returning a matrix of
+  logicals corresponding to the incidences tested for missingness.
 }
 \references{
   P. C. Fishburn (1972),
@@ -230,5 +290,21 @@ relation_has_missings(x)
   \emph{Intermediate Microeconomics: A Modern Approach}.
   6th Edition. W. W. Norton & Company.
   
+}
+\examples{
+require("sets")
+R <- relation(domain = c(1, 2, 3), graph = set(c(1, 2), c(2, 3)))
+summary(R)
+
+## Note the possible effects of NA-handling:
+relation_incidence(R)
+relation_is(R, "transitive") ## clearly FALSE
+
+relation_incidence(R)[1, 2] <- NA
+relation_incidence(R)
+relation_is(R, "transitive") ## clearly NA
+
+## The following gives TRUE, since NA gets replaced with 0:
+relation_is(R, "transitive", na.rm = TRUE)
 }
 \keyword{math}

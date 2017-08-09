@@ -22,9 +22,9 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
         size <- dim(incidence)
         if(!is.null(domain)) {
             ## Be nice first ...
-            domain <- rep(domain, length.out = length(size))
+            domain <- rep_len(domain, length(size))
             ## ... and then check.
-            if(any(size != sapply(domain, length)))
+            if(any(size != lengths(domain)))
                 stop("Relation size mismatch between domain and incidence.")
         }
         return(.make_relation_from_domain_and_incidence(domain, incidence))
@@ -32,12 +32,12 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
 
     if(!is.null(graph)) {
         if (is.gset(graph) &&
-            (gset_is_multiset(graph) || gset_is_fuzzy_multiset(graph)))
+            (gset_is_multiset(graph, na.rm = TRUE) || gset_is_fuzzy_multiset(graph)))
             stop("Only crisp or fuzzy sets allowed.")
         G <- .make_relation_graph_components(graph)
         ## Be nice and recycle domain (useful for endorelations).
         if (!is.null(domain) && (length(G) > 0L))
-            domain <- rep(domain, length.out = length(G))
+            domain <- rep_len(domain, length(G))
         return(.make_relation_from_domain_and_graph_components(domain, G))
     }
 
@@ -49,7 +49,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
         I <- array(do.call(mapply,
                            c(list(charfun),
                              .cartesian_product(lapply(domain, as.list)))),
-                   dim = sapply(domain, length))
+                   dim = lengths(domain))
         return(.make_relation_from_domain_and_incidence(domain, I))
     }
 }
@@ -107,7 +107,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
             && is.data.frame(graph) && ncol(graph) != 2L)
         || (!is.null(graph)
             && is.set(graph)
-            && any(sapply(graph, length) != 2L))
+            && any(vapply(graph, length, 0L) != 2L))
         || (!is.null(charfun) && length(domain) != 2L ))
         stop("Relation is not binary.")
     R <- homorelation(domain = domain, incidence = incidence,
@@ -370,8 +370,8 @@ function(target, current, check.attributes = TRUE, ...)
         return(c(msg,
                  gettextf("Relation arities (%d, %d) differ.",
                           a_t, a_c)))
-    s_t <- sapply(D_t, length)
-    s_c <- sapply(D_c, length)
+    s_t <- lengths(D_t)
+    s_c <- lengths(D_c)
     if(!identical(s_t, s_c))
         return(c(msg,
                  gettextf("Relation sizes (%s, %s) differ.",
@@ -604,6 +604,16 @@ function(x)
                                              t(.incidence(x)))
 }
 
+### na.omit
+
+na.omit.relation <-
+function(object, ...)
+{
+    I = relation_incidence(x)
+    relation_incidence(x)[is.na(I)] <- 0
+    x
+}
+
 ### * Relation representations
 
 ### ** .make_relation_by_domain_and_incidence
@@ -814,7 +824,7 @@ function(x, endorelation = FALSE) {
 .make_incidence_from_domain_and_graph_components <-
 function(D, G, size = NULL)
 {
-    if(is.null(size)) size <- sapply(D, length)
+    if(is.null(size)) size <- lengths(D)
     I <- array(0, size)
     if(length(G) > 0L)
         I[rbind(mapply(.exact_match,

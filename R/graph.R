@@ -58,7 +58,7 @@ function(x, ...)
                           else "A set with %s%s:",
                           .ntuple(as.list(x)[[1L]], plural = isTRUE(length(x) > 1L)),
                           if (is.null(domain_names)) "" else
-                          paste(" ", format(as.tuple(domain_names)), sep = "")
+                          paste0(" ", format(as.tuple(domain_names)))
                           )
                   )
        if (gset_is_fuzzy_set(x, na.rm = TRUE) ||
@@ -99,7 +99,7 @@ function(x)
     if (length(x) < 1L) return(list())
     l <- length(as.list(x)[[1L]])
     if (l < 1L) return(list())
-    if (!all(sapply(x, length) == l))
+    if (!all(vapply(x, length, 0L) == l))
         stop("All elements need to be of same length.")
     ## <NOTE>
     ## We could try making this more efficient by building a big

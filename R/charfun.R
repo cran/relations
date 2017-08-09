@@ -15,8 +15,8 @@ function(x, components = FALSE)
                    args <- list(...)
                    if (a == 2L) {
                        ## recycle for binary relations
-                       maxlen <- max(sapply(args, length))
-                       args <- lapply(args, rep, length.out = maxlen)
+                       maxlen <- max(lengths(args))
+                       args <- lapply(args, rep_len, maxlen)
                    }
                    if(length(args) != a)
                        stop("Wrong number of arguments.")

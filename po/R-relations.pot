@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: relations 0.6-2\n"
-"POT-Creation-Date: 2014-03-16 17:55\n"
+"Project-Id-Version: relations 0.6-6.2\n"
+"POT-Creation-Date: 2017-08-07 11:32\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -88,16 +88,25 @@ msgstr ""
 msgid "An empty data table."
 msgstr ""
 
-msgid "Method '%s' is not a valid dissimilarity method."
+msgid "Invalid additional argument '%s'."
 msgstr ""
 
 msgid "All relations must have the same domain."
+msgstr ""
+
+msgid "Method '%s' is not a valid dissimilarity method."
 msgstr ""
 
 msgid "Invalid 'score' argument."
 msgstr ""
 
 msgid "Invalid 'Delta' argument."
+msgstr ""
+
+msgid "Invalid PC pair weights."
+msgstr ""
+
+msgid "Invalid PC discrepancies."
 msgstr ""
 
 msgid "Argument 'x' must be a relation or relation ensemble."

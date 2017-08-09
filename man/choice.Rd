@@ -25,24 +25,28 @@ relation_choice(x, method = "symdiff", weights = 1,
 }
 \details{
   A social choice function is a rule for \emph{choosing} from a set
-  \eqn{D} of objects, i.e., selecting suitable subsets of \eqn{D}.
+  \eqn{X} of objects, i.e., selecting suitable subsets of \eqn{X}.
   Voting rules used in elections are the most prominent example of such
   functions, which typically aggregate individual preferences (e.g., of
   voters).
 
-  Choice methods \code{"symdiff"}, \code{"CKS"} and \code{"euclidean"}
-  choose a given number \eqn{k} of objects (\dQuote{winners}) by
-  determining a relation \eqn{R} minimizing \eqn{\sum_b w_b d(R_b, R)^p}
-  over all relations for which winners are always strictly preferred to
-  losers, without any further constraints on the relations between pairs
-  of winners or pairs of losers, where \eqn{d} is symmetric difference
-  (symdiff, \dQuote{Kemeny-Snell}), Cook-Kress-Seiford (CKS), or
+  Choice methods \code{"symdiff"}, \code{"CKS"}, \code{"PC"} and
+  \code{"euclidean"} choose a given number \eqn{k} of objects
+  (\dQuote{winners}) by determining a relation \eqn{R} minimizing
+  \eqn{\sum_b w_b d(R_b, R)^e} over all relations for which winners are
+  always strictly preferred to losers, without any further constraints
+  on the relations between pairs of winners or pairs of losers, where
+  \eqn{d} is symmetric difference (symdiff, \dQuote{Kemeny-Snell}),
+  Cook-Kress-Seiford (CKS), generalized paired comparison, or 
   Euclidean dissimilarity, respectively, and \eqn{w_b} is the case
-  weight given to \eqn{R_b}.  For symdiff and CKS choice, the \eqn{R_b}
-  must be crisp endorelations, and \eqn{p = 1}; for Euclidean choice,
-  the \eqn{R_b} can be crisp or fuzzy endorelations, and \eqn{p = 2}.
+  weight given to \eqn{R_b}.
+  For symdiff, CKS and PC choice, the \eqn{R_b} must be crisp
+  endorelations, and \eqn{e = 1}; for Euclidean choice, the \eqn{R_b}
+  can be crisp or fuzzy endorelations, and \eqn{e = 2}. 
   (Note that solving such a choice problem is different from computing
   consensus preference relations.)
+  See \code{\link{relation_dissimilarity}()} for more information about
+  these dissimilarities.
 
   Available control options include:
   \describe{
@@ -53,10 +57,12 @@ relation_choice(x, method = "symdiff", weights = 1,
       obtain all optimal choices.  By default, only a single optimal
       choice is computed.}
   }
+  For the general PC case, the discrepancies can be specified via the
+  \code{delta} control option.
 
   Choice method \code{"Schulze"} implements the Schulze method for
   selecting winners from (votes expressing) preferences.  See e.g.
-  \url{http://en.wikipedia.org/wiki/Schulze_method} for details.
+  \url{https://en.wikipedia.org/wiki/Schulze_method} for details.
   Currently, the Schulze heuristic is used, and the set of all possible
   winners is returned.
 }

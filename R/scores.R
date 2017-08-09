@@ -13,7 +13,7 @@ function(x,
     if(!.is_ensemble_of_endorelations(x))
         stop("Relation scores are only available for (ensembles of) endorelations.")
     labs <- LABELS(.domain(x)[[1L]], quote = FALSE)
-    weights <- rep(weights, length.out = length(x))
+    weights <- rep_len(weights, length(x))
     I <- .weighted_sum_of_arrays(lapply(x, .incidence), weights)
     ret <- switch(method,
                   Borda =, Kendall = colSums(I),

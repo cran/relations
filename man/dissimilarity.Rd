@@ -8,15 +8,15 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
 }
 \arguments{
   \item{x}{an ensemble of relations (see
-    \code{\link{relation_ensemble}}),
+    \code{\link{relation_ensemble}()}),
     or something which can be coerced to such.} 
   \item{y}{\code{NULL} (default), or as for \code{x}.}
   \item{method}{a character string specifying one of the built-in
     methods for computing dissimilarity, or a function to be taken as
     a user-defined method.  If a character string, its lower-cased
     version is matched against the lower-cased names of the available
-    built-in methods using \code{\link{pmatch}}.  See \bold{Details} for
-    available built-in methods.}
+    built-in methods using \code{\link{pmatch}()}.
+    See \bold{Details} for available built-in methods.}
   \item{\dots}{further arguments to be passed to methods.}
 }
 \value{
@@ -93,7 +93,7 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
       \code{\link{relation_scores}}.  Otherwise, if given it must be a
       function giving the score function itself.  If \code{Delta} is a
       number \eqn{p \ge 1}, the usual \eqn{l_p} distance is used.
-      Otherwise, it must be a function given the distance function.
+      Otherwise, it must be a function giving the distance function.
       The defaults correspond to using the default relation scores and
       \eqn{p = 1}, which for linear orders gives Spearman's footrule
       distance.
@@ -103,6 +103,59 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
 
     \item{\code{"Jaccard"}}{Jaccard distance: 1 minus the ratio of the
       cardinalities of the intersection and the union of the relations.
+    }
+
+    \item{\code{"PC"}}{(generalized) paired comparison distance.  This
+      generalizes the symdiff and CKS distances to use a general set of
+      discrepancies \eqn{\delta_{kl}} between the possible paired
+      comparison results with \eqn{a,b}/\eqn{b,a} incidences 0/0, 1/0,
+      0/1, and 1/1 numbered from 1 to 4 (in a preference context with a
+      \eqn{\le} encoding, these correspond to incompatibility, strict
+      \eqn{<} and \eqn{>} preference, and indifference), with
+      \eqn{\delta_{kl}} the discrepancy between possible results \eqn{k}
+      and \eqn{l}.  The distance is then obtained as the sum of the
+      discrepancies from the paired comparisons of distinct objects,
+      plus half the sum of discrepancies from the comparisons of
+      identical objects (for which the only possible results are
+      incomparability and indifference). 
+      The distance is a metric provided that the \eqn{\delta_{kl}}
+      satisfy the metric conditions (non-negativity and zero iff
+      \eqn{k = l}, symmetry and sub-additivity).
+
+      The discrepancies can be specified via the additional argument
+      \code{delta}, either as a numeric vector of length 6 with the
+      non-redundant values \eqn{\delta_{21}, \delta_{31}, \delta_{41},
+      \delta_{32}, \delta_{42}, \delta_{43}}, or as a character string
+      partially matching one of the following built-in discrepancies
+      with corresponding parameter vector \eqn{\delta}:
+
+      \describe{
+	\item{\code{"symdiff"}}{symmetric difference distance, with
+	  discrepancy between distinct results two between either
+	  opposite strict preferences or indifference and
+	  incomparability, and one otherwise:
+	  \eqn{\delta = (1, 1, 2, 2, 1, 1)}
+	  (default).
+	  
+	  Can also be referred to as \code{"SD"}.	  
+	}
+	\item{\code{"CKS"}}{Cook-Kress-Seiford distance, see above:
+	  \eqn{\delta = (2, 2, 1, 2, 1, 1)}.}
+	\item{\code{"EM"}}{the distance obtained from the generalization
+	  of the Kemeny-Snell distance for complete rankings to partial
+	  rankings introduced in Emond and Mason (2000).  This uses a
+	  discrepancy of two for opposite strict preferences, and one
+	  for all other distinct results: 
+	  \eqn{\delta = (1, 1, 1, 2, 1, 1)}.}
+	\item{\code{"JMB"}}{the distance with parameters as suggested by
+	  Jabeur, Martel and Ben Khélifa (2004):
+	  \eqn{\delta = (4/3, 4/3, 4/3, 5/3, 1, 1)}.}
+	\item{\code{"discrete"}}{the discrete metric on the set of paired
+	  comparison results:
+	  \eqn{\delta = (1, 1, 1, 1, 1, 1)}.}
+      }
+
+      Only applicable to crisp endorelations.
     }
   }
     
@@ -116,15 +169,29 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   Information and preference in partial orders: a bimatrix
   representation.
   \emph{Psychometrika} \bold{51}/2, 197--207.
+  \doi{10.1007/BF02293980}.
 
   W. D. Cook and L. M. Seiford (1978),
   Priority ranking and consensus formation.
   \emph{Management Science}, \bold{24}/16, 1721--1732.
+  \doi{10.1287/mnsc.24.16.1721}.
 
   P. Diaconis (1988),
   \emph{Group Representations in Probability and Statistics}.
   Institute of Mathematical Statistics: Hayward, CA.
   
+  E. J. Emond and D. W. Mason (2000),
+  \emph{A new technique for high level decision support}.
+  Technical Report ORD Project Report PR2000/13, Operational
+  Research Division, Department of National Defence, Canada.
+  \url{http://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
+
+  K. Jabeur, J.-M. Martel and S. Ben Khélifa (2004).
+  A distance-based collective preorder integrating the relative
+  importance of the groups members.
+  \emph{Group Decision and Negotiation}, \bold{13}, 327--349.
+  \doi{10.1023/B:GRUP.0000042894.00775.75}.
+
   J. G. Kemeny and J. L. Snell (1962),
   \emph{Mathematical Models in the Social Sciences},
   chapter \dQuote{Preference Rankings: An Axiomatic Approach}.

@@ -532,15 +532,86 @@ function(x, na.rm = FALSE)
 
 relation_has_missings <-
 function(x)
-    any(is.na(.incidence(x)))
+    anyNA(x)
 
 relation_is_acyclic <-
 function(x)
     relation_is_antisymmetric(transitive_closure(x))
 
-relation_is_cyclic <- 
+relation_is_cyclic <-
 function(x)
     !relation_is_acyclic(x)
+
+## New meta-predicate
+
+.all_predicates_ignoring_missingness <- c(
+## these only look at the domain:
+"binary",
+"ternary",
+"quaternary",
+
+## these look at the graph, but currently have no support for NAs:
+"left_total",
+"right_total",
+"surjective",
+"functional",
+"injective",
+"bijective",
+"endorelation",
+"homogeneous",
+
+"acyclic",
+"cyclic"
+)
+
+
+.all_predicates_handling_missingness <- c(
+"crisp",
+"complete",
+"match",
+"strongly_complete",
+"reflexive",
+"irreflexive",
+"coreflexive",
+"symmetric",
+"asymmetric",
+"antisymmetric",
+"transitive",
+"negatively_transitive",
+"quasitransitive",
+"Ferrers",
+"semitransitive",
+"trichotomous",
+"Euclidean",
+"equivalence",
+"weak_order",
+"preference",
+"preorder",
+"quasiorder",
+"partial_order",
+"linear_order",
+"strict_partial_order",
+"strict_linear_order",
+"tournament",
+"interval_order",
+"semiorder"
+)
+
+.all_predicates <- c(.all_predicates_handling_missingness,
+                     .all_predicates_ignoring_missingness)
+
+relation_is <- function(x, predicate, ...)
+{
+    if(!is.relation(x))
+        stop("Argument 'x' must be a relation.")
+    predicate <- match.arg(predicate, .all_predicates)
+    do.call(sprintf("relation_is_%s", predicate), list(x, ...))
+}
+
+is.na.relation <- function(x)
+{
+    is.na(relation_incidence(x))
+}
 
 ## FIXME: add meta cache to improve performance
 ## (idea: all predicates should call .foo-methods internally with additional
@@ -549,10 +620,18 @@ function(x)
 .check_all_predicates <-
 function(x, ...)
 {
-    preds <- ls("package:relations", pattern = "relation_is_.*")
-    props <- sapply(preds, do.call, c(list(x), list(...)))
-    names(props) <- sub("relation_is_", "", names(props))
-    props
+    props1 <- sapply(sprintf("relation_is_%s",
+                             .all_predicates_handling_missingness),
+                     do.call, list(x, ...))
+    names(props1) <- .all_predicates_handling_missingness
+
+    props2 <- sapply(sprintf("relation_is_%s",
+                             .all_predicates_ignoring_missingness),
+                     do.call, list(x))
+    names(props2) <- .all_predicates_ignoring_missingness
+
+    ret <- c(props1, props2)
+    ret[order(names(ret))]
 }
 
 ### Local variables: ***

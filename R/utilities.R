@@ -27,7 +27,7 @@ function(x)
 {
     (is.list(x)
      && (length(x) != 0L)
-     && all(sapply(x, length) > 0L)
+     && all(lengths(x) > 0L)
      && !any(unlist(sapply(x, duplicated))))
 }
 

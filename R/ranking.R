@@ -3,12 +3,20 @@
 ranking <-
 function(x, domain = NULL, decreasing = TRUE, complete = FALSE)
 {
-    ## some checks
+    if(is.numeric(x) &&
+       !is.null(elements <- names(x)) &&
+       all(nzchar(elements))) {
+        ## NAs will be dropped when splitting, hence record here.
+        if(is.null(domain))
+            domain <- elements
+        x <- unname(split(elements, x))
+    } 
+
     elements <- unlist(x)
-    if (any(duplicated(elements)))
+    if(any(duplicated(elements)))
         stop("Elements must be unique.")
 
-    if (is.null(domain))
+    if(is.null(domain))
         domain <- elements
     domain <- as.set(domain)
 
@@ -28,7 +36,7 @@ function(x, domain = NULL, decreasing = TRUE, complete = FALSE)
     ## create scores
     x <- as.list(x)
     SEQ <- if (!decreasing) seq_along else function(x) rev(seq_along(x))
-    ret <- rep(SEQ(x), sapply(x, length))[1 : length(n)]
+    ret <- rep.int(SEQ(x), lengths(x))[1 : length(n)]
     names(ret) <- n
 
     ## complete scores, if needed
