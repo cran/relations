@@ -2,6 +2,12 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-8}{
+  \itemize{
+    \item No user-level changes.
+  }
+}
+
 \section{Changes in version 0.6-7}{
   \itemize{
     \item \code{relation_dissimilarity()}, \code{relation_consensus()}

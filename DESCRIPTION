@@ -1,5 +1,5 @@
 Package: relations
-Version: 0.6-7
+Version: 0.6-8
 Encoding: UTF-8
 Title: Data Structures and Algorithms for Relations
 Description: Data structures and algorithms for k-ary relations with
@@ -7,7 +7,8 @@ Description: Data structures and algorithms for k-ary relations with
   and fitters for consensus relations.
 Authors@R: c(person(given = "David", family = "Meyer", role = c("aut")),
              person(given = "Kurt", family = "Hornik", role = c("aut", "cre"),
-                    email = "Kurt.Hornik@R-project.org"),
+                    email = "Kurt.Hornik@R-project.org",
+		    comment = c(ORCID = "0000-0003-4198-9911")),
              person(given = "Christian", family = "Buchta", role = "ctb"))
 LazyData: yes
 Depends: R (>= 3.2.0)
@@ -17,10 +18,10 @@ Suggests: Rgraphviz, clue (>= 0.3-49), Rglpk (>= 0.3-1), lpSolve (>=
 Enhances: seriation, Rcplex
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2017-08-09 04:28:08 UTC; hornik
+Packaged: 2018-04-23 04:42:52 UTC; hornik
 Author: David Meyer [aut],
-  Kurt Hornik [aut, cre],
+  Kurt Hornik [aut, cre] (<https://orcid.org/0000-0003-4198-9911>),
   Christian Buchta [ctb]
 Maintainer: Kurt Hornik <Kurt.Hornik@R-project.org>
 Repository: CRAN
-Date/Publication: 2017-08-09 05:29:40 UTC
+Date/Publication: 2018-04-23 09:11:24 UTC
