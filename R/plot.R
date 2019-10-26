@@ -37,10 +37,11 @@ function(x, attrs = list(list(graph = list(rankdir = "BT"),
 {
     if(!is.relation_ensemble(x))
         stop("Wrong class.")
-    if(!all(sapply(x,
+    if(!all(vapply(x,
                    function(e)
                    (isTRUE(relation_is_crisp(e)) &&
-                    relation_is_endorelation(e)))))
+                    relation_is_endorelation(e)),
+                   NA)))
         stop("Plotting only available for ensembles of crisp endorelations without missings.")
 
     ## Make things a bit more efficient.

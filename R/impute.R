@@ -81,12 +81,12 @@ function(D, I, NAs, control)
     n <- length(NAs)
     m <- mn - n
 
-    A <- I[1:m, 1:m]
-    B <- matrix(rep.int(seq_len(m), n), m, n) / (m + 1)
-    C <- matrix(rep(rev(seq_len(m)), each = n), n, m) / (m + 1)
-    D <- matrix(0.5, n, n)
-    diag(D) <- 1
-    I <- rbind(cbind(A, B), cbind(C, D))[ro, ro]
+    a <- I[1:m, 1:m]
+    b <- matrix(rep.int(seq_len(m), n), m, n) / (m + 1)
+    c <- matrix(rep(rev(seq_len(m)), each = n), n, m) / (m + 1)
+    d <- matrix(0.5, n, n)
+    diag(d) <- 1
+    I <- rbind(cbind(a, b), cbind(c, d))[ro, ro]
     .make_relation_from_domain_and_incidence(D, I)
 }
 
@@ -152,12 +152,12 @@ function(I, n, diag = 1)
 
     mn <- ncol(I)
     m <- mn - n
-    N <- .nsol_W(m, n)
 
     A <- I[1:m, 1:m]
 
     reps <- table(cumsum(!duplicated(A)))
     c <- length(reps)
+    N <- .nsol_W(c, n)
 
     f1 <- (.nsol_W(c, n - 1) + .nsol_W(c + 1, n - 1)) / N
     fp <- f1 * (c + 1) / 2

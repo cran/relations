@@ -103,7 +103,7 @@ function(x, i)
     ## For lists, this gives NULL elements.  We could convert them to
     ## null relations (all incidences zero).  For now, we remove them.
     y <- NextMethod("[")
-    .make_relation_ensemble_from_list_and_meta(y[!sapply(y, is.null)],
+    .make_relation_ensemble_from_list_and_meta(y[!vapply(y, is.null, NA)],
                                                attr(x, ".Meta"))
 }
 
@@ -345,7 +345,7 @@ function(x)
 
 .is_ensemble_of_crisp_relations <-
 function(x)
-    all(sapply(x, relation_is_crisp))
+    all(vapply(x, relation_is_crisp, NA))
 
 
 ### Local variables: ***

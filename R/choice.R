@@ -109,7 +109,10 @@ function(relations, weights, control)
     delta <- control$delta
     gamma <- control$gamma
 
-    incidences <- lapply(relations, relation_incidence)
+    ## Coefficients of the choice QP.
+    incidences <- lapply(relations,
+                         .relation_dissimilarity_PC_IP,
+                         control$family)
     AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
     A <- AB$A
     B <- AB$B

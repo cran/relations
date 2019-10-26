@@ -638,7 +638,7 @@ function(D, I)
     ## Now canonicalize by turning all domain components into sets, and
     ## reordering the incidences accordingly.  Note that components
     ## which are already sets are already in the canonical order.
-    ind <- sapply(D, is.cset)
+    ind <- vapply(D, is.cset, NA)
     if(!all(ind)) {
         ## If all components are sets there is nothing we need to do.
         pos <- vector("list", length = length(D))

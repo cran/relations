@@ -14,7 +14,7 @@
 ## pre-transforming.
 ## (The same could be done for user-defined methods by providing and
 ## exposing a relation_dissimilarity_method() generator.)
-                         
+
 relation_dissimilarity <-
 function(x, y = NULL, method = "symdiff", ...)
 {
@@ -53,14 +53,14 @@ function(x, y = NULL, method = "symdiff", ...)
     ## Canonicalize method and trafos, expanding generators.
     ## Note that generators are currently called with *all* args in
     ## ... and hence should accept all possible additional args.
-    
+
     fmethod <- if(inherits(method, "Generator"))
         method(...)
     else if(length(formals(method)) > 2L)
         function(x, y) method(x, y, ...)
     else
         method
-    
+
     fxtrafo <- if(is.null(xtrafo))
         NULL
     else if(inherits(xtrafo, "Generator"))
@@ -86,7 +86,7 @@ function(x, y = NULL, method = "symdiff", ...)
     ## for (cross-)proximity objects, all we can return is a matrix or a
     ## dist object.
     ## </NOTE>
-    
+
     if(!is.null(y)) {
         y <- as.relation_ensemble(y)
         D <- relation_domain(x)
@@ -123,7 +123,7 @@ function(x, y = NULL, method = "symdiff", ...)
 
 relation_dissimilarity_methods_db <- new.env()
 
-set_relation_dissimilarity_method <- 
+set_relation_dissimilarity_method <-
 function(name,
          description, method, xtrafo = NULL, ytrafo = NULL,
          additional = character(), ...)
@@ -173,7 +173,7 @@ function(x)
         stop("Not implemented.")        # David said so ...
     relation_incidence(x)
 }
-    
+
 .relation_dissimilarity_symdiff_method <-
 Generator(function(na.rm = FALSE) {
               function(x, y)
@@ -222,14 +222,14 @@ function(x, y, na.rm = FALSE)
 ## Psychometrika 51/2. 197-207.
 ## Unique paired comparison metric for partial rankings (Definition 2.1)
 ## under the assumption that indifference is the centroid between strict
-## preferences and incomparability. 
+## preferences and incomparability.
 ## <NOTE>
 ## Originally only defined between (partial) rankings, but applicable
 ## more generally.
 ## </NOTE>
 
 .relation_dissimilarity_CKS_xtrafo <-
-function(x)    
+function(x)
 {
     x <- relation_incidence(x)
     list(P = pmin(t(x), 1 - x),
@@ -262,7 +262,7 @@ function(x, y)
 function(x, y)
 {
     P_x <- pmin(t(x), 1 - x)
-    I_x <- pmax(x, t(x)) 
+    I_x <- pmax(x, t(x))
     P_y <- pmin(t(y), 1 - y)
     I_y <- pmax(y, t(y))
     sum(abs(P_x - P_y)) + sum(abs(I_x - I_y)) / 2
@@ -291,12 +291,12 @@ function(x, y)
 
 ## set_relation_dissimilarity_method("CS",
 ##                                   "Cook-Seiford distance",
-##                                   .relation_dissimilarity_CS_method,         
+##                                   .relation_dissimilarity_CS_method,
 ##                                   .relation_dissimilarity_CS_xtrafo,
 ##                                   .relation_dissimilarity_CS_xtrafo)
 
 ## Old style without trafos:
-    
+
 ## .relation_dissimilarity_CS <-
 ## function(x, y)
 ## {
@@ -369,7 +369,7 @@ Generator(function(score = NULL, Delta = 1) {
 ##     }
 ##     else
 ##         stop("Invalid 'score' argument.")
-##    
+##
 ##     if(is.numeric(p <- Delta) && (length(p) == 1L) && (p >= 1)) {
 ##         Delta <- function(u, v) sum(abs(u - v) ^ p) ^ (1 / p)
 ##     } else if(!is.function(Delta))
@@ -405,14 +405,14 @@ Generator(function(na.rm = FALSE) {
 
 ## (Still used in consensus code.)
 .incidence_dissimilarity_manhattan <-
-function(x, y, na.rm = FALSE)    
+function(x, y, na.rm = FALSE)
     sum(abs(x - y), na.rm = na.rm)
 
 ## ** relation_dissimilarity method 'euclidean'
 
 .relation_dissimilarity_euclidean_params <- c("na.rm")
 
-.relation_dissimilarity_euclidean_method <- 
+.relation_dissimilarity_euclidean_method <-
 Generator(function(na.rm = FALSE) {
               function(x, y)
                   sqrt(sum((x - y) ^ 2, na.rm = na.rm))
@@ -424,7 +424,7 @@ Generator(function(na.rm = FALSE) {
 ##                                   relation_incidence,
 ##                                   relation_incidence,
 ##                                   .relation_dissimilarity_euclidean_params)
-    
+
 ## Old style without trafos:
 
 ## .relation_dissimilarity_euclidean <-
@@ -452,7 +452,7 @@ Generator(function(na.rm = FALSE) {
                       sum(.S.(x, y), na.rm = na.rm)
               }
           })
-    
+
 
 ## set_relation_dissimilarity_method("Jaccard",
 ##                                   "Jaccard distance",
@@ -466,7 +466,7 @@ Generator(function(na.rm = FALSE) {
 ## ## One could also use
 ## ##   1 - gset_similarity(relation_graph(x), relation_graph(y))
 ## ## but proceeding directly should be more efficient.
-##                                  
+##
 ## .relation_dissimilarity_Jaccard <-
 ## function(x, y, na.rm = FALSE)
 ##     .incidence_dissimilarity_Jaccard(relation_incidence(x),
@@ -485,30 +485,30 @@ Generator(function(na.rm = FALSE) {
 
 ## ** relation_dissimilarity method 'PC'
 
-.relation_dissimilarity_PC_params <- c("delta", "gamma")
+.relation_dissimilarity_PC_params <-
+    c("delta", "gamma", "family")
 
-.relation_dissimilarity_PC_xtrafo <- 
-Generator(function(delta = "symdiff", gamma = NULL) {
+.relation_dissimilarity_PC_xtrafo <-
+Generator(function(delta = "symdiff", gamma = NULL, family = NULL) {
               D <- .relation_dissimilarity_PC_Delta(delta)
               M <- .relation_dissimilarity_PC_M(D)
-              function(x)
-                  .relation_dissimilarity_PC_ABC(relation_incidence(x),
-                                                 delta,
-                                                 gamma,
-                                                 D,
-                                                 M)
+              function(x) {
+                  IP <- .relation_dissimilarity_PC_IP(x, family)
+                  .relation_dissimilarity_PC_ABC(IP, delta, gamma,
+                                                 D, M)
+              }
           })
-              
+
 .relation_dissimilarity_PC_ytrafo <-
-function(y)
-{
-    Y <- relation_incidence(y)
-    list(Y = Y, YtY = Y * t(Y))
-}
+Generator(function(delta = "symdiff", gamma = NULL, family = NULL) {
+              function(y)
+                  .relation_dissimilarity_PC_IP(y, family)
+          })
 
 .relation_dissimilarity_PC_method <-
-function(x, y)    
-    sum(x$C) + sum(x$B * y$Y) + sum(x$A * y$YtY)
+function(x, y) {
+    sum(x$C) + sum(x$B * y$I) + sum(x$A * y$P)
+}
 
 ## set_relation_dissimilarity_method("PC",
 ##                                   "paired comparison distance",
@@ -528,26 +528,31 @@ function(x, y)
 
 ## (Still used in consensus code.)
 .incidence_dissimilarity_PC <-
-function(X, Y, delta, gamma)
+function(IP, Y, delta, gamma)
 {
-    ABC <- .relation_dissimilarity_PC_ABC(X, delta, gamma)
+    ABC <- .relation_dissimilarity_PC_ABC(IP, delta, gamma)
     sum(ABC$C) + sum(ABC$B * Y) + sum(ABC$A * Y * t(Y))
 }
 
 .relation_dissimilarity_PC_ABC <-
-function(X, delta, gamma, D = NULL, M = NULL)
+function(IP, delta, gamma, D = NULL, M = NULL)
 {
-    nrx <- nrow(X)
-    dnx <- dimnames(X)
+    X <- IP$I
+    P <- IP$P
 
     if(is.null(D))
         D <- .relation_dissimilarity_PC_Delta(delta)
     if(is.null(M))
         M <- .relation_dissimilarity_PC_M(D)
 
-    x <- diag(X)
     T <- t(X)
-    P <- X * T
+    if(is.null(P))
+        P <- X * T
+
+    nrx <- nrow(X)
+    dnx <- dimnames(X)
+
+    x <- diag(X)
 
     M1 <-             M[1L, 2L] * X + M[1L, 3L] * T + M[1L, 4L] * P
     M2 <- M[2L, 1L] + M[2L, 2L] * X + M[2L, 3L] * T + M[2L, 4L] * P
@@ -648,4 +653,63 @@ function(x)
         x
     else
         stop("Invalid PC discrepancies.")
+}
+
+## averaged incidences for W with PC dist
+.impute_P <-
+function(I, n)
+{
+    o <- do.call(order, split(I, col(I)))
+    ro <- `[<-`(seq_along(o), o, seq_along(o))
+    I <- I[o, o, drop = FALSE]
+
+    mn <- ncol(I)
+    m <- mn - n
+
+    A <- I[1:m, 1:m]
+    c  <- length(table(cumsum(!duplicated(A))))
+
+    A <- A * t(A)
+
+    f <- .nsol_W(c, n - 1) / .nsol_W(c, n)
+    B <- matrix(f, m, n)
+    D <- matrix(f, n, n)
+    diag(D) <- 1
+
+    rbind(cbind(A, B), cbind(t(B), D))[ro, ro, drop = FALSE]
+}
+
+
+.relation_dissimilarity_PC_IP <-
+function(x, family = NULL)
+{
+    X <- relation_incidence(x)
+    ## If X has no missings, return a list with X and P = X * t(X) [the
+    ## incidences of the symmetric part of x].
+    ## Otherwise, if family is suitable, return a list of the average X
+    ## and P over all imputations of x within the family (if possible).
+
+    if(is.character(family) && anyNA(X) && (length(family) == 1L)) {
+        if(family == "L") {
+            ## FIXME: make testing for possible imputations in L more
+            ## efficient.
+            if(!relation_is_linear_order(x, na.rm = TRUE))
+                stop("Cannot impute within family 'L'.")
+            X <- .incidence(relation_impute(x, "average/L"))
+            P <- diag(1, nrow(X), ncol(X))
+        } else if(family == "W") {
+            ## FIXME: make testing for possible imputations in W more
+            ## efficient.
+            if(!relation_is_weak_order(x, na.rm = TRUE))
+                stop("Cannot impute within family 'W'.")
+            P <- .impute_P(X, length(.missing_objects(X)))
+            X <- .incidence(relation_impute(x, "average/W"))
+        } else
+            stop(gettextf("Invalid family '%s'.", family),
+                 domain = NA)
+    } else {
+        P <- X * t(X)
+    }
+
+    list(I = X, P = P)
 }

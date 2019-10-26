@@ -162,7 +162,7 @@ function(x, y, ...)
     Dxy <- Map(set_intersection, Dx, Dy)
 
     ## check if there is some overlap
-    if (any(sapply(Dxy, set_is_empty)))
+    if (any(vapply(Dxy, set_is_empty, NA)))
         return(set())
 
     ## extract incidences for common domain

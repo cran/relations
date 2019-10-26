@@ -692,9 +692,6 @@ function(relations, weights, control)
 
 ### ** .relation_consensus_PC_G
 
-## <FIXME>
-## Not yet ...
-## </FIXME>
 .relation_consensus_PC_G <-
 function(relations, weights, control)
 {
@@ -711,7 +708,9 @@ function(relations, weights, control)
 
     delta <- control$delta
     gamma <- control$gamma
-    incidences <- lapply(relations, relation_incidence)
+    incidences <- lapply(relations,
+                         .relation_dissimilarity_PC_IP,
+                         control$family)
     AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
 
     B <- AB$B
@@ -1330,7 +1329,9 @@ function(relations, family, weights, control)
 
     delta <- control$delta
     gamma <- control$gamma
-    incidences <- lapply(relations, relation_incidence)
+    incidences <- lapply(relations,
+                         .relation_dissimilarity_PC_IP,
+                         control$family) 
     AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
     if(identical(control$simplify, FALSE) ||
        family %in% c("preorder", "transitive")) {
@@ -1369,7 +1370,9 @@ function(relations, weights, k, control)
 
     delta <- control$delta
     gamma <- control$gamma
-    incidences <- lapply(relations, relation_incidence)
+    incidences <- lapply(relations,
+                         .relation_dissimilarity_PC_IP,
+                         control$family)
     AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
     B <- AB$B + AB$A
     I <- fit_relation_LP_E_k(B, k, control)
@@ -1392,7 +1395,9 @@ function(relations, weights, k, control)
 
     delta <- control$delta
     gamma <- control$gamma
-    incidences <- lapply(relations, relation_incidence)
+    incidences <- lapply(relations,
+                         .relation_dissimilarity_PC_IP,
+                         control$family)
     AB <- .make_fit_relation_PC_AB(incidences, weights, delta, gamma)
     B <- AB$B + AB$A + t(AB$A)
     I <- fit_relation_LP_W_k(B, k, control)
@@ -1465,9 +1470,11 @@ function(incidences, weights, P = NULL, Q = NULL)
 .make_fit_relation_PC_AB <-
 function(incidences, weights, delta, gamma)
 {
+    ## NOTE: This takes 'incidences' as I/P lists obtained by
+    ## .relation_dissimilarity_PC_IP().
     w <- rep_len(weights, length(incidences))
     if(is.relation_ensemble(incidences)) 
-        incidences <- lapply(incidences, relation_incidence)
+        incidences <- lapply(incidences, .relation_dissimilarity_PC_IP)
     D <- .relation_dissimilarity_PC_Delta(delta)
     M <- .relation_dissimilarity_PC_M(D)
     ABC <- lapply(incidences, .relation_dissimilarity_PC_ABC,
@@ -1572,9 +1579,12 @@ function(I, incidences, weights)
 .relation_consensus_PC_objval <-
 function(I, incidences, weights, delta, gamma)
 {
+    ## NOTE: This takes 'incidences' as I/P lists obtained by
+    ## .relation_dissimilarity_PC_IP().
+    
     ## Be nice.
     if(is.relation_ensemble(incidences))
-        incidences <- lapply(incidences, relation_incidence)
+        incidences <- lapply(incidences, .relation_dissimilarity_PC_IP)
     if(is.list(I)) I <- I[[1L]]
 
     sum(weights *
