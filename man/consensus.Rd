@@ -248,7 +248,7 @@ relation_consensus(x, method = NULL, weights = 1,
   \emph{A new technique for high level decision support}.
   Technical Report ORD Project Report PR2000/13, Operational
   Research Division, Department of National Defence, Canada.
-  \url{http://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
+  \url{https://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
 
   K. Hornik and D. Meyer (2007),
   Deriving consensus rankings from benchmarking experiments.

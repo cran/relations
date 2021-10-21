@@ -1,5 +1,5 @@
 Package: relations
-Version: 0.6-9
+Version: 0.6-10
 Encoding: UTF-8
 Title: Data Structures and Algorithms for Relations
 Description: Data structures and algorithms for k-ary relations with
@@ -18,10 +18,10 @@ Suggests: Rgraphviz, clue (>= 0.3-49), Rglpk (>= 0.3-1), lpSolve (>=
 Enhances: seriation, Rcplex
 License: GPL-2
 NeedsCompilation: no
-Packaged: 2019-10-26 14:01:43 UTC; hornik
+Packaged: 2021-10-21 18:42:10 UTC; hornik
 Author: David Meyer [aut],
   Kurt Hornik [aut, cre] (<https://orcid.org/0000-0003-4198-9911>),
   Christian Buchta [ctb]
 Maintainer: Kurt Hornik <Kurt.Hornik@R-project.org>
 Repository: CRAN
-Date/Publication: 2019-10-26 15:52:53 UTC
+Date/Publication: 2021-10-21 19:10:21 UTC
