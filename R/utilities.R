@@ -173,7 +173,7 @@ function(x, w = NULL, na.rm = FALSE)
 {
     ## Compute weighted sum \sum w_b x_b for conforming arrays x_b.
     if(is.null(w)) w <- rep.int(1, length(x))
-    array(rowSums(mapply("*", x, w), na.rm = na.rm),
+    array(rowSums(mapply(`*`, x, w), na.rm = na.rm),
           dim = dim(x[[1L]]), dimnames = dimnames(x[[1L]]))
 }
 

@@ -125,10 +125,10 @@ function(x, y, ...)
     ## extract incidences for combined domain
     Ix <- Iy <- array(0, lengths(Dxy),
                       lapply(Dxy, LABELS, quote = FALSE))
-    Ix <- do.call("[<-", c(list(Ix),
+    Ix <- do.call(`[<-`, c(list(Ix),
                            lapply(Dx, LABELS, quote = FALSE),
                            list(relation_incidence(x))))
-    Iy <- do.call("[<-", c(list(Iy),
+    Iy <- do.call(`[<-`, c(list(Iy),
                            lapply(Dy, LABELS, quote = FALSE),
                            list(relation_incidence(y))))
 
@@ -166,9 +166,9 @@ function(x, y, ...)
         return(set())
 
     ## extract incidences for common domain
-    Ix <- do.call("[", c(list(relation_incidence(x)),
+    Ix <- do.call(`[`, c(list(relation_incidence(x)),
                          lapply(Dxy, LABELS, quote = FALSE)))
-    Iy <- do.call("[", c(list(relation_incidence(y)),
+    Iy <- do.call(`[`, c(list(relation_incidence(y)),
                          lapply(Dxy, LABELS, quote = FALSE)))
 
     ## and put things together
@@ -191,7 +191,7 @@ function(x, y = NULL)
         stop("Relation arity mismatch.")
 
     ## extract incidences for common domain
-    I <- do.call("[", c(list(.incidence(y)), Map(.exact_match, Dx, Dy)))
+    I <- do.call(`[`, c(list(.incidence(y)), Map(.exact_match, Dx, Dy)))
     I[is.na(I)] <- 0
     relation_intersection(x,
         relation_complement(.make_relation_from_domain_and_incidence(Dx, I)))

@@ -192,7 +192,7 @@ function(D, I, NAs, control)
         list(x, y)
     }
     for (k in seq_len(nrow(ind))) {
-        I <- do.call("c", lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
+        I <- do.call(c, lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
         if (length(I) > control$n) {
             I <- lapply(I[seq_len(control$n)],
                         function(i) `[<-`(i, is.na(i), 0))

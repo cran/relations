@@ -54,7 +54,7 @@ function(x, maximum = FALSE)
     n <- nrow(x)
     nodes <- list(node(x, integer(), 0))
     while(n > 1L) {
-        nodes <- do.call("c", lapply(nodes, splitter))
+        nodes <- do.call(c, lapply(nodes, splitter))
         n <- n - 1L
     }
 
@@ -124,7 +124,7 @@ function(x, n, maximum = FALSE)
     k <- nrow(x)
     nodes <- list(node(x, integer(), 0))
     while((length(nodes) < n) && (k > 1L))  {
-        nodes <- do.call("c", lapply(nodes, splitter))
+        nodes <- do.call(c, lapply(nodes, splitter))
         k <- k - 1L
     }
     if(length(nodes) > n)

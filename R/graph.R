@@ -133,7 +133,7 @@ function(x)
     memberships <- NULL
     if (!isTRUE(relation_is_crisp(x)))
         memberships <- I[I > 0 | is.na(I)]
-    .structure(lapply(.cartesian_product(D), "[", ind),
+    .structure(lapply(.cartesian_product(D), `[`, ind),
                memberships = memberships,
                names = names(D))
     ## </NOTE>

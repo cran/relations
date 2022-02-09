@@ -20,7 +20,7 @@ function(x, components = FALSE)
                    }
                    if(length(args) != a)
                        stop("Wrong number of arguments.")
-                   t <- .split_into_components(do.call("cbind", args))
+                   t <- .split_into_components(do.call(cbind, args))
                    ind <- rbind(mapply(.exact_match, t, D))
                    if (any(is.na(ind)))
                        stop("Out-of-domain elements.")

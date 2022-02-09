@@ -87,7 +87,7 @@ function(domain = NULL, incidence = NULL, graph = NULL, charfun = NULL)
             ind <- Map(match, list(domain), dn)
 
             ## span target array using indices
-            incidence <- do.call("[", c(list(incidence), ind))
+            incidence <- do.call(`[`, c(list(incidence), ind))
 
             ## replace all NAs produced with 0
             incidence[is.na(incidence)] <- 0
@@ -159,7 +159,7 @@ function(x, ...)
         rep.int(list(x), 2L)
     else
         NULL
-    I <- outer(x, x, "<=")
+    I <- outer(x, x, `<=`)
     meta <- if(any(is.na(x)))
         list(is_endorelation = TRUE,
              is_complete = NA,
@@ -188,7 +188,7 @@ function(x, ...)
         rep.int(list(as.character(x)), 2L)
     else
         NULL
-    I <- outer(x, x, "<=")
+    I <- outer(x, x, `<=`)
     meta <- if(any(is.na(x)))
         list(is_endorelation = TRUE,
              is_complete = NA,
@@ -214,7 +214,7 @@ function(x, ...)
         rep.int(list(as.character(x)), 2L)
     else
         NULL
-    I <- outer(x, x, "==")
+    I <- outer(x, x, `==`)
     meta <- if(any(is.na(x)))
         list(is_endorelation = TRUE,
              is_reflexive = NA,
@@ -294,7 +294,7 @@ function(x, ...)
         list(nms, nms)
     else
         NULL
-    I <- outer(oo, oo, "<=")
+    I <- outer(oo, oo, `<=`)
     meta <- .relation_meta_db[["L"]]
     .make_relation_from_domain_and_incidence(D, I, meta)
 }
@@ -338,7 +338,7 @@ function(x, ...)
     D <- Map(.set_subset, D, l)
 
     ## subset incidence matrix using standard method
-    I <- do.call("[", c(list(I), l, drop = FALSE))
+    I <- do.call(`[`, c(list(I), l, drop = FALSE))
 
     ## return new relation
     .make_relation_from_domain_and_incidence(D, I)
@@ -543,7 +543,7 @@ function(e1, e2)
             I <- diag(nrow = .size(e1)[[1L]])
             return(.make_relation_from_domain_and_incidence(D1, I))
         } else {
-            I <- Reduce("%*%", rep.int(I1, e2))
+            I <- Reduce(`%*%`, rep.int(I1, e2))
             return(.make_relation_from_domain_and_incidence(D1, I))
         }
     }
@@ -728,7 +728,7 @@ function(D, G)
         ##                              .transform_factors_into_characters(D))))
         ##         stop("Invalid graph with out-of-domain elements.")
         ## </FIXME>
-        if((L > 0) && !all(mapply(set_is_subset, values, D)))
+        if((L > 0) && !all(mapply(cset_is_subset, values, D)))
             stop("Invalid graph with out-of-domain elements.")
     } else
         D <- values

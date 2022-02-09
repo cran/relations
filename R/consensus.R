@@ -80,14 +80,14 @@ function(relations, weights, control, FUN, ...)
     scores <- lapply(relations, FUN, ...)
 
     ## Multiply by the weights and compute the total scores.
-    scores <- rowSums(mapply("*", scores, weights))
+    scores <- rowSums(mapply(`*`, scores, weights))
 
     ## break ties directly if a single linear order is enforced.
     out <-
         rank(scores,
              ties.method = if (f_l_o && n == 1L) "first" else "average")
 
-    INC <- function(S) outer(S, S, "<=")
+    INC <- function(S) outer(S, S, `<=`)
     I <- if (f_l_o && n > 1L) {
         ## find all groupwise permutations & combine
         l <- expand.grid(lapply(split(seq_along(out), out), .permute))
@@ -167,8 +167,8 @@ function(relations, weights, control)
     incidences <- lapply(relations, relation_incidence)
     scores <- sapply(incidences, .incidence_scores_ranks)
     for(k in seq_len(n))
-        C[, k] <- rowSums(sweep(abs(scores - k), 2L, weights, "*"))
-    .compare <- function(u) outer(u, u, ">=")
+        C[, k] <- rowSums(sweep(abs(scores - k), 2L, weights, `*`))
+    .compare <- function(u) outer(u, u, `>=`)
     I <- if(nos > 1L)
         lapply(.find_up_to_n_LSAP_solutions(C, nos), .compare)
     else
@@ -243,7 +243,7 @@ function(relations, weights, control)
         k <- 1L
         nr <- nrow(ind)
         while((length(I) < nos) && (k <= nr)) {
-            I <- do.call("c",
+            I <- do.call(c,
                          lapply(I, splitter, ind[k, 1L], ind[k, 2L]))
             k <- k + 1L
         }
@@ -343,7 +343,7 @@ function(relations, weights, control)
     incidences <- lapply(relations, relation_incidence)
     weights <- rep_len(weights, length(incidences))
     ## Incidences of the consensus relation are the weighted medians.
-    I <- array(apply(do.call("cbind", lapply(incidences, c)),
+    I <- array(apply(do.call(cbind, lapply(incidences, c)),
                      1L, clue:::weighted_median, weights),
                dim = .size(relations))
     meta <-
@@ -518,7 +518,7 @@ function(relations, weights, control)
 
         ## Split diagonal terms when m_{ii} = 0.
         for(i in which(diag(M) == 0)) {
-            I <- do.call("c",
+            I <- do.call(c,
                          lapply(I,
                                 function(x, i) {
                                     y <- x
@@ -555,7 +555,7 @@ function(relations, weights, control)
                 k <- 1L
                 nr <- nrow(ind)
                 while((length(I) < nos) && (k <= nr)) {
-                    I <- do.call("c",
+                    I <- do.call(c,
                                  lapply(I, fun, ind[k, 1L], ind[k, 2L]))
                     k <- k + 1L
                 }
