@@ -120,7 +120,7 @@ function(x, y, ...)
         stop("Relation arity mismatch.")
 
     ## combine domains
-    Dxy <- Map(set_union, Dx, Dy)
+    Dxy <- Map(cset_union, Dx, Dy)
 
     ## extract incidences for combined domain
     Ix <- Iy <- array(0, lengths(Dxy),
@@ -159,10 +159,10 @@ function(x, y, ...)
         stop("Relation arity mismatch.")
 
     ## intersect domains
-    Dxy <- Map(set_intersection, Dx, Dy)
+    Dxy <- Map(cset_intersection, Dx, Dy)
 
     ## check if there is some overlap
-    if (any(vapply(Dxy, set_is_empty, NA)))
+    if (any(vapply(Dxy, cset_is_empty, NA)))
         return(set())
 
     ## extract incidences for common domain

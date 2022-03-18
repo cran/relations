@@ -2,6 +2,12 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-12}{
+  \itemize{
+    \item No user-level changes.
+  }
+}
+
 \section{Changes in version 0.6-11}{
   \itemize{
     \item No user-level changes.

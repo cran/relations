@@ -556,7 +556,7 @@ function(e1, e2)
     if(as.character(.Generic) == "*") {
         if((length(D1) != 2L)
            || (length(D2) != 2L)
-           || !set_is_equal(D1[[2L]], D2[[1L]]))
+           || !cset_is_equal(D1[[2L]], D2[[1L]]))
             stop("Composition of given relations not defined.")
         ## When composing indicidences, need the same *internal* order
         ## for D2[[1L]] as for D1[[2L]].
