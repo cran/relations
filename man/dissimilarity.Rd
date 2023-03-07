@@ -184,7 +184,7 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   \emph{A new technique for high level decision support}.
   Technical Report ORD Project Report PR2000/13, Operational
   Research Division, Department of National Defence, Canada.
-  \url{https://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
+  %% \url{https://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
 
   K. Jabeur, J.-M. Martel and S. Ben Khélifa (2004).
   A distance-based collective preorder integrating the relative

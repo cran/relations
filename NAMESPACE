@@ -159,6 +159,7 @@ S3method("sym", "relation")
 S3method("asy", "relation")
 
 S3method("as.relation", "default")
+S3method("as.relation", "array")
 S3method("as.relation", "character")
 S3method("as.relation", "cl_partition")
 S3method("as.relation", "data.frame")
