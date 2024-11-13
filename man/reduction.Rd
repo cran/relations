@@ -41,7 +41,7 @@ reflexive_reduction(x)
   \code{\link{relation}()},\cr
   \code{\link{reflexive_reduction}()},
   \code{\link{transitive_reduction}()},
-  \code{\link[sets:closure]{reduction}()},\cr
+  \code{\link[sets]{reduction}()},\cr
   \code{\link{relation_condensation}()},
   \code{\link{relation_component_representation}()}.
 }

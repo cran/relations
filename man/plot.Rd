@@ -33,14 +33,14 @@
   \item{x}{an \R object inheriting from class \code{\link{relation}} or
      \code{\link{relation_ensemble}}.}
   \item{attrs}{argument passed to the plot method for class
-    \code{\link[graph:graphNEL-class]{graphNEL}}.
+    \code{\link[graph]{graphNEL}}.
     
     Note that for the \code{relation_ensemble} method, it is a
     \emph{list} of such objects, recycled as needed.}
   \item{type}{character vector of either "simplified" or "raw"
      strings, one for each relation plotted. (See details.)}
   \item{limit}{Argument passed to the labeling function creating default
-    labels for the nodes (see \code{\link[sets:labels]{LABELS}()}).
+    labels for the nodes (see \code{\link[sets]{LABELS}()}).
     Recycled as needed for relation ensembles.}
   \item{labels}{Optional list of character vectors defining unique
     labels for the nodes. List of such lists for relation ensembles.}
@@ -48,7 +48,7 @@
      and columns of the screen layout.  If \code{NULL}, the layout is
      square.}
   \item{\dots}{Other arguments passed to the
-    \code{\link[graph:graphNEL-class]{graphNEL}} plot method.}
+    \code{\link[graph]{graphNEL}} plot method.}
   \item{main}{character vector used for the main title(s). If \code{NULL},
      the title(s) is (are) set to the type of the visualized relation(s).}
 }
