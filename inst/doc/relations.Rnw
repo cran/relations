@@ -36,7 +36,7 @@
 \title{Good Relations with \R}
 \author{David Meyer and Kurt Hornik}
 %% \VignetteIndexEntry{Relations}
-%\VignetteDepends{relations,sets}
+%\VignetteDepends{relations,sets,Rgraphviz}
 %\VignetteKeywords{set, tuple, relation, relation ensemble, consensus, Hasse Diagram}
 %\VignettePackage{relations}
 

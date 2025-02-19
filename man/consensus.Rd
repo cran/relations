@@ -276,13 +276,15 @@ data("Felines")
 relations <- as.relation_ensemble(Felines)
 ## This gives a relation ensemble of length 14 (number of variables in
 ## the data set).
-## Now fit an equivalence relation to this:
-E <- relation_consensus(relations, "symdiff/E")
-## And look at the equivalence classes:
-ids <- relation_class_ids(E)
-## Or, more nicely:
-split(rownames(Felines), ids)
-## Which is the same as in the paper ...
+if(requireNamespace("Rglpk", quietly = TRUE)) {
+    ## Now fit an equivalence relation to this:
+    E <- relation_consensus(relations, "symdiff/E")
+    ## And look at the equivalence classes:
+    ids <- relation_class_ids(E)
+    ## Or, more nicely:
+    split(rownames(Felines), ids)
+    ## Which is the same as in the paper ...
+}
 
 ## Consensus linear order.
 ## Example from Cook and Kress, pages 48ff.
@@ -301,19 +303,21 @@ pm <- matrix(c(0, 1, 0, 1, 1,
 R <- as.relation(t(pm))
 relation_incidence(R)
 relation_is(R, "tournament")
-## Closest linear order:
-L <- relation_consensus(R, "symdiff/L")
-relation_incidence(L)
-## Visualize provided that Rgraphviz is available.
-if(require("Rgraphviz")) plot(L)
-## But note that this linear order is not unique.
-L <- relation_consensus(R, "symdiff/L", control = list(n = "all"))
-print(L)
-if(require("Rgraphviz")) plot(L)
-## (Oh no: c is once first and once last.)
-## Closest weak order relation with at most 3 indifference classes:
-W3 <- relation_consensus(R, "symdiff/W", control = list(k = 3))
-relation_incidence(W3)
+if(requireNamespace("Rglpk", quietly = TRUE)) {
+    ## Closest linear order:
+    L <- relation_consensus(R, "symdiff/L")
+    relation_incidence(L)
+    ## Visualize provided that Rgraphviz is available.
+    if(require("Rgraphviz")) plot(L)
+    ## But note that this linear order is not unique.
+    L <- relation_consensus(R, "symdiff/L", control = list(n = "all"))
+    print(L)
+    if(require("Rgraphviz")) plot(L)
+    ## (Oh no: c is once first and once last.)
+    ## Closest weak order relation with at most 3 indifference classes:
+    W3 <- relation_consensus(R, "symdiff/W", control = list(k = 3))
+    relation_incidence(W3)
+}
 
 ## Consensus weak orders.
 ## Example from Emond and Mason, pages 28f.
@@ -372,11 +376,13 @@ EM_solutions <- lapply(EM_solutions, maker)
 ## featuring unranked objects.
 ## Following the reference, we impute these by zeroes:
 ens <- relation_impute(relation_ensemble(list = EM_inputs), "omit")
-## We can now obtain all consensus weak orders (corresponding to
-## complete rankings) as follows:
-con <- relation_consensus(ens, "PC/W", wei, delta = "EM", all = TRUE)
-## To verify that these agree with the solutions given in the
-## reference:
-sets::set_outer(con, relation_ensemble(list = EM_solutions), `==`)
+if(requireNamespace("Rglpk", quietly = TRUE)) {
+    ## We can now obtain all consensus weak orders (corresponding to
+    ## complete rankings) as follows:
+    con <- relation_consensus(ens, "PC/W", wei, delta = "EM", all = TRUE)
+    ## To verify that these agree with the solutions given in the
+    ## reference:
+    sets::set_outer(con, relation_ensemble(list = EM_solutions), `==`)
+}
 }
 \keyword{math}
