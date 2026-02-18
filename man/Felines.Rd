@@ -33,9 +33,7 @@ data("Felines")
   }
 }
 \source{
-  F. Marcotorchino and P. Michaud (1982),
-  Agregation de similarités en classification automatique.
-  \emph{Revue de Statistique Appliquée}, \bold{30}(2), 21--44.
+  \bibshow{Marcotorchino+Michaud:1982}
 }
 \examples{
 data("Felines")

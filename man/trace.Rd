@@ -21,12 +21,10 @@ relation_trace(x, which)
   domain) relations such that \eqn{R * S \le R} or \eqn{S * R \le R},
   respectively (where \eqn{*} denotes composition).  In the fuzzy case,
   the memberships of the traces can be defined as the infima over the
-  corresponding fuzzy membership implications.  See Chapter 2.3 in Fodor
-  and Roubens (1994) for more information.
+  corresponding fuzzy membership implications.
+  See Chapter 2.3 in \bibcitet{Fodor+Roubens:1994} for more information.
 }
 \references{
-  J. Fodor and M. Roubens (1994),
-  \emph{Fuzzy Preference Modelling and Multicriteria Decision Support}.
-  Kluwer Academic Publishers: Dordrecht.
+  \bibshow{Fodor+Roubens:1994}
 }
 \keyword{math}

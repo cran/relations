@@ -50,8 +50,9 @@ relation_antijoin(x, y, \dots)
 }
 \details{
   These functions provide functionality similar to the corresponding
-  operations defined in relational algebra theory as introduced by Codd
-  (1970).  Note, however, that domains in database relations, unlike the
+  operations defined in relational algebra theory as introduced by
+  \bibcitet{Codd:1970}.
+  Note, however, that domains in database relations, unlike the
   concept of relations we use here, are unordered.  In fact, a database
   relation (\dQuote{table}) is defined as a set of elements called
   \dQuote{tuples}, where the \dQuote{tuple} components are named, but
@@ -119,10 +120,7 @@ relation_antijoin(x, y, \dots)
   
 }
 \references{
-  E. F. Codd (1970),
-  A relational model of data for large shared data banks.
-  \emph{Communications of the ACM}, \bold{13}/6, 377--387.
-  \doi{10.1145/362384.362685}.
+  \bibshow{Codd:1970}
 }
 \seealso{
   \code{\link{relation}()}

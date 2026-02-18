@@ -14,13 +14,7 @@ data("Cetacea")
   gives a common zoological classification.
 }
 \source{
-  G. Vescia (1985).
-  Descriptive classification of Cetacea: Whales, porpoises, and
-  dolphins.
-  In: J. F. Marcotorchino, J. M. Proth, and J. Janssen (eds.),
-  Data analysis in real life environment: ins and outs of solving
-  problems.
-  Elsevier Science Publishers B.V.: Amsterdam, The Netherlands.
+  \bibshow{Vescia:1985}
 }
 \examples{
 data("Cetacea")

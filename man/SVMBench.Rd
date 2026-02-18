@@ -34,9 +34,10 @@ data("SVM_Benchmarking_Regression_Consensus")
   relation iff both delivered results on the corresponding data set and
   \eqn{a} did not perform significantly better than \eqn{b} at the 5\%
   level.  Since some methods failed on some data sets, the relations are
-  not guaranteed to be complete or transitive.  See Meyer et al. (2003)
-  for details on the experimental design of the benchmark study, and
-  Hornik and Meyer (2007) for the pairwise comparisons.
+  not guaranteed to be complete or transitive.
+  See \bibcitet{Meyer+Leisch+Hornik:2003} for details on the
+  experimental design of the benchmark study, and
+  \bibcitet{Hornik+Meyer:2007} for the pairwise comparisons. 
 
   The corresponding consensus objects are lists of ensembles of
   consensus relations fitted to the benchmark results.
@@ -47,20 +48,11 @@ data("SVM_Benchmarking_Regression_Consensus")
   relations have been computed (see \code{\link{relation_consensus}}).
   For both classification and regression,
   the three relation ensembles obtained are provided as a named list of
-  length 3. See Hornik & Meyer (2007) for details on the meta-analysis.
+  length 3.
+  See \bibcitet{Hornik+Meyer:2007} for details on the meta-analysis.
 }
 \source{
-  D. Meyer, F. Leisch, and K. Hornik (2003),
-  The support vector machine under test.
-  \emph{Neurocomputing}, \bold{55}, 169--186.
-  \doi{10.1016/S0925-2312(03)00431-4}.
-
-  K. Hornik and D. Meyer (2007),
-  Deriving consensus rankings from benchmarking experiments.
-  In R. Decker and H.-J. Lenz,
-  \emph{Advances in Data Analysis}.
-  Studies in Classification, Data Analysis, and Knowledge Organization.
-  Springer-Verlag: Heidelberg, 163--170.  
+  \bibshow{Meyer+Leisch+Hornik:2003, Hornik+Meyer:2007}
 }
 \examples{
 data("SVM_Benchmarking_Classification")

@@ -81,15 +81,6 @@ if(require("Rgraphviz")) {
   }
 }
 \references{
-  S. Warshall (1962),
-  A theorem on Boolean matrices.
-  \emph{Journal of the ACM}, \bold{9}/1, 11--12.
-  \doi{10.1145/321105.321107}.
-
-  J. A. La Poutré and J. van Leeuwen (1988),
-  Maintenance of Transitive Closures and Transitive Reductions of
-  Graphs.
-  \emph{Proceedings of the International Workshop of Graph-Theoretic
-  Concepts in Computer Science}, Springer, London, 106--120.
+  \bibshow{La_Poutré+van_Leeuwen:1988, Warshall:1962}
 }
 \keyword{math}

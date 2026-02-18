@@ -50,7 +50,8 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
     }
 
     \item{\code{"CS"}}{Cook-Seiford distance, a generalization of the
-      distance function of Cook and Seiford (1978).  Let the generalized
+      distance function of \bibcitet{Cook+Seiford:1978}.
+      Let the generalized
       ranks of an object \eqn{a} in the (first) domain of an
       endorelation \eqn{R} be defined as the number of objects \eqn{b}
       dominating \eqn{a} (i.e., for which \eqn{a R b} and not \eqn{b R
@@ -66,7 +67,8 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
     }
 
     \item{\code{"CKS"}}{Cook-Kress-Seiford distance, a generalization of
-      the distance function of Cook, Kress and Seiford (1986).  For each
+      the distance function of \bibcitet{Cook+Kress+Seiford:1986}.
+      For each
       pair of objects \eqn{a} and \eqn{b} in an endorelation \eqn{R}, we
       can have \eqn{a R b} and not \eqn{b R a} or vice versa (cases of
       \dQuote{strict preference}), \eqn{a R b} and \eqn{b R a} (the case
@@ -143,12 +145,12 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
 	  \eqn{\delta = (2, 2, 1, 2, 1, 1)}.}
 	\item{\code{"EM"}}{the distance obtained from the generalization
 	  of the Kemeny-Snell distance for complete rankings to partial
-	  rankings introduced in Emond and Mason (2000).  This uses a
+	  rankings introduced in \bibcitet{Emond+Mason:2000}.  This uses a
 	  discrepancy of two for opposite strict preferences, and one
 	  for all other distinct results: 
 	  \eqn{\delta = (1, 1, 1, 2, 1, 1)}.}
 	\item{\code{"JMB"}}{the distance with parameters as suggested by
-	  Jabeur, Martel and Ben Khélifa (2004):
+	  \bibcitet{Jabeur+Martel+Khélifa:2004}:
 	  \eqn{\delta = (4/3, 4/3, 4/3, 5/3, 1, 1)}.}
 	\item{\code{"discrete"}}{the discrete metric on the set of paired
 	  comparison results:
@@ -165,36 +167,11 @@ relation_dissimilarity(x, y = NULL, method = "symdiff", \dots)
   the dissimilarity computations.
 }
 \references{
-  W. D. Cook, M. Kress and L. M. Seiford (1986),
-  Information and preference in partial orders: a bimatrix
-  representation.
-  \emph{Psychometrika} \bold{51}/2, 197--207.
-  \doi{10.1007/BF02293980}.
-
-  W. D. Cook and L. M. Seiford (1978),
-  Priority ranking and consensus formation.
-  \emph{Management Science}, \bold{24}/16, 1721--1732.
-  \doi{10.1287/mnsc.24.16.1721}.
-
-  P. Diaconis (1988),
-  \emph{Group Representations in Probability and Statistics}.
-  Institute of Mathematical Statistics: Hayward, CA.
-  
-  E. J. Emond and D. W. Mason (2000),
-  \emph{A new technique for high level decision support}.
-  Technical Report ORD Project Report PR2000/13, Operational
-  Research Division, Department of National Defence, Canada.
-  %% \url{https://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
-
-  K. Jabeur, J.-M. Martel and S. Ben Khélifa (2004).
-  A distance-based collective preorder integrating the relative
-  importance of the groups members.
-  \emph{Group Decision and Negotiation}, \bold{13}, 327--349.
-  \doi{10.1023/B:GRUP.0000042894.00775.75}.
-
-  J. G. Kemeny and J. L. Snell (1962),
-  \emph{Mathematical Models in the Social Sciences},
-  chapter \dQuote{Preference Rankings: An Axiomatic Approach}.
-  MIT Press: Cambridge.
+  \bibshow{Cook+Kress+Seiford:1986,
+    Cook+Seiford:1978,
+    Diaconis:1988,
+    Emond+Mason:2000,
+    Jabeur+Martel+Khélifa:2004,
+    Kemeny+Snell:1962}
 }
 \keyword{math}

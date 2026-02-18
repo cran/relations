@@ -40,7 +40,7 @@ relation_consensus(x, method = NULL, weights = 1,
   dissimilarity measure (see \code{\link{relation_dissimilarity}()}),
   \eqn{w_b} is the case weight given to element \eqn{R_b} of the
   ensemble, and \eqn{e \ge 1}.  Such consensus relations are called
-  \dQuote{central relations} in Régnier (1965).  For \eqn{e = 1}, we
+  \dQuote{central relations} in \bibcitet{Régnier:1965}.  For \eqn{e = 1}, we
   obtain (generalized) medians; \eqn{e = 2} gives (generalized) means
   (least squares consensus relations).
 
@@ -49,7 +49,8 @@ relation_consensus(x, method = NULL, weights = 1,
   applicable to ensembles of endorelations only. 
 
   \describe{
-    \item{\code{"Borda"}}{the consensus method proposed by Borda (1781).
+    \item{\code{"Borda"}}{the consensus method proposed by
+      \bibcitet{Borda:1781}.
       For each relation \eqn{R_b} and object \eqn{x}, one determines the
       Borda/Kendall scores, i.e., the number of objects \eqn{y} such
       that \eqn{y R_b x}.  These are then aggregated across relations
@@ -63,8 +64,9 @@ relation_consensus(x, method = NULL, weights = 1,
       parameter \code{n} to some positive integer or \code{"all"},
       respectively.
     }
-    \item{\code{"Copeland"}}{the consensus method proposed by Copeland
-      (1951).  For each relation \eqn{R_b} and object \eqn{x}, one
+    \item{\code{"Copeland"}}{the consensus method proposed by
+      \bibcitet{Copeland:1951}.
+      For each relation \eqn{R_b} and object \eqn{x}, one
       determines the Copeland scores, i.e., the number of objects
       \eqn{y} such that \eqn{y R_b x}, minus the number of objects
       \eqn{y} such that \eqn{x R_b y}.  Like the Borda method, these are
@@ -79,8 +81,9 @@ relation_consensus(x, method = NULL, weights = 1,
       parameter \code{n} to some positive integer or \code{"all"},
       respectively.
     }
-    \item{\code{"Condorcet"}}{the consensus method proposed by Condorcet
-      (1785).  For a given ensemble of crisp relations, this minimizes
+    \item{\code{"Condorcet"}}{the consensus method proposed by
+      \bibcitet{de_Condorcet:1785}.
+      For a given ensemble of crisp relations, this minimizes
       the criterion function \eqn{\Phi} with \eqn{d} as symmetric
       difference distance and \eqn{e = 1} over all possible crisp 
       relations.  In the case of endorelations, consensus is obtained by
@@ -94,7 +97,7 @@ relation_consensus(x, method = NULL, weights = 1,
       solutions consensus relations by setting the control parameter
       \code{n} to some positive integer or \code{"all"}, respectively.
     } 
-    \item{\code{"CS"}}{the consensus method of Cook and Seiford (1978)
+    \item{\code{"CS"}}{the consensus method of \bibcitet{Cook+Seiford:1978}
       which determines a linear order minimizing the criterion function
       \eqn{\Phi} with \eqn{d} as generalized Cook-Seiford (ranking)
       distance and \eqn{e = 1} via solving a linear sum assignment
@@ -134,7 +137,7 @@ relation_consensus(x, method = NULL, weights = 1,
       
       Consensus relations are determined by reformulating the consensus
       problem as a binary program (for the relation incidences), see
-      Hornik and Meyer (2007) for details.  The solver employed can be
+      \bibcitet{Hornik+Meyer:2007} for details.  The solver employed can be
       specified via the control argument \code{solver}, with currently
       possible values \code{"glpk"}, \code{"lpsolve"}, \code{"symphony"}
       or \code{"cplex"} or a unique abbreviation thereof, specifying to
@@ -220,52 +223,15 @@ relation_consensus(x, method = NULL, weights = 1,
   }
 }
 \references{
-  J. C. Borda (1781),
-  Mémoire sur les élections au scrutin.
-  Histoire de l'Académie Royale des Sciences.
-  
-  W. D. Cook and M. Kress (1992),
-  \emph{Ordinal information and preference structures: decision models and
-    applications}.
-  Prentice-Hall: New York.
-  ISBN: 0-13-630120-7.
-
-  W. D. Cook and L. M. Seiford (1978),
-  Priority ranking and consensus formation.
-  \emph{Management Science}, \bold{24}/16, 1721--1732.
-  \doi{10.1287/mnsc.24.16.1721}.
-  
-  M. J. A. de Condorcet (1785),
-  Essai sur l'application de l'analyse à la probabilité des décisions
-  rendues à la pluralité des voix. 
-  Paris.
-
-  A. H. Copeland (1951),
-  A Reasonable Social Welfare Function.
-  \emph{mimeo}, University of Michigan.
-  
-  E. J. Emond and D. W. Mason (2000),
-  \emph{A new technique for high level decision support}.
-  Technical Report ORD Project Report PR2000/13, Operational
-  Research Division, Department of National Defence, Canada.
-  %% \url{https://cradpdf.drdc-rddc.gc.ca/PDFS/zbc84/p513851.pdf}.
-
-  K. Hornik and D. Meyer (2007),
-  Deriving consensus rankings from benchmarking experiments.
-  In R. Decker and H.-J. Lenz,
-  \emph{Advances in Data Analysis}.
-  Studies in Classification, Data Analysis, and Knowledge Organization.
-  Springer-Verlag: Heidelberg, 163--170.
-  
-  F. Marcotorchino and P. Michaud (1982).
-  Agrégation de similarités en classification automatique.
-  \emph{Revue de Statistique Appliquée}, \bold{30}/2, 21--44.
-  \url{https://eudml.org/doc/106132}.
-  
-  S. Régnier (1965),
-  Sur quelques aspects mathématiques des problèmes de classification
-  automatique.
-  \emph{ICC Bulletin}, \bold{4}, 175--191.
+  \bibshow{Borda:1781,
+    de_Condorcet:1785,
+    Cook+Kress:1992,
+    Cook+Seiford:1978,
+    Copeland:1951,
+    Emond+Mason:2000,
+    Hornik+Meyer:2007,
+    Marcotorchino+Michaud:1982,
+    Régnier:1965}
 }
 \examples{
 ## Consensus equivalence.

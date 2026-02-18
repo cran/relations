@@ -107,8 +107,8 @@ is.relation(x)
   \emph{inverse}) \eqn{R^{t}} of the relation \eqn{R} with domain
   \eqn{(X, Y)} is the relation with domain \eqn{(Y, X)} such that
   \eqn{y R^{t} x} iff \eqn{x R y}.  The 
-  \emph{codual} (Clark (1990), also known as the \sQuote{dual} in the
-  fuzzy preference literature, e.g., Ovchinnikov (1991)) is the
+  \emph{codual} \bibcitep{Clark:1990}, also known as the \sQuote{dual} in the
+  fuzzy preference literature, e.g., \bibcitet{Ovchinnikov:1991}, is the
   complement of the transpose (equivalently, the transpose of the
   complement).
 
@@ -164,15 +164,7 @@ is.relation(x)
   and returns a logical vector with the corresponding results.
 }
 \references{
-  S. A. Clark (1990),
-  A folk meta-theorem in the foundations of utility theory.
-  \emph{Mathematical Social Sciences}, \bold{19}/3, 253--267.
-  \doi{10.1016/0165-4896(90)90065-F}.
-  
-  S. Ovchinnikov (1991),
-  Similarity relations, fuzzy partitions, and fuzzy orderings.
-  \emph{Fuzzy Sets and Systems}, \bold{40}/1, 107--126.
-  \doi{10.1016/0165-0114(91)90048-U}.
+  \bibshow{Clark:1990, Ovchinnikov:1991}
 }
 \seealso{
   \code{\link{relation_incidence}()} for obtaining incidences;

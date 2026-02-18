@@ -57,9 +57,6 @@ R == reflexive_closure(RR)
 R == closure(reduction(R, "reflexive"), "reflexive")
 }
 \references{
-  S. Warshall (1962),
-  A theorem on Boolean matrices.
-  \emph{Journal of the ACM}, \bold{9}/1, 11--12.
-  \doi{10.1145/321105.321107}.
+  \bibshow{Warshall:1962}
 }
 \keyword{math}

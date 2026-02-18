@@ -239,7 +239,7 @@ relation_has_missings(x)
   \eqn{R}.
 
   There seem to be no commonly agreed definitions for order relations:
-  e.g., Fishburn (1972) requires these to be irreflexive.
+  e.g., \bibcitet{Fishburn:1972} requires these to be irreflexive.
 
   For a fuzzy binary relation \eqn{R}, let \eqn{R(x, y)} denote the
   membership of \eqn{(x, y)} in the relation.  Write \eqn{T} and \eqn{S}
@@ -281,15 +281,7 @@ relation_has_missings(x)
   logicals corresponding to the incidences tested for missingness.
 }
 \references{
-  P. C. Fishburn (1972),
-  \emph{Mathematics of decision theory}.
-  Methods and Models in the Social Sciences 3.
-  Mouton: The Hague.
-
-  H. R. Varian (2002),
-  \emph{Intermediate Microeconomics: A Modern Approach}.
-  6th Edition. W. W. Norton & Company.
-  
+  \bibshow{Fishburn:1972, Varian:2002}
 }
 \examples{
 require("sets")

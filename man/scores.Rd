@@ -35,8 +35,9 @@
   Let the \emph{in-degree} \eqn{I(x)} and \emph{out-degree} \eqn{O(x)}
   of an object \eqn{x} be defined as the numbers of objects \eqn{y} such
   that \eqn{y R x} and, respectively, \eqn{x R y}, and let \eqn{D(x) =
-    I(x) - O(x)} be the \emph{differential} of \eqn{x} (see Regenwetter
-  and Rykhlevskaia (2004)).  Note that \eqn{I} and \eqn{O} are given by
+    I(x) - O(x)} be the \emph{differential} of \eqn{x}
+  (see \bibcitet{Regenwetter+Rykhlevskaia:2004}).
+  Note that \eqn{I} and \eqn{O} are given by
   the column sums and row sums of the incidence matrix of \eqn{R}.  If
   \eqn{R} is a preference relation with a \eqn{\le} interpretation,
   \eqn{D(x)} is the difference between the numbers of objects dominated
@@ -57,7 +58,7 @@
       preference context) using \eqn{(n + 1 - D(x)) / 2}.
       Otherwise, if \code{decreasing} is false, objects are ranked via
       \eqn{(n + 1 + D(x)) / 2} (\dQuote{from the smallest to the largest}).
-      See Regenwetter and Rykhlevskaia (2004) for more details on
+      See \bibcitet{Regenwetter+Rykhlevskaia:2004} for more details on
       generalized ranks.
     }
     \item{\code{"Barthelemy/Monjardet"}}{\eqn{(M(x) + N(x) - 1) / 2},
@@ -66,19 +67,19 @@
       respectively.  If \eqn{R} is a \eqn{\le} preference relation, we
       get the number of dominated objects plus half the number of the
       equivalent objects minus 1 (the \dQuote{usual} average ranks minus
-      one if the relation is complete).  See Barthélemy and Monjardet
-      (1981).
+      one if the relation is complete).
+      See \bibcitet{Barthelemy+Monjardet:1981}.
     }
     \item{\code{"Borda"}, \code{"Kendall"}}{the out-degrees.
-      See Borda (1770) and Kendall (1955).
+      See \bibcitet{Borda:1781} and \bibcitet{Kendall:1955}.
     }
     \item{\code{"Wei"}}{the eigenvector corresponding to the greatest
       eigenvalue of the incidence matrix of the complement of \eqn{R}.
-      See Wei (1952).
+      See \bibcitet{Wei:1952}.
     }
     \item{\code{"differential"}, \code{"Copeland"}}{the differentials,
-    equivalent to the negative \emph{net flow} of Bouyssou (1992), and
-    also to the Copeland scores.}
+    equivalent to the negative \emph{net flow} of
+    \bibcitet{Bouyssou:1992}, and also to the Copeland scores.}
   }
 
   For relation ensembles, currently only
@@ -99,34 +100,13 @@
   A vector of scores, with names taken from the relation domain labels.
 }
 \references{
-  J.-P. Barthélemy and B. Monjardet (1981),
-  The median procedure in cluster analysis and social choice theory.
-  \emph{Mathematical Social Sciences}, \bold{1}, 235--267.
-  \doi{10.1016/0165-4896(81)90041-X}.
-
-  J. C. Borda (1781),
-  Mémoire sur les élections au scrutin.
-  Histoire de l'Académie Royale des Sciences.
-
-  D. Bouyssou (1992),
-  Ranking methods based on valued preference relations: A
-  characterization of the net flow network.
-  \emph{European Journal of Operational Research}, \bold{60}, 61--67.
-  \doi{10.1016/0377-2217(92)90333-5}.
-	
-  M. Kendall (1955),
-  Further contributions to the theory of paired comparisons.
-  \emph{Biometrics}, \bold{11}, 43--62.
-  \doi{10.2307/3001479}.
-
-  M. Regenwetter and E. Rykhlevskaia (2004),
-  On the (numerical) ranking associated with any finite binary relation.
-  \emph{Journal of Mathematical Psychology}, \bold{48}, 239--246.
-  \doi{10.1016/j.jmp.2004.03.003}.
-  
-  T. H. Wei (1952).
-  \emph{The algebraic foundation of ranking theory}.
-  Unpublished thesis, Cambridge University.
+  \bibshow{Barthelemy+Monjardet:1981,
+    Borda:1781,
+    Bouyssou:1992,
+    Cook+Kress:1992,
+    Kendall:1955,
+    Regenwetter+Rykhlevskaia:2004,
+    Wei:1952}
 }
 \examples{
 ## Example taken from Cook and Cress (1992, p.74)

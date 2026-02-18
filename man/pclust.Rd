@@ -39,10 +39,10 @@ relation_pclust(x, k, method, m = 1, weights = 1,
   For \eqn{m = 1}, a generalization of the Lloyd-Forgy variant of the
   \eqn{k}-means algorithm is used, which iterates between reclassifying
   objects to their closest prototypes, and computing new prototypes as
-  consensus relations (generalized \dQuote{central relations}, Régnier
-  (1965)) for the classes.  This procedure was proposed in Gaul and
-  Schader (1988) as the \dQuote{Clusterwise Aggregation of Relations}
-  (CAR).
+  consensus relations (generalized \dQuote{central relations},
+  \bibcitet{Régnier:1965}) for the classes.
+  This procedure was proposed in \bibcitet{Gaul+Schader:1988} as the
+  \dQuote{Clusterwise Aggregation of Relations} (CAR).
 
   For \eqn{m > 1}, a generalization of the fuzzy \eqn{c}-means recipe
   is used, which alternates between computing optimal memberships for
@@ -78,15 +78,7 @@ relation_pclust(x, k, method, m = 1, weights = 1,
   replications of the base algorithm.
 }
 \references{
-  S. Régnier (1965).
-  Sur quelques aspects mathématiques des problèmes de classification
-  automatique.
-  \emph{ICC Bulletin}, \bold{4}, 175--191.
-  
-  W. Gaul and M. Schader (1988).
-  Clusterwise aggregation of relations.
-  \emph{Applied Stochastic Models and Data Analysis}, \bold{4}, 273--282.
-  \doi{10.1002/asm.3150040406}.
+  \bibshow{Gaul+Schader:1988, Régnier:1965}
 }
 \keyword{math}
 \keyword{cluster}
