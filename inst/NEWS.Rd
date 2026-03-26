@@ -2,6 +2,12 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-17}{
+  \itemize{
+    \item No user-visible changes.
+  }
+}
+
 \section{Changes in version 0.6-16}{
   \itemize{
     \item Generate bibliographic citations and references from

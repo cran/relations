@@ -1,4 +1,4 @@
-6a70665c88e74065774a7f35f41251de *DESCRIPTION
+4e213c17c42d24a8512f9d1ac718347d *DESCRIPTION
 ca192fd4d86c4f901fbcf84c6cc7cbee *NAMESPACE
 30b331a76eb8788dc6e1f2ea93daeb0b *R/algebra.R
 9794e80d79048eb2e468379b305d9d03 *R/charfun.R
@@ -30,7 +30,7 @@ da090508072036b1e3dae6ceb97d13e5 *R/plot.R
 c75e16e3dc8be86625e90ed2b365dff9 *R/utilities.R
 8624cab699649d59027fa929217e24c9 *R/violations.R
 abf404a6142e6125da6ff42b867029a6 *R/zzz.R
-e3ac9ef7179dc79a12bc9669c77e7bdc *build/partial.rdb
+434f1fdb3b61ec47fa104706687e7b18 *build/partial.rdb
 0c2ed1cb71d0105a4572dd51ecd28b59 *build/vignette.rds
 e14ab1a00b127759b34fa90b4635ecd1 *data/Cetacea.rda
 fad140554b60349a1864d2bb641a053f *data/Felines.rda
@@ -38,11 +38,11 @@ fad140554b60349a1864d2bb641a053f *data/Felines.rda
 ee60b6362020576729e8f9037f03736b *data/SVM_Benchmarking_Classification_Consensus.rda
 c6aefbe3994c4451e6299c3302da02d2 *data/SVM_Benchmarking_Regression.rda
 c4ec9743a6d3aa898caa48c0cb60dbd9 *data/SVM_Benchmarking_Regression_Consensus.rda
-6d8272be7f76f167c4135b910093fb46 *inst/NEWS.Rd
+ee4053f44037b8dc0a85fe66cc7dab6a *inst/NEWS.Rd
 f8bbbf43e701b88fe02bf1ad5eef9e68 *inst/REFERENCES.R
 8d354f92561cdacbe09b3184f1da7994 *inst/doc/relations.R
 eceec9967df0448544de49b23e1be2b2 *inst/doc/relations.Rnw
-47c103069628b7ab574dce465e726865 *inst/doc/relations.pdf
+4ed2df488f4fa956223c909f08a96d74 *inst/doc/relations.pdf
 87729a916741aafe40299507c8cec8a7 *inst/po/en@quot/LC_MESSAGES/R-relations.mo
 40ea2857ada888a3495c3bc770d8472d *man/Cetacea.Rd
 3b5aa242d3ccb54d5b886ecb8a4efb78 *man/Felines.Rd
