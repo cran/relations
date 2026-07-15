@@ -21,6 +21,10 @@ homorelation(domain = NULL, incidence = NULL, graph = NULL,
              charfun = NULL)
 as.relation(x, \dots)
 is.relation(x)
+
+asy(x)
+sym(x)
+codual(x, \dots)
 }
 \arguments{
   \item{domain}{List (or tuple) of (possibly named) sets (or vectors)
@@ -40,10 +44,10 @@ is.relation(x)
   \item{charfun}{A characteristic function of the relation, i.e., a
     predicate function taking \eqn{k} arguments, with \eqn{k} equal to
     the arity of the relation.}
-  \item{x}{an \R object.}
-  \item{\dots}{Further arguments passed to \code{as.relation()}
-    methods (currently not used for those defined in the relations
-    package).}
+  \item{x}{For \code{as.relation} and \code{is.relation}: an \R object.
+    Otherwise, an object inheriting from class \code{\link{relation}},
+    representing an endorelation.}
+  \item{\dots}{Further arguments passed to methods.}
 }
 \details{
   Given \eqn{k} sets of objects \eqn{X_1}, \ldots, \eqn{X_k}, a

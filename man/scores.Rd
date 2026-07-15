@@ -8,6 +8,7 @@
   Compute scores for the tuples of (ensembles of) endorelations.
 }
 \usage{
+relation_scores(x, method, normalize = FALSE, \dots)
 \method{relation_scores}{relation}(x,
                 method = c("ranks", "Barthelemy/Monjardet",
                            "Borda", "Kendall", "Wei",
@@ -21,7 +22,7 @@
 }
 \arguments{
   \item{x}{an object inheriting from class \code{\link{relation}},
-    representing an endorelation.}
+    representing an endorelation, or an ensemble of endorelations.}
   \item{method}{character string indicating the method (see
     \bold{Details}).}
   \item{normalize}{logical indicating whether the score vector should be

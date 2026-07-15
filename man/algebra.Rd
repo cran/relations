@@ -37,6 +37,17 @@ relation_remainder(x, y)
 relation_join(x, y, \dots)
 relation_semijoin(x, y, \dots)
 relation_antijoin(x, y, \dots)
+
+x \%<|\% y
+x \%=><\% y
+x \%=><=\% y
+x \%><\% y
+x \%><=\% y
+x \%><|\% y
+x \%U\% y
+x \%|>\% y
+x \%|><\% y
+x \%|><|\% y
 }
 \arguments{
   \item{x, y}{Relation objects.}

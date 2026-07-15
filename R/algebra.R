@@ -77,7 +77,6 @@ function(x, subset)
     x
 }
 
-"%><%" <-
 relation_cartesian <-
 function(x, y, ...)
 {
@@ -96,12 +95,14 @@ function(x, y, ...)
                                                    T.FUN)
                                              )
 }
+"%><%" <-
+function(x, y)
+    relation_cartesian(x, y)
 
 ### * relation_union
 
 ## For union of relations, we also allow non-identical domain labels.
 
-"%U%" <-
 relation_union <-
 function(x, y, ...)
 {
@@ -136,6 +137,9 @@ function(x, y, ...)
     .make_relation_from_domain_and_incidence(Dxy, .S.(Ix, Iy))
 }
 
+"%U%" <-
+function(x, y)
+    relation_union(x, y)
 
 ### * relation_intersection
 
@@ -248,7 +252,6 @@ function(x, y)
 
 ### * relation_join et al
 
-"%|><|%" <-
 relation_join <-
 function(x, y, ...)
 {
@@ -292,36 +295,47 @@ function(x, y, ...)
     as.relation(.structure(tmp[, nms], memberships = M))
 }
 
+"%|><|%" <-
+function(x, y)
+    relation_join(x, y)
+
 "%><=%" <-
-function(x, y, ...)
-    relation_join(x, y, all.y = TRUE, ...)
+function(x, y)
+    relation_join(x, y, all.y = TRUE)
 
 "%=><%" <-
-function(x, y, ...)
-    relation_join(x, y, all.x = TRUE, ...)
+function(x, y)
+    relation_join(x, y, all.x = TRUE)
 
 "%=><=%" <-
-function(x, y, ...)
-    relation_join(x, y, all = TRUE, ...)
+function(x, y)
+    relation_join(x, y, all = TRUE)
 
-"%|><%" <-
 relation_semijoin <-
 function(x, y, ...)
     relation_projection(relation_join(x, y, ...),
                         relation_domain_names(x))
 
-"%><|%" <-
-function(x, y, ...)
-    relation_semijoin(y, x, ...)
+"%|><%" <-
+function(x, y)    
+    relation_semijoin(x, y)
 
-"%|>%" <-
+"%><|%" <-
+function(x, y)
+    relation_semijoin(y, x)
+
+
 relation_antijoin <-
 function(x, y, ...)
     x - relation_semijoin(x, y, ...)
 
+"%|>%" <-
+function(x, y)    
+    relation_antijoin(x, y)
+
 "%<|%" <-
-function(x, y, ...)
-    relation_antijoin(y, x, ...)
+function(x, y)
+    relation_antijoin(y, x)
 
 ### * .stop_if_not_relation_has_unique_domain_names
 

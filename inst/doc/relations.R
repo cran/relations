@@ -346,5 +346,3 @@ relation_class_ids(W3)
 ### code chunk number 33: consensusfig
 ###################################################
 if(require("Rgraphviz")) plot(L)
-
-

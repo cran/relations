@@ -2,6 +2,13 @@
 \title{News for Package \pkg{relations}}
 \newcommand{\cpkg}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in version 0.6-18}{
+  \itemize{
+    \item The (binary) relational algebra operators now are all
+    functions taking exactly two arguments.
+  }
+}
+
 \section{Changes in version 0.6-17}{
   \itemize{
     \item No user-visible changes.
